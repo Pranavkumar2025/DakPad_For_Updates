@@ -1,0 +1,171 @@
+[
+  {
+    "caseId": 1,
+    "applicantName": "Sunita Devi",
+    "title": "Negligence During Health Check-up",
+    "dateOfApplication": "2023-05-12",
+    "description": "Received wrong test reports at PHC Chhoti Bazar.",
+    "addAt": "Table A",
+    "receivedDate": "2023-05-15",
+    "departmentInOut": "OUT",
+    "departmentSendTo": "Primary Health Center",
+    "date": "2023-05-16",
+    "status": "Pending",
+    "pdfLink": "#",
+    "timeline": [
+      { "section": "Reception", "comment": "Filed grievance about test report mix-up.", "date": "2023-05-12" },
+      { "section": "PHC Chhoti Bazar", "comment": "PHC acknowledged the report error.", "date": "2023-05-14" },
+      { "section": "Health Officer Review", "comment": "Requested explanation from lab technician.", "date": "2023-05-15" }
+    ]
+  },
+  {
+    "caseId": 2,
+    "applicantName": "Rajesh Yadav",
+    "title": "Doctor Unavailable at PHC",
+    "dateOfApplication": "2023-06-01",
+    "description": "No doctor present at the center for 3 consecutive days.",
+    "addAt": "Table B",
+    "receivedDate": "2023-06-03",
+    "departmentInOut": "OUT",
+    "departmentSendTo": "District Health Office",
+    "date": "2023-06-05",
+    "status": "Disposed",
+    "pdfLink": "#",
+    "timeline": [
+      { "section": "PHC Report", "comment": "Complaint recorded regarding doctor absence.", "date": "2023-06-01" },
+      { "section": "District Health Office", "comment": "Clarification received. Temporary issue due to training.", "date": "2023-06-03" },
+      { "section": "Case Closure", "comment": "Issue resolved. Doctors resumed duty.", "date": "2023-06-05" }
+    ]
+  },
+  {
+    "caseId": 3,
+    "applicantName": "Aarti Kumari",
+    "title": "Rude Behavior by Medical Staff",
+    "dateOfApplication": "2023-04-22",
+    "description": "Staff at Sadar Hospital behaved rudely and refused service.",
+    "addAt": "Table C",
+    "receivedDate": "2023-04-25",
+    "departmentInOut": "IN",
+    "departmentSendTo": "Civil Surgeon Office",
+    "date": "2023-04-26",
+    "status": "Pending",
+    "pdfLink": "#",
+    "timeline": [
+      { "section": "Sadar Hospital", "comment": "Incident reported by patient.", "date": "2023-04-22" },
+      { "section": "Civil Surgeon Office", "comment": "Inquiry initiated against involved staff.", "date": "2023-04-25" }
+    ]
+  },
+  {
+    "caseId": 4,
+    "applicantName": "Mohammed Imran",
+    "title": "Expired Medicines Issued",
+    "dateOfApplication": "2023-07-10",
+    "description": "Expired tablets provided from government dispensary.",
+    "addAt": "Table D",
+    "receivedDate": "2023-07-13",
+    "departmentInOut": "IN",
+    "departmentSendTo": "Drug Control Department",
+    "date": "2023-07-14",
+    "status": "Compliance",
+    "pdfLink": "#",
+    "timeline": [
+      { "section": "Dispensary", "comment": "Reported expired medicines handed to patient.", "date": "2023-07-10" },
+      { "section": "Drug Control", "comment": "Batch investigated. Found expired stock.", "date": "2023-07-13" },
+      { "section": "Compliance", "comment": "Stock removed, and memo issued to pharmacist.", "date": "2023-07-14" }
+    ]
+  },
+  {
+    "caseId": 5,
+    "applicantName": "Neha Kumari",
+    "title": "Improper Sanitation in PHC",
+    "dateOfApplication": "2023-08-03",
+    "description": "No proper toilet facility and unhygienic wards.",
+    "addAt": "2023-08-04",
+    "receivedDate": "2023-08-05",
+    "departmentInOut": "OUT",
+    "departmentSendTo": "Health Sanitation Dept",
+    "date": "2023-08-06",
+    "status": "Dismissed",
+    "pdfLink": "#",
+    "timeline": [
+      { "section": "PHC Visit", "comment": "Filed sanitation complaint.", "date": "2023-08-03" },
+      { "section": "Sanitation Dept", "comment": "Inspection conducted. Minor issues observed.", "date": "2023-08-05" },
+      { "section": "Review Panel", "comment": "No grounds for escalation. Case dismissed.", "date": "2023-08-06" }
+    ]
+  },
+  {
+    "caseId": 6,
+    "applicantName": "Vikash Singh",
+    "title": "Delay in Ambulance Service",
+    "dateOfApplication": "2023-09-14",
+    "description": "108 ambulance arrived 1 hour late during emergency.",
+    "addAt": "2023-09-15",
+    "receivedDate": "2023-09-16",
+    "departmentInOut": "IN",
+    "departmentSendTo": "Emergency Response Unit",
+    "date": "2023-09-17",
+    "status": "Pending",
+    "pdfLink": "#",
+    "timeline": [
+      { "section": "Emergency Call", "comment": "Ambulance delayed for over an hour.", "date": "2023-09-14" },
+      { "section": "Response Unit", "comment": "Cause identified: vehicle breakdown.", "date": "2023-09-16" }
+    ]
+  },
+  {
+    "caseId": 7,
+    "applicantName": "Ramesh Prasad",
+    "title": "Wrong Vaccination Administered",
+    "dateOfApplication": "2023-03-19",
+    "description": "Child received wrong vaccine dose at PHC.",
+    "addAt": "2023-03-20",
+    "receivedDate": "2023-03-21",
+    "departmentInOut": "OUT",
+    "departmentSendTo": "Vaccination Department",
+    "date": "2023-03-22",
+    "status": "Compliance",
+    "pdfLink": "#",
+    "timeline": [
+      { "section": "PHC Records", "comment": "Reported adverse event post vaccination.", "date": "2023-03-19" },
+      { "section": "Vaccination Dept", "comment": "Mismatch in vaccine label confirmed.", "date": "2023-03-21" },
+      { "section": "Compliance", "comment": "New SOP issued for vaccine verification.", "date": "2023-03-22" }
+    ]
+  },
+  {
+    "caseId": 8,
+    "applicantName": "Sushila Devi",
+    "title": "Bribe Demanded for Admission",
+    "dateOfApplication": "2023-10-11",
+    "description": "Ward boy demanded bribe for admitting patient.",
+    "addAt": "2023-10-12",
+    "receivedDate": "2023-10-13",
+    "departmentInOut": "IN",
+    "departmentSendTo": "Health Vigilance Cell",
+    "date": "2023-10-14",
+    "status": "Pending",
+    "pdfLink": "#",
+    "timeline": [
+      { "section": "Complaint Filed", "comment": "Bribe incident recorded by family.", "date": "2023-10-11" },
+      { "section": "Vigilance Cell", "comment": "Statement recorded. Staff suspended for inquiry.", "date": "2023-10-13" }
+    ]
+  },
+  {
+    "caseId": 9,
+    "applicantName": "Deepak Kumar",
+    "title": "Misbehavior During Emergency",
+    "dateOfApplication": "2023-11-01",
+    "description": "Doctor on night duty misbehaved with patient’s family.",
+    "addAt": "2023-11-02",
+    "receivedDate": "2023-11-03",
+    "departmentInOut": "OUT",
+    "departmentSendTo": "Hospital Admin Dept",
+    "date": "2023-11-04",
+    "status": "Dismissed",
+    "pdfLink": "#",
+    "timeline": [
+      { "section": "Emergency Ward", "comment": "Complaint noted by hospital admin.", "date": "2023-11-01" },
+      { "section": "Admin Dept", "comment": "Doctor issued verbal warning.", "date": "2023-11-03" },
+      { "section": "Final Review", "comment": "Case considered resolved.", "date": "2023-11-04" }
+    ]
+  }
+
+]

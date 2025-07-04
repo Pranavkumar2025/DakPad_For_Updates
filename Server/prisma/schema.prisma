@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Case {
+  id                String     @id @default(uuid())
+  applicantName     String
+  phone             String
+  title             String
+  description       String
+  addAt             String?
+  dateOfApplication DateTime   // ✅ FIXED
+  caseType          String?
+  departmentInOut   String
+  fileUrl           String?
+  status            String
+
+  timeline          Timeline[]
+  messages          Message[]
+}
+
+
+model Timeline {
+  id      String   @id @default(uuid())
+  section String
+  comment String
+  date    String
+  case    Case     @relation(fields: [caseId], references: [id])
+  caseId  String
+}
+
+model Message {
+  id      String   @id @default(uuid())
+  message String
+  from    String
+  date    String
+  case    Case     @relation(fields: [caseId], references: [id])
+  caseId  String
+}
