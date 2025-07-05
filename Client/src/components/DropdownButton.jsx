@@ -24,7 +24,7 @@ const DropdownButton = ({ label, items }) => {
     <div className="relative inline-block text-left mb-2" ref={dropdownRef}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className=" border border-gray-300 bg-gray-200 flex items-center rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-[#ffbda0]"
+        className=" border border-green-500 bg-white flex items-center rounded-full px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-[#ffbda0]"
       >
         {label}
         <span className="pl-2">

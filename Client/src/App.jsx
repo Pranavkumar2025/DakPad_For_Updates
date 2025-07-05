@@ -6,12 +6,13 @@ import ApplicationForm from "./pages/ApplicationForm";
 import ProtectedRoute from "./components/ProtectedRoute"; 
 import NotFound from "./pages/NotFound";
 import AddCaseForm from "./components/AddCaseForm";
+import AdminLogin from "./pages/AdminLogin";
 
 const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AdminDashboard />} />
+        <Route path="/Admin" element={<AdminDashboard />} />
 
         {/* ✅ Protected Route */}
         {/* <Route
@@ -26,6 +27,7 @@ const App = () => {
         <Route path="/user-dashboard" element={<UserDashboard />} />
         <Route path="/application-form" element={<ApplicationForm />} />
         <Route path="/addCaseForm" element= {<AddCaseForm />} />
+        <Route path="/" element= {<AdminLogin />} />
         
         {/* Fallback route for 404 Not Found */}
         <Route path="*" element={<NotFound />} />

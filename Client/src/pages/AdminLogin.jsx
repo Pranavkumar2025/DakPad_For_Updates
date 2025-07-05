@@ -10,32 +10,16 @@ const AdminLogin = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
     setError("");
 
-    try {
-      const response = await fetch("http://localhost:5000/api/admin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ adminId, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // ✅ Save token to localStorage
-        localStorage.setItem("adminToken", data.token);
-        // ✅ Redirect to admin dashboard
-        navigate("/admin-dashboard");
-      } else {
-        setError(data.error || "Login failed");
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      setError("Server error. Please try again later.");
+    // ✅ Hardcoded credentials check
+    if (adminId === "0519" && password === "@Dakpad2025") {
+      localStorage.setItem("adminToken", "hardcoded-token");
+      navigate("/Admin");
+    } else {
+      setError("Invalid Admin ID or Password");
     }
   };
 
