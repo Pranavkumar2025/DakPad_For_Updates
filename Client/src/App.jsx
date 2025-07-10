@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import AddCaseForm from "./components/AddCaseForm";
 import AdminLogin from "./pages/AdminLogin";
 
+
 const App = () => {
   return (
     <Router>
@@ -24,10 +25,10 @@ const App = () => {
           }
         /> */}
 
-        <Route path="/user-dashboard" element={<UserDashboard />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/application-form" element={<ApplicationForm />} />
         <Route path="/addCaseForm" element= {<AddCaseForm />} />
-        <Route path="/" element= {<AdminLogin />} />
+        <Route path="/" element= {<UserDashboard />} />
         
         {/* Fallback route for 404 Not Found */}
         <Route path="*" element={<NotFound />} />

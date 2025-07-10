@@ -1,33 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { FaRegClock } from 'react-icons/fa';
 import { GrCompliance } from 'react-icons/gr';
 import { RiCloseCircleLine } from 'react-icons/ri';
-import { useNavigate } from 'react-router-dom';
 
 import backimg from '../assets/back4.jpeg';
 import UserNavbar from '../components/UserNavbar';
+import casesData from '../JsonData/DataTable.json';
+import AddCaseForm from '../components/AddCaseForm';
+import EditCaseForm from '../components/EditCaseForm';
+import UserSidebar from '../components/UserSidebar';
 
 const UserDashboard = () => {
   const [cases, setCases] = useState([]);
   const [filteredCases, setFilteredCases] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCase, setSelectedCase] = useState(null);
-  const [userMessage, setUserMessage] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [applicationIdInput, setApplicationIdInput] = useState('');
+  const [foundApplication, setFoundApplication] = useState(null);
+  const [showEditForm, setShowEditForm] = useState(false);
 
-  const navigate = useNavigate();
+  const handleDownload = () => {
+    if (!foundApplication) return;
 
-  const handleNewApplication = () => {
-    navigate('/application-form');
+    const content = `
+    Application ID: ${foundApplication.applicationId}
+    Applicant Name: ${foundApplication.applicantName}
+    Mobile Number: ${foundApplication.mobileNumber}
+    Email: ${foundApplication.email}
+    Title: ${foundApplication.title}
+    Description: ${foundApplication.description}
+    Date of Application: ${foundApplication.dateOfApplication}
+    Source: ${foundApplication.addAt}
+    Status: ${foundApplication.status}
+  `;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${foundApplication.applicationId}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/cases')
-      .then(res => {
-        setCases(res.data);
-        setFilteredCases(res.data);
-      })
-      .catch(console.error);
+    setCases(casesData);
+    setFilteredCases(casesData);
   }, []);
 
   useEffect(() => {
@@ -40,12 +58,18 @@ const UserDashboard = () => {
   const getStatusBadge = (status) => {
     let color = '', icon = null;
     if (status === 'Pending') {
-      color = 'bg-[#13c2FF]'; icon = <FaRegClock />;
+      color = 'bg-[#13c2FF]';
+      icon = <FaRegClock />;
     } else if (status === 'Compliance') {
-      color = 'bg-[#13B56C]'; icon = <GrCompliance />;
+      color = 'bg-[#13B56C]';
+      icon = <GrCompliance />;
+    } else if (status === 'Dismissed') {
+      color = 'bg-[#ff4d4f]';
+      icon = <RiCloseCircleLine />;
     } else {
-      color = 'bg-[#0969F9]'; icon = <RiCloseCircleLine />;
+      color = 'bg-[#0969F9]';
     }
+
     return (
       <span className={`inline-flex items-center gap-2 text-white px-3 py-1 rounded-full text-xs ${color}`}>
         {icon}
@@ -54,158 +78,162 @@ const UserDashboard = () => {
     );
   };
 
-  const handleUserMessageSubmit = async (e) => {
-    e.preventDefault();
-    if (!userMessage.trim() || !selectedCase) return;
-
-    try {
-      await axios.post(`http://localhost:5000/api/cases/${selectedCase.id}/message`, {
-        message: userMessage.trim(),
-        from: 'user'
-      });
-
-      const updatedCase = {
-        ...selectedCase,
-        messages: [...(selectedCase.messages || []), {
-          message: userMessage.trim(),
-          from: 'user',
-          date: new Date().toISOString().split('T')[0]
-        }]
-      };
-      setSelectedCase(updatedCase);
-      setUserMessage('');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to send message.');
-    }
+  const handleApplicationIdSearch = () => {
+    const match = cases.find(c => c.applicationId === applicationIdInput.trim());
+    setFoundApplication(match || null);
   };
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-no-repeat bg-fixed"
-      style={{ backgroundImage: `url(${backimg})` }}
-    >
-      <div className="backdrop-blur-sm bg-white/70 min-h-screen">
-        <UserNavbar />
+    <div className="relative min-h-screen">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed -z-10"
+        style={{ backgroundImage: `url(${backimg})` }}
+      />
 
-        {/* Main Content */}
-        <div className="p-6 max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-gray-700">Dashboard</h2>
-            <button
-              onClick={handleNewApplication}
-              className="bg-[#13c2FF] hover:bg-[#0f9cd5] text-white text-sm font-medium px-4 py-2 rounded-md shadow"
-            >
-              + New Application
-            </button>
+      {/* Main Content */}
+      <div className="flex min-h-screen bg-white/80 backdrop-blur-sm">
+        <UserSidebar />
+
+        <div className="flex-1">
+          <div className="p-4">
+            <UserNavbar />
           </div>
 
-          <input
-            type="text"
-            placeholder="Search by your name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="border px-4 py-2 mb-6 rounded-md w-full max-w-md shadow-sm"
-          />
+          <div className="flex-1 px-4 max-w-7xl mx-auto space-y-8 pb-10">
+            {/* Search Bar */}
+            <div className="flex flex-col lg:flex-row justify-between items-end gap-6">
+              <div className="space-y-1 w-full lg:w-auto">
+                <label className="block text-sm text-gray-600 font-medium">
+                  Search by Name or Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter name or title..."
+                  className="border border-gray-300 bg-white px-4 py-2 text-sm rounded-md focus:ring-[#ff5010] w-full md:w-80 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-md min-h-96 bg-white bg-opacity-80">
-            <table className="min-w-full table-auto text-sm">
-              <thead className="bg-gray-100 text-gray-600 text-xs">
-                <tr>
-                  <th className="px-4 py-2 text-left">Sr. No</th>
-                  <th className="px-4 py-2 text-left">Applicant's Name</th>
-                  <th className="px-4 py-2 text-left">Title</th>
-                  <th className="px-4 py-2 text-left">Date of Application</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-left">View Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCases.map((caseItem, idx) => (
-                  <tr
-                    key={caseItem.id}
-                    className="border-t border-gray-100 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => setSelectedCase(caseItem)}
-                  >
-                    <td className="px-4 py-2">{idx + 1}</td>
-                    <td className="px-4 py-2">{caseItem.applicantName}</td>
-                    <td className="px-4 py-2">{caseItem.title}</td>
-                    <td className="px-4 py-2">{caseItem.dateOfApplication}</td>
-                    <td className="px-4 py-2">{getStatusBadge(caseItem.status)}</td>
-                    <td className="px-4 py-2 text-blue-600 hover:underline text-xs">View</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Modal */}
-          {selectedCase && (
-            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-2xl shadow-xl w-[90%] max-w-xl max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-700">Case Timeline & Messages</h3>
-                  <button onClick={() => setSelectedCase(null)} className="text-gray-600 text-xl hover:text-red-500">&times;</button>
-                </div>
-
-                <div className="text-sm space-y-3 text-gray-700 mb-4">
-                  <p><strong>Applicant:</strong> {selectedCase.applicantName}</p>
-                  <p><strong>Title:</strong> {selectedCase.title}</p>
-                  <p><strong>Date:</strong> {selectedCase.dateOfApplication}</p>
-                  <p><strong>Description:</strong> {selectedCase.description}</p>
-                  <p><strong>Status:</strong> {getStatusBadge(selectedCase.status)}</p>
-                </div>
-
-                <h4 className="text-gray-800 font-semibold mb-2">Timeline</h4>
-                <div className="border-l-2 border-[#ff5010] pl-4 space-y-4 text-sm mb-6">
-                  {selectedCase.timeline?.length ? (
-                    selectedCase.timeline.map((item, idx) => (
-                      <div key={idx} className="relative">
-                        <div className="absolute -left-2 top-1 w-3 h-3 bg-[#ff5010] rounded-full shadow-md"></div>
-                        <p className="font-semibold text-[#ff5010]">{item.section}</p>
-                        <p className="text-gray-600 italic">{item.comment}</p>
-                        <p className="text-xs text-gray-400">{item.date}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-400 italic">No timeline entries.</p>
-                  )}
-                </div>
-
-                <h4 className="text-gray-800 font-semibold mb-2">Messages</h4>
-                <div className="space-y-2 mb-4">
-                  {selectedCase.messages?.length > 0 ? (
-                    selectedCase.messages.map((msg, idx) => (
-                      <div key={idx} className={`text-sm p-3 rounded-md ${msg.from === 'user' ? 'bg-blue-50' : 'bg-yellow-50'}`}>
-                        <p className="mb-1"><strong>{msg.from === 'user' ? 'You' : 'Admin'}:</strong></p>
-                        <p className="text-gray-700">{msg.message}</p>
-                        <p className="text-xs text-gray-400">{msg.date}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-400 italic">No messages yet.</p>
-                  )}
-                </div>
-
-                <form onSubmit={handleUserMessageSubmit} className="mt-4 space-y-2">
-                  <textarea
-                    rows={3}
-                    value={userMessage}
-                    onChange={(e) => setUserMessage(e.target.value)}
-                    placeholder="Type your message to admin..."
-                    className="w-full border px-3 py-2 rounded-md text-sm border-gray-300"
-                    required
+              <div className="flex items-end gap-2 w-full lg:w-auto">
+                <div className="w-full">
+                  <label className="block text-sm text-gray-600 mb-1">Search by Application ID</label>
+                  <input
+                    type="text"
+                    value={applicationIdInput}
+                    onChange={(e) => setApplicationIdInput(e.target.value)}
+                    className="w-full md:w-64 border border-gray-300 rounded-md px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ff5010]"
+                    placeholder="e.g., APP-2025-001"
                   />
-                  <button
-                    type="submit"
-                    className="w-full bg-[#13c2FF] text-white py-2 text-sm font-medium rounded-md hover:bg-[#0f9cd5] transition"
-                  >
-                    Send Message
-                  </button>
-                </form>
+                </div>
+
+                <button
+                  onClick={handleApplicationIdSearch}
+                  className="bg-[#ff5010] hover:bg-[#e6490f] text-white font-medium px-5 py-2 rounded-md shadow transition whitespace-nowrap"
+                >
+                  Check Status
+                </button>
               </div>
             </div>
-          )}
+
+            {/* Application Found Modal */}
+            {foundApplication && (
+              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div className="bg-white w-full max-w-2xl p-6 rounded-2xl shadow-lg relative mx-4">
+                  <button
+                    onClick={() => setFoundApplication(null)}
+                    className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-red-500"
+                  >
+                    &times;
+                  </button>
+
+                  <h2 className="text-xl font-semibold text-[#ff5010] mb-4">📋 Application Details</h2>
+
+                  <table className="w-full text-sm text-left border border-gray-200 rounded-lg overflow-hidden">
+                    <tbody className="divide-y divide-gray-100">
+                      <tr><td className="px-4 py-2 font-medium text-gray-600">Application ID</td><td className="px-4 py-2">{foundApplication.applicationId}</td></tr>
+                      <tr><td className="px-4 py-2 font-medium text-gray-600">Applicant Name</td><td className="px-4 py-2">{foundApplication.applicantName}</td></tr>
+                      <tr><td className="px-4 py-2 font-medium text-gray-600">Mobile Number</td><td className="px-4 py-2">{foundApplication.mobileNumber}</td></tr>
+                      <tr><td className="px-4 py-2 font-medium text-gray-600">Email</td><td className="px-4 py-2">{foundApplication.email}</td></tr>
+                      <tr><td className="px-4 py-2 font-medium text-gray-600">Title</td><td className="px-4 py-2">{foundApplication.title}</td></tr>
+                      <tr><td className="px-4 py-2 font-medium text-gray-600">Description</td><td className="px-4 py-2">{foundApplication.description}</td></tr>
+                      <tr><td className="px-4 py-2 font-medium text-gray-600">Date of Application</td><td className="px-4 py-2">{foundApplication.dateOfApplication}</td></tr>
+                      <tr><td className="px-4 py-2 font-medium text-gray-600">Source</td><td className="px-4 py-2">{foundApplication.addAt}</td></tr>
+                      <tr><td className="px-4 py-2 font-medium text-gray-600">Status</td><td className="px-4 py-2">{getStatusBadge(foundApplication.status)}</td></tr>
+                    </tbody>
+                  </table>
+
+                  <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                    <button
+                      onClick={handleDownload}
+                      className="bg-[#ff5010] hover:bg-[#e6490f] text-white font-medium px-6 py-2 rounded-md shadow w-full sm:w-auto"
+                    >
+                      ⬇️ Download Your Application
+                    </button>
+
+                    {/* <button
+                      onClick={() => setShowEditForm(true)}
+                      className="bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium px-6 py-2 rounded-md border border-blue-300 shadow w-full sm:w-auto"
+                    >
+                      ✏️ Edit this Application
+                    </button> */}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Table View */}
+            <div>
+              <h2 className="text-2xl font-bold pb-6 text-gray-700">Application List</h2>
+              <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-md min-h-96 bg-white bg-opacity-80">
+                <table className="min-w-full table-auto text-sm">
+                  <thead className="bg-gray-100 text-gray-600 text-xs">
+                    <tr>
+                      <th className="px-4 py-2 text-left">Sr. No</th>
+                      <th className="px-4 py-2 text-left">Applicant's Name</th>
+                      <th className="px-4 py-2 text-left">Title</th>
+                      <th className="px-4 py-2 text-left">Date of Application</th>
+                      <th className="px-4 py-2 text-left">Source</th>
+                      <th className="px-4 py-2 text-left">Last Update</th>
+                      <th className="px-4 py-2 text-left">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCases.map((caseItem, idx) => (
+                      <tr key={caseItem.applicationId || idx} className="border-t border-gray-100 hover:bg-gray-50 cursor-default">
+                        <td className="px-4 py-2">{idx + 1}</td>
+                        <td className="px-4 py-2">{caseItem.applicantName}</td>
+                        <td className="px-4 py-2">{caseItem.title}</td>
+                        <td className="px-4 py-2">{caseItem.dateOfApplication}</td>
+                        <td className="px-4 py-2">{caseItem.addAt || '—'}</td>
+                        <td className="px-4 py-2">{caseItem.lastActionDate || '—'}</td>
+                        <td className="px-4 py-2">{getStatusBadge(caseItem.status)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Add Case Form */}
+            {showAddForm && (
+              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+                <AddCaseForm isOpen={showAddForm} onClose={() => setShowAddForm(false)} />
+              </div>
+            )}
+
+            {/* Edit Case Form */}
+            {showEditForm && foundApplication && (
+              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+                <EditCaseForm
+                  isOpen={showEditForm}
+                  onClose={() => setShowEditForm(false)}
+                  applicationData={foundApplication}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
