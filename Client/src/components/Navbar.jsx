@@ -13,7 +13,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="h-16 bg-white shadow-md flex items-center justify-between px-6 rounded-full w-full">
+    <div className="h-16 ml-16 p-6 bg-white shadow-md flex items-center justify-between px-6 rounded-full ">
       <h2 className="text-xl font-semibold text-[#ff5010]">Dak Pad Bhojpur</h2>
 
       <div className="flex items-center space-x-6">

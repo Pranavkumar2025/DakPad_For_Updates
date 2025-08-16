@@ -11,6 +11,8 @@ const DataTable = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedSource, setSelectedSource] = useState("");
+  const [selectedBlock, setSelectedBlock] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
@@ -20,10 +22,20 @@ const DataTable = () => {
     const matchStatus = !selectedStatus || c.status === selectedStatus;
     const matchDepartment = !selectedDepartment || c.departmentSendTo === selectedDepartment;
     const matchSource = !selectedSource || c.addAt === selectedSource;
+    const matchBlock = !selectedBlock || c.block === selectedBlock;
+    const matchDate = !selectedDate || c.date === selectedDate;
     const matchSearch =
       c.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.title.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchStatus && matchDepartment && matchSource && matchSearch;
+
+    return (
+      matchStatus &&
+      matchDepartment &&
+      matchSource &&
+      matchBlock &&
+      matchDate &&
+      matchSearch
+    );
   });
 
   const handleDownloadExcel = () => {
@@ -55,6 +67,10 @@ const DataTable = () => {
         setSelectedDepartment={setSelectedDepartment}
         selectedSource={selectedSource}
         setSelectedSource={setSelectedSource}
+        selectedBlock={selectedBlock}
+        setSelectedBlock={setSelectedBlock}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
         onAddClick={() => setShowAddDialog(true)}
         onExcelClick={handleDownloadExcel}
       />

@@ -13,11 +13,16 @@ const FilterHeader = ({
   setSelectedDepartment,
   selectedSource,
   setSelectedSource,
+  selectedBlock,
+  setSelectedBlock,
+  selectedDate,
+  setSelectedDate,
   onAddClick,
   onExcelClick,
 }) => {
   return (
-    <div className="flex flex-col gap-3 mb-4">
+    <div className="flex flex-col ml-16 p-6 gap-3 mb-4">
+      {/* Header and Search */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <h2 className="text-2xl font-semibold text-gray-700">Applications List</h2>
         <input
@@ -35,10 +40,13 @@ const FilterHeader = ({
             Showing {filteredCount} application{filteredCount !== 1 && "s"} filtered by
             <strong className="text-gray-700"> {selectedStatus || "All"} status</strong>,
             <strong className="text-gray-700"> {selectedDepartment || "All"} department</strong>,
-            <strong className="text-gray-700"> {selectedSource || "All"} source</strong>.
+            <strong className="text-gray-700"> {selectedSource || "All"} source</strong>,
+            <strong className="text-gray-700"> {selectedBlock || "All"} block</strong>,
+            <strong className="text-gray-700"> {selectedDate || "All"} date</strong>.
           </p>
 
           <div className="flex flex-wrap gap-3 mt-1">
+            {/* Status */}
             <DropdownButton
               label={selectedStatus || "Select Status"}
               items={[
@@ -48,6 +56,8 @@ const FilterHeader = ({
                 { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
               ]}
             />
+
+            {/* Department */}
             <DropdownButton
               label={selectedDepartment || "Select Department"}
               items={[
@@ -61,6 +71,8 @@ const FilterHeader = ({
                 { label: "Rural Works Dept", onClick: () => setSelectedDepartment("Rural Works Dept") },
               ]}
             />
+
+            {/* Source */}
             <DropdownButton
               label={selectedSource || "Source of Application"}
               items={[
@@ -71,9 +83,24 @@ const FilterHeader = ({
                 { label: "Email", onClick: () => setSelectedSource("Email") },
               ]}
             />
+
+            {/* Block */}
+            <DropdownButton
+              label={selectedBlock || "Select Block"}
+              items={[
+                { label: "All", onClick: () => setSelectedBlock("") },
+                { label: "Block A", onClick: () => setSelectedBlock("Block A") },
+                { label: "Block B", onClick: () => setSelectedBlock("Block B") },
+                { label: "Block C", onClick: () => setSelectedBlock("Block C") },
+                { label: "Block D", onClick: () => setSelectedBlock("Block D") },
+              ]}
+            />
+
+         
           </div>
         </div>
 
+        {/* Action Buttons */}
         <div className="flex flex-wrap justify-end gap-3 mt-3">
           <button
             onClick={onAddClick}

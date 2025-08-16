@@ -1,30 +1,41 @@
 import { LayoutDashboard, Settings, User } from "lucide-react";
 
 const Sidebar = () => {
+  const menuItems = [
+    { icon: <LayoutDashboard className="w-6 h-6" />, label: "Dashboard", link: "#" },
+    { icon: <User className="w-6 h-6" />, label: "Users", link: "#" },
+    { icon: <Settings className="w-6 h-6" />, label: "Settings", link: "#" },
+  ];
+
   return (
-    <div className="h-screen w-20 bg-gray-900 text-white  flex flex-col items-center py-6 shadow-lg">
-      {/* Logo or Mini Title Icon */}
-      <div className="mb-10">
+    <aside className="fixed top-0 left-0 h-screen w-16 bg-gray-900 text-white flex flex-col items-center py-6 shadow-lg">
+      
+      {/* Logo */}
+      <div className="mb-12">
         <img
-          src="/logo.svg" // Replace with your actual logo image path
+          src="/logo.svg"
           alt="Logo"
-          className="w-10 h-10 border border-gray-700 rounded-md p-1"
+          className="w-10 h-10 border border-gray-700 rounded-lg p-1"
         />
       </div>
 
-      {/* Navigation Icons Only */}
+      {/* Menu Icons */}
       <nav className="flex flex-col gap-6">
-        <a href="#" className="hover:bg-[#ff5010] p-2 rounded-full">
-          <LayoutDashboard className="w-6 h-6" />
-        </a>
-        <a href="#" className="hover:bg-[#ff5010] p-2 rounded-full">
-          <User className="w-6 h-6" />
-        </a>
-        <a href="#" className="hover:bg-[#ff5010] p-2 rounded-full">
-          <Settings className="w-6 h-6" />
-        </a>
+        {menuItems.map((item, index) => (
+          <a
+            key={index}
+            href={item.link}
+            className="group relative flex items-center justify-center p-2 rounded-full hover:bg-[#ff5010] transition"
+          >
+            {item.icon}
+            {/* Tooltip */}
+            <span className="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
+              {item.label}
+            </span>
+          </a>
+        ))}
       </nav>
-    </div>
+    </aside>
   );
 };
 
