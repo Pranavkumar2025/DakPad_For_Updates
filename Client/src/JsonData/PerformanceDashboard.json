@@ -1,0 +1,123 @@
+{
+  "reportDate": "2025-01-07",
+  "region": "Bhojpur",
+  "reportType": "Revenue Performance Daily Report",
+  "dashboard": {
+    "mutation": {
+      "pendingStatus": {
+        "bottom5Anchals": [
+          { "anchor": "Shahpur", "pending": 365, "pendingPercentage": 1.93 },
+          { "anchor": "Piro", "pending": 619, "pendingPercentage": 1.87 },
+          { "anchor": "Tarari", "pending": 324, "pendingPercentage": 1.77 },
+          { "anchor": "Jagdispur", "pending": 628, "pendingPercentage": 1.72 },
+          { "anchor": "Bihiya", "pending": 337, "pendingPercentage": 1.67 }
+        ],
+        "best5Anchals": [
+          { "anchor": "Sandes", "pending": 93, "pendingPercentage": 0.09 },
+          { "anchor": "Agion", "pending": 118, "pendingPercentage": 0.75 },
+          { "anchor": "Garhani", "pending": 157, "pendingPercentage": 1.02 },
+          { "anchor": "Charpokhari", "pending": 173, "pendingPercentage": 1.28 },
+          { "anchor": "Bihiya", "pending": 241, "pendingPercentage": 1.30 }
+        ],
+        "lowestDistrict": { "district": "Barhara", "pending": 10.00, "best": 22.00 },
+        "bestDistrict": { "district": "Sandes", "pending": 43.75, "best": 43.75 }
+      },
+      "disposalStatus": {
+        "shahpur": { "disposed": 98.07, "best": 98.47, "pending": 93.1 },
+        "bihiya": { "disposed": 84.05, "best": 90.13, "pending": 92.81 }
+      }
+    },
+    "parimarianRectification": {
+      "pendingStatus": {
+        "bottom5Anchals": [
+          { "anchor": "Bihiya", "pending": 661, "pendingPercentage": 15.86 },
+          { "anchor": "Agion", "pending": 296, "pendingPercentage": 10.60 },
+          { "anchor": "Tarari", "pending": 182, "pendingPercentage": 10.43 },
+          { "anchor": "Koilwar", "pending": 248, "pendingPercentage": 8.52 },
+          { "anchor": "Jagdispur", "pending": 242, "pendingPercentage": 8.02 }
+        ],
+        "best5Anchals": [
+          { "anchor": "Sandes", "pending": 182, "pendingPercentage": 6.78 },
+          { "anchor": "Charpokhari", "pending": 249, "pendingPercentage": 7.89 },
+          { "anchor": "Koilwar", "pending": 333, "pendingPercentage": 8.52 },
+          { "anchor": "Jagdispur", "pending": 242, "pendingPercentage": 8.02 },
+          { "anchor": "Ara", "pending": 1129, "pendingPercentage": 14.08 }
+        ],
+        "lowestDistrict": { "district": "Barhara", "pending": 10.00, "best": 22.00 },
+        "bestDistrict": { "district": "Sandes", "pending": 43.75, "best": 43.75 }
+      }
+    },
+    "aadharSeeding": {
+      "pendingStatus": {
+        "bottom5Anchals": [
+          { "anchor": "Bihiya", "pending": 40677, "pendingPercentage": 60.51 },
+          { "anchor": "Agion", "pending": 25238, "pendingPercentage": 49.41 },
+          { "anchor": "Tarari", "pending": 18228, "pendingPercentage": 48.97 },
+          { "anchor": "Shahpur", "pending": 24912, "pendingPercentage": 47.21 },
+          { "anchor": "Piro", "pending": 25119, "pendingPercentage": 46.70 }
+        ],
+        "best5Anchals": [
+          { "anchor": "Sandes", "pending": 25519, "pendingPercentage": 38.38 },
+          { "anchor": "Charpokhari", "pending": 14098, "pendingPercentage": 36.90 },
+          { "anchor": "Koilwar", "pending": 30114, "pendingPercentage": 39.44 },
+          { "anchor": "Jagdispur", "pending": 222, "pendingPercentage": 8.94 },
+          { "anchor": "Ara", "pending": 1129, "pendingPercentage": 14.08 }
+        ]
+      }
+    },
+    "eMapi": {
+      "pendingStatus": {
+        "bottom5Anchals": [
+          { "anchor": "Koilwar", "pending": 197, "pendingPercentage": 41.65 },
+          { "anchor": "Ara", "pending": 123, "pendingPercentage": 40.33 },
+          { "anchor": "Udwantnagar", "pending": 94, "pendingPercentage": 39.83 },
+          { "anchor": "Garhani", "pending": 20, "pendingPercentage": 36.36 },
+          { "anchor": "Jagdispur", "pending": 21, "pendingPercentage": 36.21 }
+        ],
+        "best5Anchals": [
+          { "anchor": "Sandes", "pending": 14, "pendingPercentage": 9.86 },
+          { "anchor": "Charpokhari", "pending": 16, "pendingPercentage": 17.20 },
+          { "anchor": "Piro", "pending": 44, "pendingPercentage": 23.40 },
+          { "anchor": "Jagdispur", "pending": 89, "pendingPercentage": 27.13 },
+          { "anchor": "Ara", "pending": 1129, "pendingPercentage": 14.08 }
+        ]
+      }
+    },
+    "parimarianDigitization": {
+      "pendingStatus": {
+        "bottom5Anchals": [
+          { "anchor": "Bihiya", "pending": 29, "pendingPercentage": 1.15 },
+          { "anchor": "Tarari", "pending": 6, "pendingPercentage": 0.62 },
+          { "anchor": "Charpokhari", "pending": 5, "pendingPercentage": 0.56 },
+          { "anchor": "Piro", "pending": 10, "pendingPercentage": 0.44 },
+          { "anchor": "Udwantnagar", "pending": 5, "pendingPercentage": 0.11 }
+        ],
+        "best5Anchals": [
+          { "anchor": "Sandes", "pending": 1, "pendingPercentage": -0.17 },
+          { "anchor": "Shahpur", "pending": 3, "pendingPercentage": -0.17 },
+          { "anchor": "Bihiya", "pending": 29, "pendingPercentage": 1.15 },
+          { "anchor": "Tarari", "pending": 6, "pendingPercentage": 0.62 },
+          { "anchor": "Charpokhari", "pending": 5, "pendingPercentage": 0.56 }
+        ]
+      }
+    },
+    "bestPerformingCircleOfficer": {
+      "circle": "Sandes",
+      "officerName": "Arun Kumar"
+    },
+    "coContactDetails": [
+      { "circle": "Agion", "mobileNo": "9031671564" },
+      { "circle": "Ara", "mobileNo": "9031671560" },
+      { "circle": "Bihiya", "mobileNo": "9031671568" },
+      { "circle": "Charpokhari", "mobileNo": "9031671545" },
+      { "circle": "Garhani", "mobileNo": "9031671551" },
+      { "circle": "Jagdispur", "mobileNo": "9031671562" },
+      { "circle": "Koilwar", "mobileNo": "9031671547" },
+      { "circle": "Piro", "mobileNo": "9031671549" },
+      { "circle": "Sandesh", "mobileNo": "9031671553" },
+      { "circle": "Shahpur", "mobileNo": "9031671554" },
+      { "circle": "Tarari", "mobileNo": "9031671551" },
+      { "circle": "Udwantnagar", "mobileNo": "9031671551" }
+    ]
+  }
+}

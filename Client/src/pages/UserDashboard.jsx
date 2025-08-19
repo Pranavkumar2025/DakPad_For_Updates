@@ -10,9 +10,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-import backimg from "../assets/back5.jpg";
 import UserNavbar from "../components/UserNavbar";
-import UserSidebar from "../components/UserSidebar";
 import casesData from "../JsonData/DataTable.json";
 
 const UserDashboard = () => {
@@ -53,81 +51,61 @@ const UserDashboard = () => {
   };
 
   return (
-    <div
-      className="relative min-h-screen ml-16"
-      style={{
-        backgroundImage: `url(${backimg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      {/* Blackish overlay for background */}
-      <div className="absolute inset-0 bg-black/50" /> {/* Blackish tint for background */}
+    <div className="min-h-screen bg-white flex flex-col">
+      <UserNavbar />
 
-      <div className="relative flex min-h-screen ">
-        <UserSidebar />
+      {/* Search Section */}
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-2xl text-center">
+          {/* Title */}
+          <h1 className="text-3xl font-semibold text-gray-800 mb-2">
+            Track Your Application
+          </h1>
+          <p className="text-base text-gray-500 mb-8">
+            Enter your Application ID to check the latest status
+          </p>
 
-        <div className="flex-1 flex flex-col mt-5">
-          <UserNavbar />
-
-          {/* Search Section with Highlight */}
-          <div className="flex-1 flex items-center justify-center px-4 py-12">
-            <div className="w-full max-w-md rounded-xl shadow-lg bg-white p-8 border-2 border-indigo-500 relative overflow-hidden">
-              {/* Subtle glow effect for highlight */}
-              <div className="absolute inset-0 bg-indigo-100/20 pointer-events-none" />
-              <h1 className="text-2xl font-semibold text-gray-800 mb-2">Track Application Status</h1>
-              <p className="text-sm text-gray-500 mb-6">
-                Enter your Application ID to view real-time status
-              </p>
-
-              {/* Input */}
-              <div className="relative mb-6">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={20}
-                />
-                <input
-                  type="text"
-                  value={applicationIdInput}
-                  onChange={(e) => setApplicationIdInput(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
-                  placeholder="e.g., APP-2025-001"
-                  aria-label="Application ID"
-                />
-              </div>
-
-              <button
-                onClick={handleApplicationIdSearch}
-                disabled={isLoading || !applicationIdInput.trim()}
-                className="w-full py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="animate-spin mr-2" size={18} />
-                    Searching...
-                  </>
-                ) : (
-                  "Check Status"
-                )}
-              </button>
-
-              {/* Not Found */}
-              {foundApplication === false && applicationIdInput.trim() && !isLoading && (
-                <p className="mt-4 text-center text-red-500 text-sm animate-fade-in">
-                  No application found with this ID.
-                </p>
+          {/* Search Input */}
+          <div className="flex items-center shadow-sm rounded-md border border-gray-300 bg-white focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all max-w-xl mx-auto">
+            <Search className="ml-4 text-gray-400" size={20} />
+            <input
+              type="text"
+              value={applicationIdInput}
+              onChange={(e) => setApplicationIdInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              className="flex-1 px-4 py-4 text-gray-900 rounded-md focus:outline-none text-sm"
+              placeholder="e.g., BP000XXX"
+              aria-label="Application ID"
+            />
+            <button
+              onClick={handleApplicationIdSearch}
+              disabled={isLoading || !applicationIdInput.trim()}
+              className="mr-2 px-5 py-2.5 rounded-full font-medium text-sm bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? (
+                <div className="flex items-center">
+                  <Loader2 className="animate-spin mr-2" size={18} />
+                  Searching...
+                </div>
+              ) : (
+                "Check"
               )}
-            </div>
+            </button>
           </div>
+
+          {/* Error Message */}
+          {foundApplication === false && applicationIdInput.trim() && !isLoading && (
+            <p className="mt-4 text-red-500 text-sm animate-fade-in">
+              No application found with this ID.
+            </p>
+          )}
         </div>
       </div>
 
       {/* Modal */}
       {foundApplication && (
-        <div className="fixed inset-0 bg-gray-900/30 flex items-center justify-center z-50 transition-opacity duration-300">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative p-6">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 transition-opacity duration-300">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto relative p-6">
             {/* Close Button */}
             <button
               onClick={() => setFoundApplication(null)}
@@ -140,7 +118,9 @@ const UserDashboard = () => {
             {/* Modal Content */}
             <div className="space-y-6">
               {/* Status Card */}
-              <div className={`p-5 rounded-lg ${getStatusStyle(foundApplication.status).bg} flex items-center gap-4`}>
+              <div
+                className={`p-5 rounded-lg ${getStatusStyle(foundApplication.status).bg} flex items-center gap-4`}
+              >
                 {getStatusStyle(foundApplication.status).icon}
                 <div>
                   <h2 className={`text-xl font-semibold ${getStatusStyle(foundApplication.status).text}`}>
@@ -182,7 +162,7 @@ const UserDashboard = () => {
                   <div className="flex items-start gap-2">
                     <FileText size={16} className="text-gray-400 mt-0.5" />
                     <span>
-                      <strong>Title:</strong> {foundApplication.title}
+                      <strong>Subject:</strong> {foundApplication.subject}
                     </span>
                   </div>
                   <div className="flex items-start gap-2 col-span-1 sm:col-span-2">
@@ -198,19 +178,20 @@ const UserDashboard = () => {
               {foundApplication.timeline && foundApplication.timeline.length > 0 && (
                 <div className="border border-gray-100 rounded-lg p-5">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Progress Timeline</h3>
-                  <div className="relative">
+                  <div className="relative pl-6">
                     <div className="absolute left-2.5 top-0 bottom-0 w-0.5 bg-gray-300" />
                     {foundApplication.timeline.map((step, index) => {
-                      const isCompleted = index < foundApplication.timeline.length - 1 || step.status === "Compliance";
+                      const isCompleted =
+                        index < foundApplication.timeline.length - 1 || step.status === "Compliance";
                       const isPending = step.status === "Pending";
                       const isRejected = step.status === "Rejected";
                       const dotClass = isCompleted
                         ? "bg-green-500 border-2 border-white"
                         : isPending
-                          ? "bg-orange-500"
-                          : isRejected
-                            ? "bg-red-500"
-                            : "bg-gray-300";
+                        ? "bg-orange-500"
+                        : isRejected
+                        ? "bg-red-500"
+                        : "bg-gray-300";
                       const icon = isCompleted ? (
                         <CheckCircle size={16} className="text-white" />
                       ) : null;
@@ -227,9 +208,6 @@ const UserDashboard = () => {
                             >
                               {icon}
                             </div>
-                            {index < foundApplication.timeline.length - 1 && (
-                              <div className="absolute left-2.5 top-5 bottom-0 w-0.5 bg-gray-300" />
-                            )}
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-800">{step.section}</p>
@@ -258,13 +236,22 @@ const UserDashboard = () => {
       )}
 
       {/* Styles */}
-      <style>{`
+      <style jsx>{`
         .animate-fade-in {
           animation: fadeIn 0.3s ease-out;
         }
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .shadow-sm {
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         .shadow-lg {
           box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);

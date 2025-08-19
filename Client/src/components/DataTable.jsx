@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import casesData from "../JsonData/DataTable.json";
 import AddCaseForm from "./AddCaseForm";
 import FilterHeader from "./DataTable/FilterHeader";
@@ -18,25 +18,35 @@ const DataTable = () => {
   const [selectedCase, setSelectedCase] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
 
-  const filteredCases = casesData.filter((c) => {
-    const matchStatus = !selectedStatus || c.status === selectedStatus;
-    const matchDepartment = !selectedDepartment || c.departmentSendTo === selectedDepartment;
-    const matchSource = !selectedSource || c.addAt === selectedSource;
-    const matchBlock = !selectedBlock || c.block === selectedBlock;
-    const matchDate = !selectedDate || c.date === selectedDate;
-    const matchSearch =
-      c.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.title.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredCases = useMemo(() => {
+    return casesData.filter((c) => {
+      const matchStatus = !selectedStatus || c.status === selectedStatus;
+      const matchDepartment = !selectedDepartment || c.concernedOfficer.includes(selectedDepartment);
+      // Remove source filter if not present in JSON, or add logic if source is added later
+      // const matchSource = !selectedSource || c.addAt === selectedSource;
+      const matchBlock = !selectedBlock || c.gpBlock === selectedBlock;
+      const matchDate = !selectedDate || c.dateOfApplication === selectedDate;
+      const matchSearch =
+        c.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return (
-      matchStatus &&
-      matchDepartment &&
-      matchSource &&
-      matchBlock &&
-      matchDate &&
-      matchSearch
-    );
-  });
+      return (
+        matchStatus &&
+        matchDepartment &&
+        // matchSource &&
+        matchBlock &&
+        matchDate &&
+        matchSearch
+      );
+    });
+  }, [
+    selectedStatus,
+    selectedDepartment,
+    // selectedSource,
+    selectedBlock,
+    selectedDate,
+    searchQuery,
+  ]);
 
   const handleDownloadExcel = () => {
     const ws = XLSX.utils.json_to_sheet(filteredCases);
