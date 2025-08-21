@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaBell } from 'react-icons/fa';
+import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 
 const UserNavbar = () => {
@@ -17,7 +18,7 @@ const UserNavbar = () => {
   };
 
   return (
-    <div className="h-16 bg-white shadow-md flex items-center justify-between px-6 rounded-full w-full">
+    <div className="h-16 bg-white  flex items-center justify-between px-6 rounded-full w-full">
       {/* Left Side: Logo + Portal Info */}
       <div className="flex items-center gap-4">
         <img
@@ -26,7 +27,21 @@ const UserNavbar = () => {
           className="w-12 h-12 border border-gray-300 rounded-xl p-1 bg-gray-50"
         />
         <div className="flex flex-col">
-          <h2 className="text-xl font-semibold text-[#ff5010] whitespace-nowrap">Dak Pad Bhojpur</h2>
+          <motion.div
+            className="flex items-center gap-2"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            whileHover={{ scale: 1.05 }}
+          >
+    
+            <span
+              className="text-2xl font-bold text-transparent uppercase bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
+              style={{ fontFamily: "'Montserrat', sans-serif" }}
+            >
+              Jan Samadhan
+            </span>
+          </motion.div>
           <p className="text-xs text-gray-500 hidden md:inline-block">
             Bihar RTPS Application Tracking Portal
           </p>

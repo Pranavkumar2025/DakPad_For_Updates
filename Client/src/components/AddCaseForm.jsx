@@ -111,33 +111,8 @@ const AddCaseForm = ({ isOpen, onClose }) => {
               placeholder="Enter subject"
             />
           </div>
-          <div>
-            <label className="text-sm text-gray-500">Department</label>
-            <select className="w-full mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff5010]">
-              <option className="text-gray-200" value="" disabled selected>
-                Select department
-              </option>
-              <option value="hr">Human Resources</option>
-              <option value="engineering">Engineering</option>
-              <option value="marketing">Marketing</option>
-              <option value="sales">Sales</option>
-              <option value="finance">Finance</option>
-            </select>
-          </div>
 
-          <div>
-            <label className="text-sm text-gray-500">Table</label>
-            <select className="w-full mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff5010]">
-              <option className="text-gray-200" value="" disabled selected>
-                Select table
-              </option>
-              <option value="hr">Table 1</option>
-              <option value="engineering">Table 2</option>
-              <option value="marketing">Table 3</option>
-              <option value="sales">Table 4</option>
-              <option value="finance">Table 5</option>
-            </select>
-          </div>
+
           {/* Full width field */}
           <div>
             <label className="text-sm text-gray-500">

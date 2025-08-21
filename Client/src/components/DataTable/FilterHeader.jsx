@@ -11,8 +11,8 @@ const FilterHeader = ({
   setSelectedStatus,
   selectedDepartment,
   setSelectedDepartment,
-  selectedSource,
-  setSelectedSource,
+  // selectedSource,
+  // setSelectedSource,
   selectedBlock,
   setSelectedBlock,
   selectedDate,
@@ -27,7 +27,7 @@ const FilterHeader = ({
         <h2 className="text-2xl font-semibold text-gray-700">Applications List</h2>
         <input
           type="text"
-          placeholder="Search by name or title"
+          placeholder="Search by name or description"
           className="border border-gray-300 bg-white px-4 py-2 text-sm rounded-md focus:ring-[#ff5010] w-full md:w-80"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -40,7 +40,6 @@ const FilterHeader = ({
             Showing {filteredCount} application{filteredCount !== 1 && "s"} filtered by
             <strong className="text-gray-700"> {selectedStatus || "All"} status</strong>,
             <strong className="text-gray-700"> {selectedDepartment || "All"} department</strong>,
-            <strong className="text-gray-700"> {selectedSource || "All"} source</strong>,
             <strong className="text-gray-700"> {selectedBlock || "All"} block</strong>,
             <strong className="text-gray-700"> {selectedDate || "All"} date</strong>.
           </p>
@@ -51,9 +50,8 @@ const FilterHeader = ({
               label={selectedStatus || "Select Status"}
               items={[
                 { label: "All", onClick: () => setSelectedStatus("") },
-                { label: "Pending", onClick: () => setSelectedStatus("Pending") },
-                { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
-                { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
+                { label: "In Process", onClick: () => setSelectedStatus("In Process") },
+                // Add other statuses if they exist in the JSON or are added later
               ]}
             />
 
@@ -62,25 +60,13 @@ const FilterHeader = ({
               label={selectedDepartment || "Select Department"}
               items={[
                 { label: "All", onClick: () => setSelectedDepartment("") },
-                { label: "Registrar Office", onClick: () => setSelectedDepartment("Registrar Office") },
-                { label: "Land Revenue Office", onClick: () => setSelectedDepartment("Land Revenue Office") },
-                { label: "Welfare Department", onClick: () => setSelectedDepartment("Welfare Department") },
-                { label: "Circle Office", onClick: () => setSelectedDepartment("Circle Office") },
-                { label: "Tehsildar Office", onClick: () => setSelectedDepartment("Tehsildar Office") },
-                { label: "Municipal Engineer", onClick: () => setSelectedDepartment("Municipal Engineer") },
-                { label: "Rural Works Dept", onClick: () => setSelectedDepartment("Rural Works Dept") },
-              ]}
-            />
-
-            {/* Source */}
-            <DropdownButton
-              label={selectedSource || "Source of Application"}
-              items={[
-                { label: "All", onClick: () => setSelectedSource("") },
-                { label: "In Person", onClick: () => setSelectedSource("In Person") },
-                { label: "MLA/MP", onClick: () => setSelectedSource("MLA/MP") },
-                { label: "WhatsApp", onClick: () => setSelectedSource("WhatsApp") },
-                { label: "Email", onClick: () => setSelectedSource("Email") },
+                { label: "BDO, Barhara", onClick: () => setSelectedDepartment("BDO, Barhara") },
+                { label: "Director Accounts, DRDA", onClick: () => setSelectedDepartment("Director Accounts, DRDA") },
+                { label: "BDO Shahpur", onClick: () => setSelectedDepartment("BDO Shahpur") },
+                { label: "BDO Ara Sadar", onClick: () => setSelectedDepartment("BDO Ara Sadar") },
+                { label: "BDO Tarari", onClick: () => setSelectedDepartment("BDO Tarari") },
+                { label: "RDO Mohsin Khan", onClick: () => setSelectedDepartment("RDO Mohsin Khan") },
+                // Add other relevant officers from JSON
               ]}
             />
 
@@ -89,26 +75,52 @@ const FilterHeader = ({
               label={selectedBlock || "Select Block"}
               items={[
                 { label: "All", onClick: () => setSelectedBlock("") },
-                { label: "Block A", onClick: () => setSelectedBlock("Block A") },
-                { label: "Block B", onClick: () => setSelectedBlock("Block B") },
-                { label: "Block C", onClick: () => setSelectedBlock("Block C") },
-                { label: "Block D", onClick: () => setSelectedBlock("Block D") },
+                { label: "Barhara", onClick: () => setSelectedBlock("Barhara") },
+                { label: "Shahpur", onClick: () => setSelectedBlock("Shahpur") },
+                { label: "Ara Sadar", onClick: () => setSelectedBlock("Ara Sadar") },
+                { label: "Bagar, Tarari", onClick: () => setSelectedBlock("Bagar, Tarari") },
+                { label: "Sandesh", onClick: () => setSelectedBlock("Sandesh") },
+                { label: "Behea", onClick: () => setSelectedBlock("Behea") },
+                { label: "Sahar", onClick: () => setSelectedBlock("Sahar") },
               ]}
             />
 
-         
+            {/* Date */}
+            <DropdownButton
+              label={selectedDate || "Select Date"}
+              items={[
+                { label: "All", onClick: () => setSelectedDate("") },
+                // Dynamically generate date options or use a date picker
+                { label: "2025-05-27", onClick: () => setSelectedDate("2025-05-27") },
+                { label: "2025-05-28", onClick: () => setSelectedDate("2025-05-28") },
+                { label: "2025-05-29", onClick: () => setSelectedDate("2025-05-29") },
+                // Add more dates as needed
+              ]}
+            />
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-wrap justify-end gap-3 mt-3">
           <button
+            onClick={() => {
+              setSearchQuery("");
+              setSelectedStatus("");
+              setSelectedDepartment("");
+              // setSelectedSource("");
+              setSelectedBlock("");
+              setSelectedDate("");
+            }}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-5 py-3 rounded-xl font-medium shadow-md text-sm"
+          >
+            Reset Filters
+          </button>
+          <button
             onClick={onAddClick}
             className="flex items-center gap-2 bg-[#10b981] hover:bg-[#0ea769] text-white px-5 py-3 rounded-xl font-medium shadow-md text-sm"
           >
             + Add New Application
           </button>
-
           <motion.button
             onClick={onExcelClick}
             initial="rest"
