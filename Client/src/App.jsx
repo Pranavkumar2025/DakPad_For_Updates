@@ -8,7 +8,8 @@ import NotFound from "./pages/NotFound";
 import AddCaseForm from "./components/AddCaseForm";
 import AdminLogin from "./pages/AdminLogin";
 import PerformanceDashboard from "./pages/PerformanceDashboard";
-
+import WorkAssignedDashboard from "./components/WorkAssignedPages/WorkAssignedDashboard";
+import ApplicationReceive from "./components/ApplicationRecieve";
 
 const App = () => {
   return (
@@ -32,6 +33,8 @@ const App = () => {
 
         <Route path="/" element= {<UserDashboard />} />
         <Route path="/performance" element={<PerformanceDashboard />} />
+        <Route path="/work-assigned" element={<WorkAssignedDashboard />} />
+        <Route path="/application-receive" element={<ApplicationReceive />} />
         
         {/* Fallback route for 404 Not Found */}
         <Route path="*" element={<NotFound />} />

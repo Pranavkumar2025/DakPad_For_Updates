@@ -19,14 +19,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Complaint filed for inspection.",
-        "date": "2025-05-27"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-05-27 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Inspection from committee (Director DRDA Accounts, DC Ranjay, Mis Santosh) for review.",
+        "date": "2025-06-20 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Committee Review",
         "comment": "Inspection scheduled by DRDA committee.",
-        "date": "2025-06-20",
+        "date": "2025-06-20 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -51,14 +57,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Complaint filed for inspection.",
-        "date": "2025-05-27"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-05-27 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Inspection from committee (Director DRDA Accounts, DC Ranjay, Mis Santosh) for review.",
+        "date": "2025-06-20 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Committee Review",
         "comment": "Inspection scheduled by DRDA committee.",
-        "date": "2025-06-20",
+        "date": "2025-06-20 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -83,14 +95,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to DRDA.",
-        "date": "2025-05-28"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-05-28 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Director Accounts, DRDA for review.",
+        "date": "2025-06-04 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Accounts Review",
         "comment": "Under review by Director Accounts.",
-        "date": "2025-06-04",
+        "date": "2025-06-04 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -115,14 +133,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to RDD, Patna.",
-        "date": "2025-05-29"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-05-29 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Complainant & Related (RDD, Patna) for review.",
+        "date": "2025-06-06 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "RDD Review",
         "comment": "Under review by RDD, Patna.",
-        "date": "2025-06-06",
+        "date": "2025-06-06 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -147,14 +171,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to DRDA.",
-        "date": "2025-06-14"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-06-14 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Director Accounts, DRDA for review.",
+        "date": "2025-06-16 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Accounts Review",
         "comment": "Under review by Director Accounts.",
-        "date": "2025-06-16",
+        "date": "2025-06-16 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -179,14 +209,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to Sandesh office.",
-        "date": "2025-06-12"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-06-12 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Senior Charged Officer, Sandesh cum DTO Bhojpur for review.",
+        "date": "2025-06-16 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Officer Review",
         "comment": "Under review by DTO Bhojpur.",
-        "date": "2025-06-16",
+        "date": "2025-06-16 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -211,14 +247,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported for hearing.",
-        "date": "2025-06-14"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-06-14 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Hearing dt. 20-06-2025 for review.",
+        "date": "2025-06-19 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Hearing Scheduled",
         "comment": "Hearing set for 20-06-2025.",
-        "date": "2025-06-19",
+        "date": "2025-06-19 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -243,14 +285,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported for hearing.",
-        "date": "2025-06-14"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-06-14 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Hearing dt. 20-06-2025 for review.",
+        "date": "2025-06-19 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Hearing Scheduled",
         "comment": "Hearing set for 20-06-2025.",
-        "date": "2025-06-19",
+        "date": "2025-06-19 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -275,14 +323,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to BDO, Barhara.",
-        "date": "2025-06-14"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-06-14 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to BDO, Barhara for review.",
+        "date": "2025-06-19 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "BDO Review",
         "comment": "Under review by BDO, Barhara.",
-        "date": "2025-06-19",
+        "date": "2025-06-19 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -307,14 +361,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to BDO, Barhara.",
-        "date": "2025-06-17"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-06-17 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to BDO, Barhara for review.",
+        "date": "2025-06-19 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "BDO Review",
         "comment": "Under review by BDO, Barhara.",
-        "date": "2025-06-19",
+        "date": "2025-06-19 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -339,14 +399,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to BDO, Barhara.",
-        "date": "2025-06-19"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-06-19 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to BDO, Barhara for review.",
+        "date": "2025-06-21 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "BDO Review",
         "comment": "Under review by BDO, Barhara.",
-        "date": "2025-06-21",
+        "date": "2025-06-21 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -371,14 +437,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported for inspection.",
-        "date": "2025-06-19"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-06-19 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Inspection from committee (DMWO, Senior Charged Officer, Sahpur Hina madam cum and MIS Pmay G) for review.",
+        "date": "2025-06-10 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Committee Review",
         "comment": "Inspection by DMWO and team.",
-        "date": "2025-06-10",
+        "date": "2025-06-10 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -403,14 +475,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to BDO, Barhara.",
-        "date": "2025-06-30"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-06-30 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to BDO, Barhara for review.",
+        "date": "2025-07-05 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "BDO Review",
         "comment": "Under review by BDO, Barhara.",
-        "date": "2025-07-05",
+        "date": "2025-07-05 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -435,14 +513,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported for hearing.",
-        "date": "2025-07-11"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-07-11 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Hearing Of Awas Sahayak and Complainer for review.",
+        "date": "2025-07-10 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Hearing Scheduled",
         "comment": "Hearing with Awas Sahayak.",
-        "date": "2025-07-10",
+        "date": "2025-07-10 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -450,7 +534,7 @@
   {
     "applicationId": "BP000015",
     "sNo": 49,
-    "dateOfApplication": "2025-07-05",
+    "dateOfApplication": "2025-007-05",
     "applicantName": "Rajkumar Yadav",
     "gpBlock": "Shahpur",
     "concernedOfficer": "Hearing Of Awas Sahayak, Awas Parwechhak Mukhiya and Complainer",
@@ -467,14 +551,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported for hearing.",
-        "date": "2025-07-05"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-07-05 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Hearing Of Awas Sahayak, Awas Parwechhak Mukhiya and Complainer for review.",
+        "date": "2025-07-10 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Hearing Scheduled",
         "comment": "Hearing with Awas Sahayak and Mukhiya.",
-        "date": "2025-07-10",
+        "date": "2025-07-10 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -486,7 +576,7 @@
     "applicantName": "Girija Devi",
     "gpBlock": "Sandesh",
     "concernedOfficer": "BDO Sandesh & CO Sandesh",
-    "issueLetterNo": "2156",
+    "issueLetter,No": "2156",
     "issueDate": "2025-07-10",
     "atrSubmissionLetterNo": "Not Submitted",
     "atrSubmissionDate": "Not submitted",
@@ -499,14 +589,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to Sandesh office.",
-        "date": "2025-07-05"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-07-05 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to BDO Sandesh & CO Sandesh for review.",
+        "date": "2025-07-10 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "BDO Review",
         "comment": "Under review by BDO and CO Sandesh.",
-        "date": "2025-07-10",
+        "date": "2025-07-10 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -531,14 +627,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to BDO, Barhara.",
-        "date": "2025-07-18"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-07-18 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to BDO, Barhara for review.",
+        "date": "2025-07-19 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "BDO Review",
         "comment": "Under review by BDO, Barhara.",
-        "date": "2025-07-19",
+        "date": "2025-07-19 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -563,14 +665,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to BDO Ara Sadar.",
-        "date": "2025-07-18"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-07-18 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to BDO Ara Sadar for review.",
+        "date": "2025-07-19 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "BDO Review",
         "comment": "Under review by BDO Ara Sadar.",
-        "date": "2025-07-19",
+        "date": "2025-07-19 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -595,14 +703,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to BDO Shahpur.",
-        "date": "2025-07-30"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-07-30 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to BDO Shahpur for review.",
+        "date": "2025-08-02 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "BDO Review",
         "comment": "Under review by BDO Shahpur.",
-        "date": "2025-08-02",
+        "date": "2025-08-02 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -627,14 +741,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to RDO Ara Sadar.",
-        "date": "2025-07-31"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-07-31 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to RDO Mohsin Khan for review.",
+        "date": "2025-08-04 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "RDO Review",
         "comment": "Under review by RDO Mohsin Khan.",
-        "date": "2025-08-04",
+        "date": "2025-08-04 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -659,14 +779,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to DRDA.",
-        "date": "2025-08-02"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-08-02 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to Director Accounts, DRDA for review.",
+        "date": "2025-08-02 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "Accounts Review",
         "comment": "Under review by Director Accounts.",
-        "date": "2025-08-02",
+        "date": "2025-08-02 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -691,14 +817,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to BDO Tarari.",
-        "date": "2025-08-11"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-08-11 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to BDO Tarari for review.",
+        "date": "2025-08-11 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "BDO Review",
         "comment": "Under review by BDO Tarari.",
-        "date": "2025-08-11",
+        "date": "2025-08-11 02:00 PM",
         "pdfLink": "#"
       }
     ]
@@ -723,14 +855,20 @@
     "pdfLink": "#",
     "timeline": [
       {
-        "section": "Complaint Filing",
-        "comment": "Issue reported to BDO Tarari.",
-        "date": "2025-08-11"
+        "section": "Application Received",
+        "comment": "Application received by the system.",
+        "date": "2025-08-11 10:00 AM"
+      },
+      {
+        "section": "Assigned to Land and Revenue Department",
+        "comment": "Assigned to BDO Tarari for review.",
+        "date": "2025-08-11 12:00 PM",
+        "pdfLink": "#"
       },
       {
         "section": "BDO Review",
         "comment": "Under review by BDO Tarari.",
-        "date": "2025-08-11",
+        "date": "2025-08-11 02:00 PM",
         "pdfLink": "#"
       }
     ]

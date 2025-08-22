@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import loginImg from "../assets/login_img2.webp";
 import { FaUsers } from "react-icons/fa"; // Added FaUsers for logo icon
 import { motion } from "framer-motion";
 
@@ -21,6 +20,13 @@ const AdminLogin = () => {
     if (adminId === "0519" && password === "@Dakpad2025") {
       localStorage.setItem("adminToken", "hardcoded-token");
       navigate("/Admin");
+    } else {
+      setError("Invalid Admin ID or Password");
+    }
+
+    if (adminId === "0520" && password === "@Dakpad2026") {
+      localStorage.setItem("adminToken", "hardcoded-token");
+      navigate("/work-assigned");
     } else {
       setError("Invalid Admin ID or Password");
     }
