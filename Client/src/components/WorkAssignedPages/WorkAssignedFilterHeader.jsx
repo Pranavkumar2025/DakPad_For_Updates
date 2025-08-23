@@ -1,12 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { RiFileExcel2Fill } from "react-icons/ri";
-import { CalendarDays } from "lucide-react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css"; // Import DatePicker CSS
 import DropdownButton from "../DropdownButton";
 
-const FilterHeader = ({
+const WorkAssignedFilterHeader = ({
   searchQuery,
   setSearchQuery,
   filteredCount,
@@ -14,6 +11,8 @@ const FilterHeader = ({
   setSelectedStatus,
   selectedDepartment,
   setSelectedDepartment,
+  // selectedSource,
+  // setSelectedSource,
   selectedBlock,
   setSelectedBlock,
   selectedDate,
@@ -21,20 +20,8 @@ const FilterHeader = ({
   onAddClick,
   onExcelClick,
 }) => {
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-
-  // Handle date range changes
-  const handleDateChange = (start, end) => {
-    if (start && end) {
-      setSelectedDate(`${start.toISOString().split("T")[0]} - ${end.toISOString().split("T")[0]}`);
-    } else {
-      setSelectedDate("");
-    }
-  };
-
   return (
-    <div className="flex flex-col ml-16 p-6 gap-3 mb-4 relative" style={{ zIndex: 100 }}>
+    <div className="flex flex-col ml-16 p-6 gap-3 mb-4">
       {/* Header and Search */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <h2 className="text-2xl font-semibold text-gray-700">Applications List</h2>
@@ -64,6 +51,7 @@ const FilterHeader = ({
               items={[
                 { label: "All", onClick: () => setSelectedStatus("") },
                 { label: "In Process", onClick: () => setSelectedStatus("In Process") },
+                // Add other statuses if they exist in the JSON or are added later
               ]}
             />
 
@@ -78,6 +66,7 @@ const FilterHeader = ({
                 { label: "BDO Ara Sadar", onClick: () => setSelectedDepartment("BDO Ara Sadar") },
                 { label: "BDO Tarari", onClick: () => setSelectedDepartment("BDO Tarari") },
                 { label: "RDO Mohsin Khan", onClick: () => setSelectedDepartment("RDO Mohsin Khan") },
+                // Add other relevant officers from JSON
               ]}
             />
 
@@ -96,36 +85,18 @@ const FilterHeader = ({
               ]}
             />
 
-            {/* Date Range Picker */}
-            <div className="flex items-center bg-white border px-3 py-2 rounded-xl text-sm space-x-1 relative">
-              <CalendarDays className="text-gray-500" size={16} />
-              <DatePicker
-                selected={startDate}
-                onChange={(date) => {
-                  setStartDate(date);
-                  handleDateChange(date, endDate);
-                }}
-                placeholderText="From"
-                className="outline-none bg-transparent w-[90px]"
-                dateFormat="dd/MM/yyyy"
-                popperClassName="z-[3000]" // Increased z-index further
-                popperPlacement="top" // Force upward direction
-              />
-              <span className="text-gray-400">-</span>
-              <CalendarDays className="text-gray-500" size={16} />
-              <DatePicker
-                selected={endDate}
-                onChange={(date) => {
-                  setEndDate(date);
-                  handleDateChange(startDate, date);
-                }}
-                placeholderText="To"
-                className="outline-none bg-transparent w-[90px]"
-                dateFormat="dd/MM/yyyy"
-                popperClassName="z-[3000]" // Increased z-index further
-                popperPlacement="top" // Force upward direction
-              />
-            </div>
+            {/* Date */}
+            <DropdownButton
+              label={selectedDate || "Select Date"}
+              items={[
+                { label: "All", onClick: () => setSelectedDate("") },
+                // Dynamically generate date options or use a date picker
+                { label: "2025-05-27", onClick: () => setSelectedDate("2025-05-27") },
+                { label: "2025-05-28", onClick: () => setSelectedDate("2025-05-28") },
+                { label: "2025-05-29", onClick: () => setSelectedDate("2025-05-29") },
+                // Add more dates as needed
+              ]}
+            />
           </div>
         </div>
 
@@ -136,20 +107,13 @@ const FilterHeader = ({
               setSearchQuery("");
               setSelectedStatus("");
               setSelectedDepartment("");
+              // setSelectedSource("");
               setSelectedBlock("");
               setSelectedDate("");
-              setStartDate(null);
-              setEndDate(null);
             }}
             className="bg-gray-500 hover:bg-gray-600 text-white px-5 py-3 rounded-xl font-medium shadow-md text-sm"
           >
             Reset Filters
-          </button>
-          <button
-            onClick={onAddClick}
-            className="flex items-center gap-2 bg-[#10b981] hover:bg-[#0ea769] text-white px-5 py-3 rounded-xl font-medium shadow-md text-sm"
-          >
-            + Add New Application
           </button>
           <motion.button
             onClick={onExcelClick}
@@ -178,4 +142,4 @@ const FilterHeader = ({
   );
 };
 
-export default FilterHeader;
+export default WorkAssignedFilterHeader;

@@ -1,15 +1,15 @@
 import React from "react";
-import { FaFilePdf, FaUpload, FaSpinner } from "react-icons/fa";
+import { FaFilePdf, FaUpload, FaSpinner, FaPaperPlane } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 
 const CaseDialog = ({ data, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto py-8 px-10 mx-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto py-8 px-10 mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6 border-b pb-4">
           <h2 className="text-2xl font-bold text-gray-900">
-            Application ID: <span className="text-blue-600">{data.applicationId}</span>
+            Application ID: <span className="text-green-800">{data.applicationId}</span>
           </h2>
           <button
             className="text-gray-500 hover:text-red-600 text-2xl"
@@ -108,41 +108,47 @@ const CaseDialog = ({ data, onClose }) => {
         {/* Application Timeline */}
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Application Timeline</h3>
         {data.timeline?.length > 0 ? (
-          <div className="relative space-y-6 mb-8">
+          <div className="relative space-y-4 mb-8">
             {data.timeline.map((item, idx) => (
-              <div
-                key={idx}
-                className="relative flex items-start pl-12"
-              >
-                <div className="absolute left-4 top-2 w-4 h-4 rounded-full bg-blue-600 ring-4 ring-blue-100 z-10" />
-                <div className="absolute left-6 top-8 bottom-0 w-0.5 bg-blue-200" />
+              <div key={idx} className="relative flex items-start pl-10">
+                {/* Timeline Indicator */}
+                <div className="absolute left-0 top-0 w-6 h-6 rounded-full bg-green-600 border-2 border-white shadow-md z-10 flex items-center justify-center">
+                  <div className="w-3 h-3 rounded-full bg-white" />
+                </div>
+                {/* Timeline Connector Line */}
                 <div
-                  className={`w-full p-5 rounded-xl border shadow-sm ${
+                  className={`absolute left-2.5 top-6 bottom-0 w-0.5 ${
+                    idx === data.timeline.length - 1 ? "bg-transparent" : "bg-green-300"
+                  }`}
+                />
+                {/* Timeline Content */}
+                <div
+                  className={`w-full p-4 rounded-lg border transition-all duration-200 ${
                     idx === data.timeline.length - 1
-                      ? "bg-green-50 border-green-200"
-                      : "bg-white border-gray-200"
+                      ? "bg-green-50 border-green-300 shadow-lg"
+                      : "bg-white border-gray-200 shadow-sm hover:shadow-md"
                   }`}
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-blue-600 font-semibold text-sm">{item.section}</span>
-                    <span className="text-xs text-gray-500">{item.date}</span>
+                  <div className="flex justify-between items-center mb-1">
+                    <h4 className="text-sm font-semibold text-blue-700">{item.section}</h4>
+                    <span className="text-xs text-gray-500 font-medium">{item.date}</span>
                   </div>
-                  <p className="text-gray-700 text-sm flex items-center gap-2">
+                  <p className="text-sm text-gray-700 flex items-center gap-2">
                     {item.comment}
                     {item.pdfLink && (
                       <a
                         href={item.pdfLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-green-600 hover:text-green-800 transition-colors"
                         title="View PDF"
                       >
-                        <FaFilePdf className="inline-block w-4 h-4" />
+                        
                       </a>
                     )}
                   </p>
                   {idx === data.timeline.length - 1 && (
-                    <p className="text-green-600 text-xs font-semibold mt-2">Latest Update</p>
+                    <p className="text-blue-600 text-xs font-semibold mt-1.5">Latest Update</p>
                   )}
                 </div>
               </div>
@@ -158,75 +164,49 @@ const CaseDialog = ({ data, onClose }) => {
           <textarea
             placeholder="Enter your comment"
             rows={4}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
           />
-          <div className="flex flex-col sm:flex-row gap-3">
-            <label className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-md text-sm cursor-pointer hover:bg-gray-50 transition">
-              <FaUpload /> Upload PDF
-              <input type="file" accept="application/pdf" className="hidden" />
-            </label>
-            <label className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-md text-sm cursor-pointer hover:bg-gray-50 transition">
-              <FaUpload /> Upload Image
-              <input type="file" accept="image/*" className="hidden" />
-            </label>
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <div className="flex gap-3">
+              <label className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-md text-sm cursor-pointer hover:bg-gray-50 transition">
+                <FaUpload /> Upload PDF
+                <input type="file" accept="application/pdf" className="hidden" />
+              </label>
+              <label className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-md text-sm cursor-pointer hover:bg-gray-50 transition">
+                <FaUpload /> Upload Image
+                <input type="file" accept="image/*" className="hidden" />
+              </label>
+            </div>
+            <button
+              type="button"
+              className="ml-auto flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition"
+            >
+              <FaPaperPlane /> Send
+            </button>
           </div>
           <button
             type="submit"
-            className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition"
+            className="w-full py-2.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-shadow shadow-md hover:shadow-lg focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
           >
-            Submit Comment
+            Compliance
           </button>
         </form>
 
-        {/* Forward File */}
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Forward File To</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="text-sm font-medium text-gray-600 block mb-1">Officer/Department</label>
-            <select className="w-full border border-gray-200 text-sm px-3 py-2.5 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-              <option value="">-- Select Officer/Department --</option>
-              <option value="BDO, Barhara">BDO, Barhara</option>
-              <option value="BDO, Shahpur">BDO, Shahpur</option>
-              <option value="BDO, Ara Sadar">BDO, Ara Sadar</option>
-              <option value="BDO, Tarari">BDO, Tarari</option>
-              <option value="BDO, Sandesh">BDO, Sandesh</option>
-              <option value="Director Accounts, DRDA">Director Accounts, DRDA</option>
-              <option value="RDO Mohsin Khan">RDO Mohsin Khan</option>
-              <option value="Senior Charged Officer, Sandesh">Senior Charged Officer, Sandesh</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600 block mb-1">Stage</label>
-            <select className="w-full border border-gray-200 text-sm px-3 py-2.5 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-              <option value="">-- Select Stage --</option>
-              <option value="Initial Review">Initial Review</option>
-              <option value="Inspection">Inspection</option>
-              <option value="Hearing Scheduled">Hearing Scheduled</option>
-              <option value="Final Approval">Final Approval</option>
-            </select>
-          </div>
-        </div>
-        <div className="text-right">
-          <button className="inline-flex items-center px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition">
-            Forward
-          </button>
-        </div>
+        {/* Custom CSS for slow spin animation */}
+        <style jsx>{`
+          .animate-spin-slow {
+            animation: spin 2s linear infinite;
+          }
+          @keyframes spin {
+            0% {
+              transform: rotate(0deg);
+            }
+            100% {
+              transform: rotate(360deg);
+            }
+          }
+        `}</style>
       </div>
-
-      {/* Custom CSS for slow spin animation */}
-      <style jsx>{`
-        .animate-spin-slow {
-          animation: spin 2s linear infinite;
-        }
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
     </div>
   );
 };

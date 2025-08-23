@@ -1,15 +1,15 @@
-import { LayoutDashboard, Settings, User } from "lucide-react";
+import { LayoutDashboard, Settings, User, BarChart2 } from "lucide-react";
 
 const Sidebar = () => {
   const menuItems = [
     { icon: <LayoutDashboard className="w-6 h-6" />, label: "Dashboard", link: "#" },
     { icon: <User className="w-6 h-6" />, label: "Users", link: "#" },
+    { icon: <BarChart2 className="w-6 h-6" />, label: "Performance", link: "/performance" },
     { icon: <Settings className="w-6 h-6" />, label: "Settings", link: "#" },
   ];
 
   return (
     <aside className="fixed top-0 left-0 h-screen w-16 bg-gray-900 text-white flex flex-col items-center py-6 shadow-lg">
-      
       {/* Logo */}
       <div className="mb-12">
         <img
