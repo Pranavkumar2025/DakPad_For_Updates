@@ -34,7 +34,7 @@ const FilterHeader = ({
   };
 
   return (
-    <div className="flex flex-col ml-16 p-6 gap-3 mb-4">
+    <div className="flex flex-col ml-16 p-6 gap-3 mb-4 relative" style={{ zIndex: 100 }}>
       {/* Header and Search */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <h2 className="text-2xl font-semibold text-gray-700">Applications List</h2>
@@ -97,7 +97,7 @@ const FilterHeader = ({
             />
 
             {/* Date Range Picker */}
-            <div className="flex items-center bg-white border px-3 py-2 rounded-xl text-sm space-x-1">
+            <div className="flex items-center bg-white border px-3 py-2 rounded-xl text-sm space-x-1 relative">
               <CalendarDays className="text-gray-500" size={16} />
               <DatePicker
                 selected={startDate}
@@ -108,7 +108,8 @@ const FilterHeader = ({
                 placeholderText="From"
                 className="outline-none bg-transparent w-[90px]"
                 dateFormat="dd/MM/yyyy"
-                popperClassName="z-50" // Ensure calendar popup is above other elements
+                popperClassName="z-[3000]" // Increased z-index further
+                popperPlacement="top" // Force upward direction
               />
               <span className="text-gray-400">-</span>
               <CalendarDays className="text-gray-500" size={16} />
@@ -121,7 +122,8 @@ const FilterHeader = ({
                 placeholderText="To"
                 className="outline-none bg-transparent w-[90px]"
                 dateFormat="dd/MM/yyyy"
-                popperClassName="z-50" // Ensure calendar popup is above other elements
+                popperClassName="z-[3000]" // Increased z-index further
+                popperPlacement="top" // Force upward direction
               />
             </div>
           </div>
