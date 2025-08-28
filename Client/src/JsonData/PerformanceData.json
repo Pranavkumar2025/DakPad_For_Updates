@@ -29,28 +29,12 @@
         "description": "Successfully resolved cases"
       },
       {
-        "name": "Hearings Conducted",
-        "value": "150+",
-        "icon": "📅",
-        "trend": "↑ 10%",
-        "trendDetails": "10 new hearings this week",
-        "description": "Hearings held this quarter"
-      },
-      {
         "name": "Blocks Involved",
-        "value": "25",
+        "value": "40",
         "icon": "🏘️",
         "trend": "→ 0%",
         "trendDetails": "No change in coverage",
         "description": "Geographical coverage"
-      },
-      {
-        "name": "Officers Assigned",
-        "value": "50",
-        "icon": "👥",
-        "trend": "↑ 2%",
-        "trendDetails": "2 new officers added",
-        "description": "Active officers on duty"
       }
     ],
     "charts": [
@@ -124,7 +108,7 @@
         "Priority": "High"
       },
       {
-        "S.No.": 5,
+        "S.No.": 4,
         "Date": "29-May-2025",
         "Name of the complainant": "Kumkum Singh",
         "GP, Block": "Sahar",
@@ -138,7 +122,7 @@
         "Priority": "High"
       },
       {
-        "S.No.": 11,
+        "S.No.": 5,
         "Date": "14-Jun-2025",
         "Name of the complainant": "Munni Devi",
         "GP, Block": "Behea",
@@ -152,7 +136,7 @@
         "Priority": "High"
       },
       {
-        "S.No.": 14,
+        "S.No.": 6,
         "Date": "12-Jun-2025",
         "Name of the complainant": "Baidya Raj Krishn Paswan",
         "GP, Block": "Sandesh",
@@ -166,7 +150,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 16,
+        "S.No": 7,
         "Date": "14-Jun-2025",
         "Name of the complainant": "Ravindra Kumar",
         "GP, Block": "Sahpur",
@@ -180,7 +164,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 17,
+        "S.No": 8,
         "Date": "14-Jun-2025",
         "Name of the complainant": "Priyanka Kumari",
         "GP, Block": "Sahpur",
@@ -194,7 +178,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 18,
+        "S.No": 9,
         "Date": "14-Jun-2025",
         "Name of the complainant": "Krishna Gaund",
         "GP, Block": "Barhara",
@@ -208,7 +192,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 27,
+        "S.No": 10,
         "Date": "17-Jun-2025",
         "Name of the complainant": "Subhash Yadav",
         "GP, Block": "Barhara",
@@ -222,7 +206,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 34,
+        "S.No": 11,
         "Date": "19-Jun-2025",
         "Name of the complainant": "Punam Devi",
         "GP, Block": "Barhara",
@@ -236,7 +220,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 35,
+        "S.No": 12,
         "Date": "19-Jun-2025",
         "Name of the complainant": "Gangadhar Pandey",
         "GP, Block": "Sahpur",
@@ -250,7 +234,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 42,
+        "S.No": 13,
         "Date": "30-Jun-2025",
         "Name of the complainant": "Tuntun Kumar Mahto",
         "GP, Block": "Barhara",
@@ -264,7 +248,7 @@
         "Priority": "Medium"
       },
       {
-        "S.No": 48,
+        "S.No": 14,
         "Date": "11-Jul-2025",
         "Name of the complainant": "Sona Devi",
         "GP, Block": "Barhara",
@@ -278,7 +262,7 @@
         "Priority": "Medium"
       },
       {
-        "S.No": 49,
+        "S.No": 15,
         "Date": "05-Jul-2025",
         "Name of the complainant": "Rajkumar Yadav",
         "GP, Block": "Shahpur",
@@ -292,7 +276,7 @@
         "Priority": "Medium"
       },
       {
-        "S.No": 50,
+        "S.No": 16,
         "Date": "05-Jul-2025",
         "Name of the complainant": "Girija Devi",
         "GP, Block": "Sandesh",
@@ -306,7 +290,7 @@
         "Priority": "Medium"
       },
       {
-        "S.No": 55,
+        "S.No": 17,
         "Date": "18-Jul-2025",
         "Name of the complainant": "Gorakhnath Singh",
         "GP, Block": "Barhara",
@@ -320,7 +304,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 56,
+        "S.No": 18,
         "Date": "18-Jul-2025",
         "Name of the complainant": "Ramtawakal Ram & Others",
         "GP, Block": "Ara Sadar",
@@ -334,7 +318,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 58,
+        "S.No": 19,
         "Date": "30-Jul-2025",
         "Name of the complainant": "Suman Devi",
         "GP, Block": "Shahpur",
@@ -348,7 +332,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 59,
+        "S.No": 20,
         "Date": "31-Jul-2025",
         "Name of the complainant": "Praful Kr Pandey",
         "GP, Block": "Ara Sadar",
@@ -362,7 +346,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 60,
+        "S.No": 21,
         "Date": "02-Aug-2025",
         "Name of the complainant": "Lalan Ojha",
         "GP, Block": "Behea",
@@ -376,7 +360,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 61,
+        "S.No": 22,
         "Date": "11-Aug-2025",
         "Name of the complainant": "Anwar Ali",
         "GP, Block": "Bagar, Tarari",
@@ -390,7 +374,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 62,
+        "S.No": 23,
         "Date": "11-Aug-2025",
         "Name of the complainant": "Munna Singh & Others",
         "GP, Block": "Bagar, Tarari",
@@ -404,7 +388,7 @@
         "Priority": "Low"
       },
       {
-        "S.No.": 63,
+        "S.No.": 24,
         "Date": "11-Aug-2025",
         "Name of the complainant": "Rajesh Kumar",
         "GP, Block": "Bagar, Tarari",
@@ -418,7 +402,7 @@
         "Priority": "Low"
       },
       {
-        "S.No.": 64,
+        "S.No.": 25,
         "Date": "11-Aug-2025",
         "Name of the complainant": "Kusum Devi",
         "GP, Block": "Bagar, Tarari",
@@ -432,7 +416,7 @@
         "Priority": "Low"
       },
       {
-        "S.No.": 65,
+        "S.No.": 26,
         "Date": "11-Aug-2025",
         "Name of the complainant": "Vijay Kumar",
         "GP, Block": "Bagar, Tarari",
