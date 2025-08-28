@@ -72,7 +72,7 @@ const ApplicationTable = ({ data, onRowClick }) => {
                 </td>
                 <td className="px-6 py-4">
                   <span
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(
+                    className={`inline-flex whitespace-nowrap items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(
                       caseDetail.status
                     )}`}
                   >

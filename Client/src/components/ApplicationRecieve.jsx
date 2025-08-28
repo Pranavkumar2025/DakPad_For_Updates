@@ -1,9 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { User, Calendar, File, PlusCircle } from "lucide-react";
 import AddCaseForm from "../components/AddCaseForm";
+import Navbar from "./Navbar";
 
 const ApplicationReceive = () => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const dropdownRef = useRef(null);
+
+ // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowFilter(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const [applications] = useState([
     {
@@ -81,12 +97,60 @@ const ApplicationReceive = () => {
   const totalPages = Math.ceil(applications.length / recordsPerPage);
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <>
+    <div className="relative top-5 right-8">
+    <Navbar />
+    </div>
+    <div className="p-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold text-gray-700 flex items-center gap-2">
           Applications Received Today
         </h1>
+         
+       <div className="relative inline-block" ref={dropdownRef}>
+      {/* Clickable Filter Bar */}
+      <div
+        onClick={() => setShowFilter(!showFilter)}
+        className="flex items-center gap-3 px-4 py-2 border border-gray-300 rounded-md cursor-pointer text-gray-700 hover:bg-gray-50"
+      >
+        <span className="text-sm">Filter by Date</span>
+        <span className="text-xs text-gray-500">
+          {fromDate && toDate ? `${fromDate} - ${toDate}` : "Select Range"}
+        </span>
+      </div>
+
+      {/* Dropdown Content */}
+      {showFilter && (
+        <div className="absolute left-0 mt-1 w-auto bg-white border border-gray-300 rounded-lg shadow-lg z-50 p-3 flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">From:</label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="p-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#ff5010]"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">To:</label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="p-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#ff5010]"
+            />
+          </div>
+          <button
+            onClick={() => setShowFilter(false)}
+            className="px-3 py-1 bg-[#ff5010] text-white rounded-md hover:bg-[#e0440d] text-sm"
+          >
+            Apply
+          </button>
+        </div>
+      )}
+    </div>
+
         <button
           className="flex items-center gap-2 px-4 py-2 bg-[#ff5010] text-white rounded-md hover:bg-[#ff5010] transition"
           onClick={() => setShowAddForm(true)}
@@ -203,6 +267,9 @@ const ApplicationReceive = () => {
         </div>
       </div>
     </div>
+
+  
+    </>
   );
 };
 

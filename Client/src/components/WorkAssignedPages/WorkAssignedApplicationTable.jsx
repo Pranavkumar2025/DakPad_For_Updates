@@ -11,7 +11,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
   const getStatusStyle = (status) => {
     switch (status) {
       case "In Process":
-        return "bg-blue-500 text-white";
+        return "bg-blue-500 text-white whitespace-nowrap";
       default:
         return "bg-gray-500 text-white";
     }
@@ -30,7 +30,6 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                 "Applicant",
                 "Subject",
                 "GP, Block",
-                "Concerned Officer",
                 "Issue Date",
                 "Pending Days",
                 "Status",
@@ -53,13 +52,13 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                 onClick={() => onRowClick(caseDetail)}
               >
                 <td className="px-6 py-4">{caseDetail.sNo}</td>
-                <td className="px-6 py-4">{caseDetail.dateOfApplication}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{caseDetail.dateOfApplication}</td>
                 <td className="px-6 py-4 font-medium text-gray-800">
                   {caseDetail.applicantName}
                 </td>
                 <td className="px-6 py-4">{caseDetail.subject}</td>
                 <td className="px-6 py-4">{caseDetail.gpBlock}</td>
-                <td className="px-6 py-4">{caseDetail.concernedOfficer}</td>
+        
                 <td className="px-6 py-4">{caseDetail.issueDate}</td>
                 <td className="px-6 py-4">
                   <span

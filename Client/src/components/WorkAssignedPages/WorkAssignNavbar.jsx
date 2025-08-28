@@ -35,11 +35,6 @@ const WorkAssignNavbar = () => {
       <div className="flex items-center space-x-6">
         <span className="text-sm text-gray-500">{today}</span>
 
-        <button className="relative">
-          <FaBell className="w-5 h-5 text-gray-600 hover:text-emerald-600" />
-          <span className="absolute top-0 right-0 w-2 h-2 bg-[#ff5010] rounded-full"></span>
-        </button>
-
         <div className="flex items-center gap-3 border border-gray-200 py-1 px-3 rounded-full">
           <img
             src="https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flat-design-social-media-profiles_1281173-3806.jpg?semt=ais_hybrid&w=740"
