@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaFilePdf, FaUpload, FaSpinner, FaPaperPlane, FaCheckCircle, FaHistory } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { User, Calendar, Mail, Phone, FileText } from "lucide-react";
@@ -12,8 +12,9 @@ const CaseDialog = ({ data, onClose }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isTimelineOpen, setIsTimelineOpen] = useState(true); // Timeline open by default
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false); // Timeline hidden by default
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const markComplianceRef = useRef(null); // Ref for Mark Compliance section
 
   // Calculate pending days
   const calculatePendingDays = (issueDate) => {
@@ -159,6 +160,16 @@ const CaseDialog = ({ data, onClose }) => {
     }, 1000);
   };
 
+  // Scroll to Mark Compliance section
+  const scrollToMarkCompliance = () => {
+    markComplianceRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Display status for UI (shortened for Compliance Completed)
+  const getDisplayStatus = (status) => {
+    return status === "Compliance Completed" ? "Compliance" : status;
+  };
+
   return (
     <motion.div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -175,7 +186,7 @@ const CaseDialog = ({ data, onClose }) => {
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
-          <h2 className="text-xl font-semibold text-gray-900 font-['Montserrat']">
+          <h2 className="text-xl font-semibold text-gray-900">
             Application ID: <span className="text-green-800">{applicationData.applicationId}</span>
           </h2>
           <motion.button
@@ -189,6 +200,16 @@ const CaseDialog = ({ data, onClose }) => {
           </motion.button>
         </div>
 
+        <motion.span
+          onClick={scrollToMarkCompliance}
+          className="text-green-600 hover:text-green-800 hover:underline text-sm font-semibold cursor-pointer mb-6 block"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          aria-label="Visit Mark Compliance"
+        >
+          Visit Mark Compliance
+        </motion.span>
+
         {/* Application Details Section */}
         <motion.div
           className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6"
@@ -196,7 +217,7 @@ const CaseDialog = ({ data, onClose }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 font-['Montserrat']">Applicant Details</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Applicant Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               { label: "Sr. No", value: applicationData.sNo, icon: <FileText className="w-5 h-5 text-green-600" /> },
@@ -217,39 +238,39 @@ const CaseDialog = ({ data, onClose }) => {
               >
                 {item.icon}
                 <div>
-                  <span className="text-sm font-medium text-gray-600 font-['Montserrat']">{item.label}</span>
-                  <p className="text-base font-medium text-gray-900 font-['Montserrat']">{item.value}</p>
+                  <span className="text-sm font-medium text-gray-600">{item.label}</span>
+                  <p className="text-base font-medium text-gray-900">{item.value}</p>
                 </div>
               </motion.div>
             ))}
             <div className="md:col-span-2">
-              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Description</span>
-              <p className="text-base font-medium text-gray-900 font-['Montserrat']">{applicationData.description}</p>
+              <span className="text-sm font-medium text-gray-600">Description</span>
+              <p className="text-base font-medium text-gray-900">{applicationData.description}</p>
             </div>
             <div className="md:col-span-2">
-              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Status</span>
+              <span className="text-sm font-medium text-gray-600">Status</span>
               <p>
                 <span
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold font-['Montserrat'] shadow-sm ${
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${
                     applicationData.status === "Compliance Completed"
                       ? "bg-green-600 text-white"
                       : "bg-blue-500 text-white"
                   }`}
                 >
-                  {applicationData.status === "In Progress" && <FaSpinner className="animate-spin-slow" />}
-                  {applicationData.status}
+                  {applicationData.status === "In Progress" && <FaSpinner className="animate-spin" />}
+                  {getDisplayStatus(applicationData.status)}
                 </span>
               </p>
             </div>
             <div className="md:col-span-2">
-              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Concerned Officer</span>
-              <p className="text-base font-medium text-gray-900 font-['Montserrat']">{applicationData.concernedOfficer}</p>
+              <span className="text-sm font-medium text-gray-600">Concerned Officer</span>
+              <p className="text-base font-medium text-gray-900">{applicationData.concernedOfficer}</p>
             </div>
             <div className="md:col-span-2">
-              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Pending Days</span>
+              <span className="text-sm font-medium text-gray-600">Pending Days</span>
               <p>
                 <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-['Montserrat'] shadow-sm ${
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
                     applicationData.pendingDays <= 10
                       ? "bg-green-500 text-white"
                       : applicationData.pendingDays <= 15
@@ -267,7 +288,7 @@ const CaseDialog = ({ data, onClose }) => {
               href={applicationData.pdfLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-green-600 hover:text-green-800 font-medium text-sm flex items-center gap-2 mt-4 font-['Montserrat']"
+              className="text-green-600 hover:text-green-800 font-medium text-sm flex items-center gap-2 mt-4"
               whileHover={{ scale: 1.05 }}
               aria-label="View attached PDF"
             >
@@ -279,7 +300,7 @@ const CaseDialog = ({ data, onClose }) => {
         {/* Toggle for Application Timeline */}
         <motion.button
           onClick={() => setIsTimelineOpen(!isTimelineOpen)}
-          className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-2 mb-6 font-['Montserrat']"
+          className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-2 mb-6"
           whileHover={{ scale: 1.05 }}
           aria-label="Toggle application timeline"
         >
@@ -296,7 +317,7 @@ const CaseDialog = ({ data, onClose }) => {
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 font-['Montserrat']">Application Timeline</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Application Timeline</h3>
               {applicationData.timeline?.length > 0 ? (
                 <div className="relative space-y-4">
                   {applicationData.timeline.map((item, idx) => (
@@ -317,10 +338,10 @@ const CaseDialog = ({ data, onClose }) => {
                         }`}
                       >
                         <div className="flex justify-between items-center mb-1">
-                          <h4 className="text-sm font-semibold text-blue-700 font-['Montserrat']">{item.section}</h4>
-                          <span className="text-xs text-gray-500 font-medium font-['Montserrat']">{item.date}</span>
+                          <h4 className="text-sm font-semibold text-blue-700">{item.section}</h4>
+                          <span className="text-xs text-gray-500 font-medium">{item.date}</span>
                         </div>
-                        <p className="text-sm text-gray-700 flex items-center gap-2 font-['Montserrat']">
+                        <p className="text-sm text-gray-700 flex items-center gap-2">
                           {item.comment}
                           {item.pdfLink && (
                             <motion.a
@@ -337,108 +358,110 @@ const CaseDialog = ({ data, onClose }) => {
                           )}
                         </p>
                         {idx === applicationData.timeline.length - 1 && (
-                          <p className="text-blue-600 text-xs font-semibold mt-1.5 font-['Montserrat']">Latest Update</p>
+                          <p className="text-blue-600 text-xs font-semibold mt-1.5">Latest Update</p>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm italic text-gray-500 font-['Montserrat']">No timeline entries available.</p>
+                <p className="text-sm italic text-gray-500">No timeline entries available.</p>
               )}
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Mark Compliance Section */}
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 font-['Montserrat']">Mark Compliance</h3>
-        <form className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6" onSubmit={handleCompliance}>
-          <div className="space-y-6">
-            <div>
-              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Current Status</span>
-              <p className="text-base font-semibold text-gray-900 font-['Montserrat']">
-                {applicationData.timeline?.length > 0
-                  ? applicationData.timeline[applicationData.timeline.length - 1].section
-                  : "No status available"}
-              </p>
-              <p className="text-xs text-gray-500 font-['Montserrat']">
-                Last updated on{" "}
-                {applicationData.timeline?.length > 0
-                  ? applicationData.timeline[applicationData.timeline.length - 1].date
-                  : applicationData.issueDate}
-              </p>
-            </div>
-            <div>
-              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Compliance Comment</span>
-              <textarea
-                placeholder="Enter your compliance comment"
-                rows={4}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="w-full mt-2 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition font-['Montserrat'] shadow-sm"
-                aria-label="Compliance comment"
-              />
-              {saveSuccess && (
-                <motion.p
-                  className="text-green-600 text-sm flex items-center gap-2 mt-2 font-['Montserrat']"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <FaCheckCircle /> Compliance marked successfully!
-                </motion.p>
-              )}
-              {errorMessage && (
-                <motion.p
-                  className="text-red-600 text-sm flex items-center gap-2 mt-2 font-['Montserrat']"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <FaCheckCircle className="rotate-45" /> {errorMessage}
-                </motion.p>
-              )}
-            </div>
-            <div>
-              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Upload Document (Optional)</span>
-              <label className="flex items-center justify-center w-full h-24 mt-2 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-green-500 transition bg-white shadow-sm">
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  aria-label="Upload document"
+        <div ref={markComplianceRef}>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Mark Compliance</h3>
+          <form className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6" onSubmit={handleCompliance}>
+            <div className="space-y-6">
+              <div>
+                <span className="text-sm font-medium text-gray-600">Current Status</span>
+                <p className="text-base font-semibold text-gray-900">
+                  {applicationData.timeline?.length > 0
+                    ? applicationData.timeline[applicationData.timeline.length - 1].section
+                    : "No status available"}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Last updated on{" "}
+                  {applicationData.timeline?.length > 0
+                    ? applicationData.timeline[applicationData.timeline.length - 1].date
+                    : applicationData.issueDate}
+                </p>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-600">Compliance Comment</span>
+                <textarea
+                  placeholder="Enter your compliance comment"
+                  rows={4}
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="w-full mt-2 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition shadow-sm"
+                  aria-label="Compliance comment"
                 />
-                <div className="flex items-center gap-2 text-gray-600">
-                  <FaUpload className="text-green-600" />
-                  <span className="text-sm font-['Montserrat']">
-                    {uploadedFile ? uploadedFile.name : "Drag or click to upload (PDF, JPEG, PNG, max 5MB)"}
-                  </span>
-                </div>
-              </label>
+                {saveSuccess && (
+                  <motion.p
+                    className="text-green-600 text-sm flex items-center gap-2 mt-2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <FaCheckCircle /> Compliance marked successfully!
+                  </motion.p>
+                )}
+                {errorMessage && (
+                  <motion.p
+                    className="text-red-600 text-sm flex items-center gap-2 mt-2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <FaCheckCircle className="rotate-45" /> {errorMessage}
+                  </motion.p>
+                )}
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-600">Upload Document (Optional)</span>
+                <label className="flex items-center justify-center w-full h-24 mt-2 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-green-500 transition bg-white shadow-sm">
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    aria-label="Upload document"
+                  />
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <FaUpload className="text-green-600" />
+                    <span className="text-sm">
+                      {uploadedFile ? uploadedFile.name : "Drag or click to upload (PDF, JPEG, PNG, max 5MB)"}
+                    </span>
+                  </div>
+                </label>
+              </div>
+              <motion.button
+                type="submit"
+                disabled={isSaving}
+                className={`w-full py-2.5 text-sm font-semibold rounded-xl shadow-sm transition ${
+                  isSaving ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"
+                }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Mark compliance"
+              >
+                {isSaving ? (
+                  <>
+                    <FaSpinner className="animate-spin inline mr-2" /> Saving...
+                  </>
+                ) : (
+                  <>
+                    <FaPaperPlane className="inline mr-2" /> Mark Compliance
+                  </>
+                )}
+              </motion.button>
             </div>
-            <motion.button
-              type="submit"
-              disabled={isSaving}
-              className={`w-full py-2.5 text-sm font-semibold rounded-xl shadow-sm transition font-['Montserrat'] ${
-                isSaving ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Mark compliance"
-            >
-              {isSaving ? (
-                <>
-                  <FaSpinner className="animate-spin-slow inline mr-2" /> Saving...
-                </>
-              ) : (
-                <>
-                  <FaPaperPlane className="inline mr-2" /> Mark Compliance
-                </>
-              )}
-            </motion.button>
-          </div>
-        </form>
+          </form>
+        </div>
 
         {/* Compliance Confirmation Modal */}
         <AnimatePresence>
@@ -457,13 +480,13 @@ const CaseDialog = ({ data, onClose }) => {
                 exit={{ scale: 0.95, opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <h3 className="text-lg font-semibold text-gray-900 text-center font-['Montserrat']">Confirm Compliance</h3>
-                <p className="text-sm text-gray-600 mt-2 text-center font-['Montserrat']">
+                <h3 className="text-lg font-semibold text-gray-900 text-center">Confirm Compliance</h3>
+                <p className="text-sm text-gray-600 mt-2 text-center">
                   Are you sure you want to mark this application as completed?
                 </p>
                 <div className="mt-6 flex gap-4 justify-center">
                   <motion.button
-                    className="px-6 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition font-['Montserrat'] shadow-sm"
+                    className="px-6 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm"
                     onClick={confirmCompliance}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -472,7 +495,7 @@ const CaseDialog = ({ data, onClose }) => {
                     Confirm
                   </motion.button>
                   <motion.button
-                    className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition font-['Montserrat'] shadow-sm"
+                    className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition shadow-sm"
                     onClick={() => setIsConfirmOpen(false)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -485,18 +508,6 @@ const CaseDialog = ({ data, onClose }) => {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Custom CSS */}
-        <style jsx global>{`
-          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-          .animate-spin-slow {
-            animation: spin 2s linear infinite;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
       </motion.div>
     </motion.div>
   );
