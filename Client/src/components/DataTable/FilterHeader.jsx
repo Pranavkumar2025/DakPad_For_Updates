@@ -21,11 +21,12 @@ const FilterHeader = ({
   onAddClick,
   onExcelClick,
 }) => {
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
 
-  // Handle date range changes
-  const handleDateChange = (start, end) => {
+  const handleDateChange = (range) => {
+    const [start, end] = range;
+    setDateRange(range);
     if (start && end) {
       setSelectedDate(`${start.toISOString().split("T")[0]} - ${end.toISOString().split("T")[0]}`);
     } else {
@@ -33,8 +34,20 @@ const FilterHeader = ({
     }
   };
 
+  const CustomInput = React.forwardRef(({ value, onClick }, ref) => (
+    <div
+      className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm space-x-2 cursor-pointer hover:bg-gray-100 transition-all"
+      onClick={onClick}
+      ref={ref}
+      aria-label="Select date range"
+    >
+      <CalendarDays className="text-gray-500" size={16} />
+      <span className="text-gray-700">{value || "Select Date Range"}</span>
+    </div>
+  ));
+
   return (
-    <div className=" relative z-10 bg-white shadow-lg rounded-xl p-6 mx-4 md:mx-16 mb-6 max-w-10xl">
+    <div className=" p-6 max-w-7xl mx-auto my-6">
       {/* Header and Search */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <h2 className="text-2xl font-bold text-gray-800">Applications List</h2>
@@ -68,7 +81,7 @@ const FilterHeader = ({
                 { label: "In Process", onClick: () => setSelectedStatus("In Process") },
               ]}
               className="bg-gray-50 hover:bg-gray-100 border-gray-200"
-              menuClassName="z-[100]" // Increased z-index to appear above table header
+              menuClassName="z-[1000]"
             />
 
             {/* Department Dropdown */}
@@ -84,7 +97,7 @@ const FilterHeader = ({
                 { label: "RDO Mohsin Khan", onClick: () => setSelectedDepartment("RDO Mohsin Khan") },
               ]}
               className="bg-gray-50 hover:bg-gray-100 border-gray-200"
-              menuClassName="z-[100]" // Increased z-index to appear above table header
+              menuClassName="z-[1000]"
             />
 
             {/* Block Dropdown */}
@@ -101,39 +114,36 @@ const FilterHeader = ({
                 { label: "Sahar", onClick: () => setSelectedBlock("Sahar") },
               ]}
               className="bg-gray-50 hover:bg-gray-100 border-gray-200"
-              menuClassName="z-[100]" // Increased z-index to appear above table header
+              menuClassName="z-[1000]"
             />
 
             {/* Date Range Picker */}
-            <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm space-x-2">
-              <CalendarDays className="text-gray-500" size={16} />
-              <DatePicker
-                selected={startDate}
-                onChange={(date) => {
-                  setStartDate(date);
-                  handleDateChange(date, endDate);
-                }}
-                placeholderText="From"
-                className="outline-none bg-transparent w-24 text-sm"
-                dateFormat="dd/MM/yyyy"
-                popperClassName="z-[100]" // Match dropdown z-index
-                popperPlacement="bottom-start"
-              />
-              <span className="text-gray-400">-</span>
-              <CalendarDays className="text-gray-500" size={16} />
-              <DatePicker
-                selected={endDate}
-                onChange={(date) => {
-                  setEndDate(date);
-                  handleDateChange(startDate, date);
-                }}
-                placeholderText="To"
-                className="outline-none bg-transparent w-24 text-sm"
-                dateFormat="dd/MM/yyyy"
-                popperClassName="z-[100]" // Match dropdown z-index
-                popperPlacement="bottom-start"
-              />
-            </div>
+            <DatePicker
+              selectsRange
+              startDate={startDate}
+              endDate={endDate}
+              onChange={handleDateChange}
+              customInput={<CustomInput />}
+              dateFormat="dd/MM/yyyy"
+              withPortal // Render popover in a portal appended to body
+              portalId="date-picker-portal" // Unique ID for the portal
+              popperClassName="z-[2000]" // High z-index for visibility
+              popperPlacement="top-start" // Open above input
+              popperModifiers={[
+                {
+                  name: "offset",
+                  options: {
+                    offset: [0, 8], // Vertical spacing above input
+                  },
+                },
+                {
+                  name: "preventOverflow",
+                  options: {
+                    rootBoundary: "viewport", // Keep popover in viewport
+                  },
+                },
+              ]}
+            />
           </div>
         </div>
 
@@ -146,8 +156,7 @@ const FilterHeader = ({
               setSelectedDepartment("");
               setSelectedBlock("");
               setSelectedDate("");
-              setStartDate(null);
-              setEndDate(null);
+              setDateRange([null, null]);
             }}
             className="bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-300 font-medium text-sm transition-all"
           >
