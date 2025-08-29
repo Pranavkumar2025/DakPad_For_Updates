@@ -1,7 +1,8 @@
 import React from 'react';
 import { FaBell } from 'react-icons/fa';
 import { motion } from "framer-motion";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate , Link} from 'react-router-dom';
+import { BarChart2 } from "lucide-react";
 
 const UserNavbar = () => {
   const today = new Date().toLocaleDateString('en-GB', {
@@ -60,6 +61,11 @@ const UserNavbar = () => {
           <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-[#ff5010] rounded-full"></span>
         </button>
 
+<Link to="/performance">
+  <button className="p-2 rounded-full hover:bg-gray-100 transition">
+    <BarChart2 className="w-6 h-6 text-gray-600 hover:text-[#ff5010]" />
+  </button>
+</Link>
         {/* Info Section (Optional for Public) */}
         <div className="hidden md:flex flex-col items-end text-xs leading-tight">
           <p className="text-gray-600">Serving Citizens of Bhojpur</p>

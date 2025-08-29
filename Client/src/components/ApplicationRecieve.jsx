@@ -76,11 +76,9 @@ const Navbar = () => {
 // Sidebar Component
 const Sidebar = () => {
   const menuItems = [
-    { icon: <LayoutDashboard className="w-6 h-6" />, label: "Dashboard", link: "/dashboard" },
     { icon: <File className="w-6 h-6" />, label: "Applications", link: "/applications" },
-    { icon: <User className="w-6 h-6" />, label: "Users", link: "/users" },
     { icon: <BarChart2 className="w-6 h-6" />, label: "Performance", link: "/performance" },
-    { icon: <Settings className="w-6 h-6" />, label: "Settings", link: "/settings" },
+    
   ];
 
   return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaFilePdf, FaUpload, FaSpinner, FaCheckCircle, FaHistory, FaEdit, FaInfoCircle } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
-import { User, Calendar, Mail, Phone, FileText } from "lucide-react";
+import { User, Calendar, Mail, Phone, FileText, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import Select from "react-select";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -51,12 +51,23 @@ const AssigningWork = ({ data, onClose }) => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  // Determine dynamic status based on timeline
+  const determineStatus = (timeline) => {
+    if (!timeline || timeline.length === 0) return "Pending";
+    const latestEntry = timeline[timeline.length - 1].section.toLowerCase();
+    if (latestEntry.includes("received") || latestEntry.includes("assigned")) return "Pending";
+    if (latestEntry.includes("compliance")) return "Compliance";
+    if (latestEntry.includes("dismissed")) return "Dismissed";
+    return "In Process";
+  };
+
   // Update application data from localStorage
   const updateApplicationData = () => {
     const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
     const matchedApp = storedApplications.find((app) => app.ApplicantId === data.applicationId);
     if (matchedApp) {
       const pendingDays = calculatePendingDays(matchedApp.applicationDate);
+      const status = determineStatus(matchedApp.timeline);
       setApplicationData({
         ...data,
         applicationId: matchedApp.ApplicantId,
@@ -68,7 +79,7 @@ const AssigningWork = ({ data, onClose }) => {
         email: matchedApp.emailId || "N/A",
         issueDate: matchedApp.applicationDate,
         issueLetterNo: data.issueLetterNo || "N/A",
-        status: data.status || "In Process",
+        status: status,
         concernedOfficer: matchedApp.concernedOfficer || "N/A",
         pendingDays: pendingDays,
         pdfLink: matchedApp.attachment,
@@ -84,7 +95,7 @@ const AssigningWork = ({ data, onClose }) => {
     }
   };
 
-  // Real-time localStorage updates
+  // Real-time localStorage updates and Escape key listener for details modal
   useEffect(() => {
     updateApplicationData();
     const handleStorageChange = (event) => {
@@ -92,14 +103,21 @@ const AssigningWork = ({ data, onClose }) => {
         updateApplicationData();
       }
     };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape" && isDetailsOpen) {
+        setIsDetailsOpen(false);
+      }
+    };
     window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("keydown", handleKeyDown);
       if (uploadedFile?.url) {
         URL.revokeObjectURL(uploadedFile.url);
       }
     };
-  }, [data.applicationId, uploadedFile]);
+  }, [data.applicationId, uploadedFile, isDetailsOpen]);
 
   // Handle department selection
   const handleDepartmentChange = (option) => {
@@ -149,6 +167,15 @@ const AssigningWork = ({ data, onClose }) => {
           ? {
               ...app,
               concernedOfficer: selectedDepartment.value,
+              status: determineStatus([
+                ...(app.timeline || []),
+                {
+                  section: selectedDepartment.label,
+                  comment: assignmentNote || "Assigned to department",
+                  date: new Date().toLocaleDateString("en-GB"),
+                  pdfLink: uploadedFile?.url || null,
+                },
+              ]),
               timeline: [
                 ...(app.timeline || [
                   {
@@ -172,6 +199,15 @@ const AssigningWork = ({ data, onClose }) => {
       setApplicationData((prev) => ({
         ...prev,
         concernedOfficer: selectedDepartment.value,
+        status: determineStatus([
+          ...(prev.timeline || []),
+          {
+            section: selectedDepartment.label,
+            comment: assignmentNote || "Assigned to department",
+            date: new Date().toLocaleDateString("en-GB"),
+            pdfLink: uploadedFile?.url || null,
+          },
+        ]),
         timeline: [
           ...(prev.timeline || [
             {
@@ -226,6 +262,19 @@ const AssigningWork = ({ data, onClose }) => {
           ? {
               ...app,
               concernedOfficer: editDepartment.value,
+              status: determineStatus(
+                app.timeline.map((entry, idx) =>
+                  idx === editIndex
+                    ? {
+                        ...entry,
+                        section: editDepartment.label,
+                        comment: editNote || "Assigned to department",
+                        date: new Date().toLocaleDateString("en-GB"),
+                        pdfLink: uploadedFile?.url || entry.pdfLink,
+                      }
+                    : entry
+                )
+              ),
               timeline: app.timeline.map((entry, idx) =>
                 idx === editIndex
                   ? {
@@ -244,6 +293,19 @@ const AssigningWork = ({ data, onClose }) => {
       setApplicationData((prev) => ({
         ...prev,
         concernedOfficer: editDepartment.value,
+        status: determineStatus(
+          prev.timeline.map((entry, idx) =>
+            idx === editIndex
+              ? {
+                  ...entry,
+                  section: editDepartment.label,
+                  comment: editNote || "Assigned to department",
+                  date: new Date().toLocaleDateString("en-GB"),
+                  pdfLink: uploadedFile?.url || entry.pdfLink,
+                }
+              : entry
+          )
+        ),
         timeline: prev.timeline.map((entry, idx) =>
           idx === editIndex
             ? {
@@ -266,6 +328,20 @@ const AssigningWork = ({ data, onClose }) => {
     }, 1000);
   };
 
+  // Status styling
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "Pending":
+        return { bg: "bg-amber-100", text: "text-amber-700", badge: "bg-amber-500 text-white", icon: <Loader2 size={20} /> };
+      case "Compliance":
+        return { bg: "bg-green-100", text: "text-green-700", badge: "bg-green-600 text-white", icon: <CheckCircle size={20} /> };
+      case "Dismissed":
+        return { bg: "bg-red-100", text: "text-red-700", badge: "bg-red-600 text-white", icon: <XCircle size={20} /> };
+      default:
+        return { bg: "bg-blue-100", text: "text-blue-700", badge: "bg-blue-600 text-white", icon: <FaSpinner className="animate-spin-slow" size={20} /> };
+    }
+  };
+
   return (
     <motion.div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -275,18 +351,18 @@ const AssigningWork = ({ data, onClose }) => {
       transition={{ duration: 0.3 }}
     >
       <motion.div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6"
+        className="bg-gradient-to-b from-white to-gray-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Assign Work: <span className="text-[#ff5010]">{applicationData.applicationId}</span>
+          <h2 className="text-xl font-semibold text-gray-900 font-['Montserrat']">
+            Assign Work: <span className="text-green-700">{applicationData.applicationId}</span>
           </h2>
           <motion.button
-            className="text-gray-500 hover:text-red-500 text-xl transition-colors"
+            className="text-gray-500 hover:text-red-600 text-xl transition-colors"
             onClick={onClose}
             aria-label="Close dialog"
             whileHover={{ scale: 1.1 }}
@@ -297,25 +373,33 @@ const AssigningWork = ({ data, onClose }) => {
         </div>
 
         {/* Assigning Work Section */}
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Assign Department</h3>
-        <div className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6">
+        <motion.div
+          className="bg-white rounded-xl shadow-md p-6 mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 font-['Montserrat']">Assign Department</h3>
           <div className="space-y-6">
-            <div>
-              <span className="text-sm font-medium text-gray-600">Current Status</span>
-              <p className="text-base font-semibold text-gray-900">
-                {applicationData.timeline?.length > 0
-                  ? applicationData.timeline[applicationData.timeline.length - 1].section
-                  : "No status available"}
-              </p>
-              <p className="text-xs text-gray-500">
-                Last updated on{" "}
-                {applicationData.timeline?.length > 0
-                  ? applicationData.timeline[applicationData.timeline.length - 1].date
-                  : applicationData.issueDate}
-              </p>
+            <div className={`p-4 rounded-xl ${getStatusStyle(applicationData.status).bg}`}>
+              <div className="flex items-center gap-3">
+                {getStatusStyle(applicationData.status).icon}
+                <div>
+                  <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Current Status</span>
+                  <p className={`text-base font-semibold ${getStatusStyle(applicationData.status).text} font-['Montserrat']`}>
+                    {applicationData.status}
+                  </p>
+                  <p className="text-xs text-gray-500 font-['Montserrat']">
+                    Last updated on{" "}
+                    {applicationData.timeline?.length > 0
+                      ? applicationData.timeline[applicationData.timeline.length - 1].date
+                      : applicationData.issueDate}
+                  </p>
+                </div>
+              </div>
             </div>
             <div>
-              <span className="text-sm font-medium text-gray-600">Select Department</span>
+              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Select Department</span>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-2">
                 <Select
                   options={departments}
@@ -331,14 +415,14 @@ const AssigningWork = ({ data, onClose }) => {
                       borderColor: "#d1d5db",
                       borderRadius: "0.5rem",
                       boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-                      "&:hover": { borderColor: "#ff5010" },
+                      "&:hover": { borderColor: "#16a34a" },
                       padding: "0.25rem",
                       fontFamily: "'Montserrat', sans-serif",
                       fontSize: "0.875rem",
                     }),
                     option: (base, { isFocused, isSelected }) => ({
                       ...base,
-                      backgroundColor: isSelected ? "#ff5010" : isFocused ? "#fff7f0" : "white",
+                      backgroundColor: isSelected ? "#16a34a" : isFocused ? "#f0fff4" : "white",
                       color: isSelected ? "white" : "#111827",
                       cursor: "pointer",
                       fontFamily: "'Montserrat', sans-serif",
@@ -353,7 +437,7 @@ const AssigningWork = ({ data, onClose }) => {
                   className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg shadow-sm transition font-['Montserrat'] ${
                     isSaving || selectedDepartment?.value === applicationData.concernedOfficer
                       ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                      : "bg-[#ff5010] text-white hover:bg-[#e6490f]"
+                      : "bg-green-600 text-white hover:bg-green-700"
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -373,12 +457,12 @@ const AssigningWork = ({ data, onClose }) => {
                 rows={3}
                 value={assignmentNote}
                 onChange={(e) => setAssignmentNote(e.target.value)}
-                className="w-full mt-4 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#ff5010] focus:border-[#ff5010] transition font-['Montserrat'] shadow-sm"
+                className="w-full mt-4 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600 transition font-['Montserrat'] shadow-sm"
                 aria-label="Assignment notes"
               />
               {saveSuccess && (
                 <motion.p
-                  className="text-green-600 text-sm flex items-center gap-2 mt-2"
+                  className="text-green-600 text-sm flex items-center gap-2 mt-2 font-['Montserrat']"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
@@ -388,18 +472,18 @@ const AssigningWork = ({ data, onClose }) => {
               )}
               {errorMessage && (
                 <motion.p
-                  className="text-red-600 text-sm flex items-center gap-2 mt-2"
+                  className="text-red-600 text-sm flex items-center gap-2 mt-2 font-['Montserrat']"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <FaCheckCircle className="rotate-45" /> {errorMessage}
+                  <XCircle size={16} /> {errorMessage}
                 </motion.p>
               )}
             </div>
             <div>
-              <span className="text-sm font-medium text-gray-600">Upload Document (Optional)</span>
-              <label className="flex items-center justify-center w-full h-24 mt-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#ff5010] transition bg-white shadow-sm">
+              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Upload Document (Optional)</span>
+              <label className="flex items-center justify-center w-full h-24 mt-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-600 transition bg-white shadow-sm">
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
@@ -408,7 +492,7 @@ const AssigningWork = ({ data, onClose }) => {
                   aria-label="Upload document"
                 />
                 <div className="flex items-center gap-2 text-gray-600">
-                  <FaUpload className="text-[#ff5010]" />
+                  <FaUpload className="text-green-600" />
                   <span className="text-sm font-['Montserrat']">
                     {uploadedFile ? uploadedFile.name : "Drag or click to upload (PDF, JPEG, PNG, max 5MB)"}
                   </span>
@@ -418,7 +502,7 @@ const AssigningWork = ({ data, onClose }) => {
             <div>
               <motion.button
                 onClick={() => setIsTimelineOpen(!isTimelineOpen)}
-                className="text-[#ff5010] hover:text-[#e6490f] text-sm font-semibold flex items-center gap-2 font-['Montserrat']"
+                className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-2 font-['Montserrat']"
                 whileHover={{ scale: 1.05 }}
                 aria-label="Toggle timeline"
               >
@@ -435,134 +519,219 @@ const AssigningWork = ({ data, onClose }) => {
                   >
                     {applicationData.timeline?.length > 0 ? (
                       <div className="relative pl-6">
-                        <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-                        {applicationData.timeline.map((entry, idx) => (
-                          <div key={idx} className="relative mb-4">
-                            <div className="absolute left-[-18px] top-1 w-3 h-3 bg-[#10ff10] rounded-full shadow-sm"></div>
-                            <div className="ml-4 flex items-start justify-between">
-                              <div>
-                                <p className="text-sm font-semibold text-gray-800">{entry.section}</p>
-                                <p className="text-xs text-gray-600">{entry.comment}</p>
-                                <p className="text-xs text-gray-500">{entry.date}</p>
-                                {entry.pdfLink && (
-                                  <a
-                                    href={entry.pdfLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[#ff5010] hover:text-[#e6490f] text-xs font-semibold flex items-center gap-1 mt-1"
+                        <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-green-200"></div>
+                        {applicationData.timeline.map((entry, idx) => {
+                          const isCompleted = idx < applicationData.timeline.length - 1 || entry.section.toLowerCase().includes("compliance");
+                          const isPending = entry.section.toLowerCase().includes("received") || entry.section.toLowerCase().includes("assigned");
+                          const isRejected = entry.section.toLowerCase().includes("dismissed");
+                          const dotClass = isCompleted
+                            ? "bg-green-600 border-2 border-white"
+                            : isPending
+                            ? "bg-amber-500"
+                            : isRejected
+                            ? "bg-red-600"
+                            : "bg-gray-300";
+                          const icon = isCompleted ? <CheckCircle size={18} className="text-white" /> : null;
+                          return (
+                            <motion.div
+                              key={idx}
+                              className="relative mb-4"
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3, delay: idx * 0.05 }}
+                            >
+                              <div className={`absolute left-[-18px] top-1 w-3 h-3 ${dotClass} rounded-full shadow-sm flex items-center justify-center`}>
+                                {icon}
+                              </div>
+                              <div className="ml-4 flex items-start justify-between">
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-800 font-['Montserrat']">{entry.section}</p>
+                                  <p className="text-xs text-gray-600 font-['Montserrat']">{entry.comment}</p>
+                                  <p className="text-xs text-gray-500 font-['Montserrat']">{entry.date}</p>
+                                  {entry.pdfLink && (
+                                    <motion.a
+                                      href={entry.pdfLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-green-600 hover:text-green-800 text-xs font-semibold flex items-center gap-1 mt-1 font-['Montserrat'] group"
+                                      whileHover={{ scale: 1.05 }}
+                                      aria-label="View timeline document"
+                                    >
+                                      <FaFilePdf /> View Document
+                                      <span className="absolute hidden group-hover:block text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md -top-8 left-1/2 transform -translate-x-1/2 font-['Montserrat']">
+                                        Open PDF
+                                      </span>
+                                    </motion.a>
+                                  )}
+                                </div>
+                                {idx !== 0 && idx === applicationData.timeline.length - 1 && (
+                                  <motion.button
+                                    onClick={() => handleEditTimeline(idx, entry)}
+                                    className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-1 font-['Montserrat']"
+                                    whileHover={{ scale: 1.05 }}
+                                    aria-label="Edit timeline entry"
                                   >
-                                    <FaFilePdf /> View Document
-                                  </a>
+                                    <FaEdit /> Edit
+                                  </motion.button>
                                 )}
                               </div>
-                              {idx !== 0 && idx === applicationData.timeline.length - 1 && (
-                                <motion.button
-                                  onClick={() => handleEditTimeline(idx, entry)}
-                                  className="text-[#ff5010] hover:text-[#e6490f] text-sm font-semibold flex items-center gap-1"
-                                  whileHover={{ scale: 1.05 }}
-                                  aria-label="Edit timeline entry"
-                                >
-                                  <FaEdit /> Edit
-                                </motion.button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                            </motion.div>
+                          );
+                        })}
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500 italic">No timeline entries available.</p>
+                      <p className="text-sm text-gray-500 italic font-['Montserrat']">No timeline entries available.</p>
                     )}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Toggle for Applicant Details */}
         <motion.button
-          onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-          className="text-[#ff5010] hover:text-[#e6490f] text-sm font-semibold flex items-center gap-2 mb-6 font-['Montserrat']"
+          onClick={() => setIsDetailsOpen(true)}
+          className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-2 mb-6 font-['Montserrat']"
           whileHover={{ scale: 1.05 }}
-          aria-label="Toggle application details"
+          aria-label="Show application details"
         >
-          <FaInfoCircle /> {isDetailsOpen ? "Hide Application Details" : "Show Application Details"}
+          <FaInfoCircle /> Show Application Details
         </motion.button>
 
-        {/* Applicant Details Section */}
+        {/* Applicant Details Modal */}
         <AnimatePresence>
           {isDetailsOpen && (
             <motion.div
-              className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-60 p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Application Details</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {[
-                  { label: "Sr. No", value: applicationData.sNo, icon: <FileText className="w-5 h-5 text-gray-500" /> },
-                  { label: "Applicant Name", value: applicationData.applicantName, icon: <User className="w-5 h-5 text-gray-500" /> },
-                  { label: "Mobile No.", value: applicationData.mobileNumber, icon: <Phone className="w-5 h-5 text-gray-500" /> },
-                  { label: "GP, Block", value: applicationData.gpBlock, icon: <FileText className="w-5 h-5 text-gray-500" /> },
-                  { label: "Date of Application", value: applicationData.dateOfApplication, icon: <Calendar className="w-5 h-5 text-gray-500" /> },
-                  { label: "Email", value: applicationData.email, icon: <Mail className="w-5 h-5 text-gray-500" /> },
-                  { label: "Issue Letter No", value: applicationData.issueLetterNo, icon: <FileText className="w-5 h-5 text-gray-500" /> },
-                  { label: "Issue Date", value: applicationData.issueDate, icon: <Calendar className="w-5 h-5 text-gray-500" /> },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    {item.icon}
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">{item.label}</span>
-                      <p className="text-base font-medium text-gray-900">{item.value}</p>
-                    </div>
-                  </div>
-                ))}
-                <div className="sm:col-span-2">
-                  <span className="text-sm font-medium text-gray-600">Description</span>
-                  <p className="text-base text-gray-900">{applicationData.description}</p>
+              <motion.div
+                className="bg-white rounded-xl shadow-md p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                  <h3 className="text-lg font-semibold text-gray-800 font-['Montserrat']">Application Details</h3>
+                  <motion.button
+                    className="text-gray-500 hover:text-red-600 text-xl transition-colors"
+                    onClick={() => setIsDetailsOpen(false)}
+                    aria-label="Close details modal"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <IoClose />
+                  </motion.button>
                 </div>
-                <div className="sm:col-span-2">
-                  <span className="text-sm font-medium text-gray-600">Status</span>
-                  <p>
-                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-600 text-white shadow-sm">
-                      {applicationData.status === "In Process" && <FaSpinner className="animate-spin-slow" />}
-                      {applicationData.status}
-                    </span>
-                  </p>
-                </div>
-                <div className="sm:col-span-2">
-                  <span className="text-sm font-medium text-gray-600">Concerned Officer</span>
-                  <p className="text-base font-semibold text-gray-900">{applicationData.concernedOfficer}</p>
-                </div>
-                <div className="sm:col-span-2">
-                  <span className="text-sm font-medium text-gray-600">Pending Days</span>
-                  <p>
-                    <span
-                      className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${
-                        applicationData.pendingDays <= 10
-                          ? "bg-green-600 text-white"
-                          : applicationData.pendingDays <= 15
-                          ? "bg-orange-600 text-white"
-                          : "bg-red-600 text-white"
-                      }`}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {[
+                    { label: "Sr. No", value: applicationData.sNo || "N/A", icon: <FileText className="w-5 h-5 text-green-600" /> },
+                    { label: "Applicant Name", value: applicationData.applicantName, icon: <User className="w-5 h-5 text-green-600" /> },
+                    { label: "Mobile No.", value: applicationData.mobileNumber, icon: <Phone className="w-5 h-5 text-green-600" /> },
+                    { label: "GP, Block", value: applicationData.gpBlock, icon: <FileText className="w-5 h-5 text-green-600" /> },
+                    { label: "Date of Application", value: applicationData.dateOfApplication, icon: <Calendar className="w-5 h-5 text-green-600" /> },
+                    { label: "Email", value: applicationData.email, icon: <Mail className="w-5 h-5 text-green-600" /> },
+                    { label: "Issue Letter No", value: applicationData.issueLetterNo, icon: <FileText className="w-5 h-5 text-green-600" /> },
+                    { label: "Issue Date", value: applicationData.issueDate, icon: <Calendar className="w-5 h-5 text-green-600" /> },
+                  ].map((item, idx) => (
+                    <motion.div
+                      key={idx}
+                      className="flex items-start gap-3"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: idx * 0.05 }}
                     >
-                      {applicationData.pendingDays}
-                    </span>
-                  </p>
+                      {item.icon}
+                      <div>
+                        <span className="text-sm font-medium text-gray-600 font-['Montserrat']">{item.label}</span>
+                        <p className="text-base font-medium text-gray-900 font-['Montserrat']">{item.value}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                  <motion.div
+                    className="sm:col-span-2"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.4 }}
+                  >
+                    <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Description</span>
+                    <p className="text-base text-gray-900 font-['Montserrat']">{applicationData.description}</p>
+                  </motion.div>
+                  <motion.div
+                    className="sm:col-span-2"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.45 }}
+                  >
+                    <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Status</span>
+                    <p>
+                      <span
+                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusStyle(applicationData.status).badge} shadow-sm`}
+                      >
+                        {getStatusStyle(applicationData.status).icon}
+                        {applicationData.status}
+                      </span>
+                    </p>
+                  </motion.div>
+                  <motion.div
+                    className="sm:col-span-2"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.5 }}
+                  >
+                    <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Concerned Officer</span>
+                    <p className="text-base font-semibold text-gray-900 font-['Montserrat']">{applicationData.concernedOfficer}</p>
+                  </motion.div>
+                  <motion.div
+                    className="sm:col-span-2"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.55 }}
+                  >
+                    <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Pending Days</span>
+                    <p>
+                      <span
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${
+                          applicationData.pendingDays <= 10
+                            ? "bg-green-600 text-white"
+                            : applicationData.pendingDays <= 15
+                            ? "bg-amber-600 text-white"
+                            : "bg-red-600 text-white"
+                        }`}
+                      >
+                        {applicationData.pendingDays}
+                      </span>
+                    </p>
+                  </motion.div>
+                  {applicationData.pdfLink && (
+                    <motion.div
+                      className="sm:col-span-2"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.6 }}
+                    >
+                      <motion.a
+                        href={applicationData.pdfLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:text-green-800 font-semibold text-sm flex items-center gap-2 font-['Montserrat'] group"
+                        whileHover={{ scale: 1.05 }}
+                        aria-label="View attached document"
+                      >
+                        <FaFilePdf /> View Attached Document
+                        <span className="absolute hidden group-hover:block text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md -top-8 left-1/2 transform -translate-x-1/2 font-['Montserrat']">
+                          Open PDF
+                        </span>
+                      </motion.a>
+                    </motion.div>
+                  )}
                 </div>
-              </div>
-              {applicationData.pdfLink && (
-                <a
-                  href={applicationData.pdfLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#ff5010] hover:text-[#e6490f] font-semibold text-sm flex items-center gap-2 mt-4"
-                >
-                  <FaFilePdf /> View Attached Document
-                </a>
-              )}
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -571,7 +740,7 @@ const AssigningWork = ({ data, onClose }) => {
         <AnimatePresence>
           {isConfirmOpen && (
             <motion.div
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-60"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -585,13 +754,13 @@ const AssigningWork = ({ data, onClose }) => {
                 transition={{ duration: 0.3 }}
               >
                 <h3 className="text-lg font-semibold text-gray-900 text-center font-['Montserrat']">Confirm Assignment</h3>
-                <p className="text-sm text-gray-600 mt-2 text-center">
+                <p className="text-sm text-gray-600 mt-2 text-center font-['Montserrat']">
                   Assign this application to{" "}
-                  <span className="font-semibold text-[#ff5010]">{selectedDepartment?.label}</span>?
+                  <span className="font-semibold text-green-700">{selectedDepartment?.label}</span>?
                 </p>
                 <div className="mt-6 flex gap-4 justify-center">
                   <motion.button
-                    className="px-6 py-2.5 text-sm font-semibold text-white bg-[#ff5010] rounded-lg hover:bg-[#e6490f] transition font-['Montserrat'] shadow-sm"
+                    className="px-6 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition font-['Montserrat'] shadow-sm"
                     onClick={confirmSave}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -618,7 +787,7 @@ const AssigningWork = ({ data, onClose }) => {
         <AnimatePresence>
           {isEditConfirmOpen && (
             <motion.div
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-60"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -632,7 +801,7 @@ const AssigningWork = ({ data, onClose }) => {
                 transition={{ duration: 0.3 }}
               >
                 <h3 className="text-lg font-semibold text-gray-900 text-center font-['Montserrat']">Edit Assignment</h3>
-                <p className="text-sm text-gray-600 mt-2 text-center">Modify the department and note.</p>
+                <p className="text-sm text-gray-600 mt-2 text-center font-['Montserrat']">Modify the department and note.</p>
                 <div className="mt-4 space-y-4">
                   <Select
                     options={departments}
@@ -650,14 +819,14 @@ const AssigningWork = ({ data, onClose }) => {
                         borderColor: "#d1d5db",
                         borderRadius: "0.5rem",
                         boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-                        "&:hover": { borderColor: "#ff5010" },
+                        "&:hover": { borderColor: "#16a34a" },
                         padding: "0.25rem",
                         fontFamily: "'Montserrat', sans-serif",
                         fontSize: "0.875rem",
                       }),
                       option: (base, { isFocused, isSelected }) => ({
                         ...base,
-                        backgroundColor: isSelected ? "#ff5010" : isFocused ? "#fff7f0" : "white",
+                        backgroundColor: isSelected ? "#16a34a" : isFocused ? "#f0fff4" : "white",
                         color: isSelected ? "white" : "#111827",
                         cursor: "pointer",
                         fontFamily: "'Montserrat', sans-serif",
@@ -671,10 +840,10 @@ const AssigningWork = ({ data, onClose }) => {
                     rows={3}
                     value={editNote}
                     onChange={(e) => setEditNote(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#ff5010] focus:border-[#ff5010] transition font-['Montserrat'] shadow-sm"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600 transition font-['Montserrat'] shadow-sm"
                     aria-label="Edit assignment note"
                   />
-                  <label className="flex items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#ff5010] transition bg-white shadow-sm">
+                  <label className="flex items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-600 transition bg-white shadow-sm">
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
@@ -683,7 +852,7 @@ const AssigningWork = ({ data, onClose }) => {
                       aria-label="Upload new document"
                     />
                     <div className="flex items-center gap-2 text-gray-600">
-                      <FaUpload className="text-[#ff5010]" />
+                      <FaUpload className="text-green-600" />
                       <span className="text-sm font-['Montserrat']">
                         {uploadedFile ? uploadedFile.name : "Upload new document (optional, PDF, JPEG, PNG, max 5MB)"}
                       </span>
@@ -692,7 +861,7 @@ const AssigningWork = ({ data, onClose }) => {
                 </div>
                 <div className="mt-6 flex gap-4 justify-center">
                   <motion.button
-                    className="px-6 py-2.5 text-sm font-semibold text-white bg-[#ff5010] rounded-lg hover:bg-[#e6490f] transition font-['Montserrat'] shadow-sm"
+                    className="px-6 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition font-['Montserrat'] shadow-sm"
                     onClick={confirmEdit}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -724,6 +893,23 @@ const AssigningWork = ({ data, onClose }) => {
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+          }
+          .shadow-sm {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          }
+          .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          }
+          .shadow-2xl {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          }
+          .transition-all {
+            transition: all 0.3s ease-in-out;
+          }
+          input:focus,
+          button:focus,
+          select:focus {
+            outline: none;
           }
         `}</style>
       </motion.div>
