@@ -14,6 +14,16 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  // Determine dynamic status based on timeline (from AssigningWork)
+  const determineStatus = (timeline) => {
+    if (!timeline || timeline.length === 0) return "Pending";
+    const latestEntry = timeline[timeline.length - 1].section.toLowerCase();
+    if (latestEntry.includes("received") || latestEntry.includes("assigned")) return "Pending";
+    if (latestEntry.includes("compliance")) return "Compliance";
+    if (latestEntry.includes("dismissed")) return "Dismissed";
+    return "In Process";
+  };
+
   // Function to update applications from localStorage and JSON data
   const updateApplications = () => {
     const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
@@ -21,7 +31,15 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
     // Map localStorage data to match WorkAssignedApplicationTable structure
     const mappedStoredApplications = storedApplications
       .map((app, index) => {
-        const status = app.status || "Pending"; // Fetch status directly from localStorage
+        const timeline = app.timeline || [
+          {
+            section: "Application Received",
+            comment: `Application received at ${app.block || "N/A"} on ${app.applicationDate}`,
+            date: app.applicationDate,
+            pdfLink: app.attachment || null,
+          },
+        ];
+        const status = determineStatus(timeline); // Use determineStatus for status
         return {
           applicationId: app.ApplicantId,
           sNo: index + 1, // Temporary sNo
@@ -35,6 +53,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
           attachment: app.attachment,
           concernedOfficer: app.concernedOfficer || "N/A",
           isFromLocalStorage: true,
+          timeline: timeline, // Include timeline for status calculation
         };
       })
       .sort((a, b) => new Date(b.dateOfApplication) - new Date(a.dateOfApplication));
@@ -44,12 +63,25 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
     const filteredData = data.filter((item) => !storedAppIds.has(item.applicationId));
     const combinedData = [
       ...mappedStoredApplications,
-      ...filteredData.map((item, index) => ({
-        ...item,
-        sNo: mappedStoredApplications.length + index + 1,
-        isFromLocalStorage: false,
-        pendingDays: calculatePendingDays(item.issueDate, item.status),
-      })),
+      ...filteredData.map((item, index) => {
+        const timeline = item.timeline || [
+          {
+            section: "Application Received",
+            comment: `Application received at ${item.gpBlock || "N/A"} on ${item.dateOfApplication}`,
+            date: item.dateOfApplication,
+            pdfLink: item.attachment || null,
+          },
+        ];
+        const status = determineStatus(timeline); // Use determineStatus for JSON data
+        return {
+          ...item,
+          sNo: mappedStoredApplications.length + index + 1,
+          isFromLocalStorage: false,
+          pendingDays: calculatePendingDays(item.issueDate, status),
+          status: status,
+          timeline: timeline,
+        };
+      }),
     ].map((item, index) => ({ ...item, sNo: index + 1 })); // Re-index sNo
 
     setApplications(combinedData);
@@ -112,7 +144,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
   };
 
   return (
-    <div className="md:pl-20 lg:pl-20">
+    <div className="md:pl-16 lg:pl-16">
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 shadow-xl bg-white mx-auto max-w-8xl p-6 my-6">
         <table className="w-full table-auto">
@@ -167,10 +199,10 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
-                      aria-label={`Status: ${caseDetail.status === "Compliance" ? "Updated on time" : caseDetail.status}`}
+                      aria-label={`Status: ${caseDetail.status}`}
                     >
                       {caseDetail.status === "In Process" && <FaSpinner className="animate-spin-slow" />}
-                      {caseDetail.status === "Compliance" ? "Updated on time" : caseDetail.status}
+                      {caseDetail.status}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -228,10 +260,10 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                 </h3>
                 <span
                   className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
-                  aria-label={`Status: ${caseDetail.status === "Compliance" ? "Updated on time" : caseDetail.status}`}
+                  aria-label={`Status: ${caseDetail.status}`}
                 >
                   {caseDetail.status === "In Process" && <FaSpinner className="animate-spin-slow" />}
-                  {caseDetail.status === "Compliance" ? "Updated on time" : caseDetail.status}
+                  {caseDetail.status}
                 </span>
               </div>
               <div className="space-y-2 text-xs text-gray-700 font-['Montserrat']">

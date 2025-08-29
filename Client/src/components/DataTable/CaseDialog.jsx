@@ -62,6 +62,7 @@ const CaseDialog = ({ data, onClose }) => {
     updateApplicationData();
     const handleStorageChange = (event) => {
       if (event.key === "applications") {
+        console.log("CaseDialog: Storage event triggered, updating application data...");
         updateApplicationData();
       }
     };
@@ -111,7 +112,7 @@ const CaseDialog = ({ data, onClose }) => {
         app.ApplicantId === applicationData.applicationId
           ? {
               ...app,
-              status: "Compliance Completed",
+              status: "Compliance", // Store "Compliance" instead of "Compliance Completed"
               timeline: [
                 ...(app.timeline || [
                   {
@@ -122,7 +123,7 @@ const CaseDialog = ({ data, onClose }) => {
                   },
                 ]),
                 {
-                  section: "Compliance Completed",
+                  section: "Compliance Completed", // Keep timeline entry as "Compliance Completed"
                   comment: comment || "Compliance marked as completed",
                   date: new Date().toLocaleDateString("en-GB"),
                   pdfLink: uploadedFile?.url || null,
@@ -131,10 +132,11 @@ const CaseDialog = ({ data, onClose }) => {
             }
           : app
       );
+      console.log("CaseDialog: Saving to localStorage:", updatedApplications);
       localStorage.setItem("applications", JSON.stringify(updatedApplications));
       setApplicationData((prev) => ({
         ...prev,
-        status: "Compliance Completed",
+        status: "Compliance", // Update state to "Compliance"
         timeline: [
           ...(prev.timeline || [
             {
@@ -252,7 +254,7 @@ const CaseDialog = ({ data, onClose }) => {
               <p>
                 <span
                   className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${
-                    applicationData.status === "Compliance Completed"
+                    applicationData.status === "Compliance" || applicationData.status === "Compliance Completed"
                       ? "bg-green-600 text-white"
                       : "bg-blue-500 text-white"
                   }`}

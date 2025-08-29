@@ -7,21 +7,38 @@ const ApplicationTable = ({ data, onRowClick }) => {
 
   // Calculate pending days based on issue date and status
   const calculatePendingDays = (issueDate, status) => {
-    if (status === "Compliance" || status === "Compliance Completed") return 0; // Updated to handle both
+    if (status === "Compliance" || status === "Compliance Completed") return 0; // Handle both statuses
     const issue = new Date(issueDate);
     const today = new Date();
     const diffTime = Math.abs(today - issue);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  // Determine dynamic status based on timeline (aligned with CaseDialog)
+  const determineStatus = (timeline) => {
+    if (!timeline || timeline.length === 0) return "Pending";
+    const latestEntry = timeline[timeline.length - 1].section.toLowerCase();
+    if (latestEntry.includes("received")) return "Pending";
+    if (latestEntry.includes("compliance completed")) return "Compliance"; // Map to Compliance
+    return "In Progress"; // Default to In Progress for other cases
+  };
+
   // Function to update applications from localStorage and JSON data
   const updateApplications = () => {
     const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
 
-    // Map localStorage data to match WorkAssignedApplicationTable structure
+    // Map localStorage data to match ApplicationTable structure
     const mappedStoredApplications = storedApplications
       .map((app, index) => {
-        const status = app.status || "Pending"; // Fetch status directly from localStorage
+        const timeline = app.timeline || [
+          {
+            section: "Application Received",
+            comment: `Application received at ${app.block || "N/A"} on ${app.applicationDate}`,
+            date: app.applicationDate,
+            pdfLink: app.attachment || null,
+          },
+        ];
+        const status = determineStatus(timeline); // Use determineStatus for status
         return {
           applicationId: app.ApplicantId,
           sNo: index + 1, // Temporary sNo
@@ -35,6 +52,7 @@ const ApplicationTable = ({ data, onRowClick }) => {
           attachment: app.attachment,
           concernedOfficer: app.concernedOfficer || "N/A",
           isFromLocalStorage: true,
+          timeline: timeline, // Include timeline for status calculation
         };
       })
       .sort((a, b) => new Date(b.dateOfApplication) - new Date(a.dateOfApplication));
@@ -44,12 +62,25 @@ const ApplicationTable = ({ data, onRowClick }) => {
     const filteredData = data.filter((item) => !storedAppIds.has(item.applicationId));
     const combinedData = [
       ...mappedStoredApplications,
-      ...filteredData.map((item, index) => ({
-        ...item,
-        sNo: mappedStoredApplications.length + index + 1,
-        isFromLocalStorage: false,
-        pendingDays: calculatePendingDays(item.issueDate, item.status),
-      })),
+      ...filteredData.map((item, index) => {
+        const timeline = item.timeline || [
+          {
+            section: "Application Received",
+            comment: `Application received at ${item.gpBlock || "N/A"} on ${item.dateOfApplication}`,
+            date: item.dateOfApplication,
+            pdfLink: item.attachment || null,
+          },
+        ];
+        const status = determineStatus(timeline); // Use determineStatus for JSON data
+        return {
+          ...item,
+          sNo: mappedStoredApplications.length + index + 1,
+          isFromLocalStorage: false,
+          pendingDays: calculatePendingDays(item.issueDate, status),
+          status: status,
+          timeline: timeline,
+        };
+      }),
     ].map((item, index) => ({ ...item, sNo: index + 1 })); // Re-index sNo
 
     setApplications(combinedData);
@@ -60,6 +91,7 @@ const ApplicationTable = ({ data, onRowClick }) => {
     updateApplications();
     const handleStorageChange = (event) => {
       if (event.key === "applications") {
+        console.log("Storage event triggered, updating applications...");
         updateApplications();
       }
     };
@@ -67,6 +99,7 @@ const ApplicationTable = ({ data, onRowClick }) => {
 
     // Polling for same-tab updates
     const intervalId = setInterval(() => {
+      console.log("Polling for updates...");
       updateApplications();
     }, 1000); // Check every 1 second
 
@@ -99,14 +132,11 @@ const ApplicationTable = ({ data, onRowClick }) => {
   const getStatusStyle = (status) => {
     switch (status) {
       case "Compliance":
-      case "Compliance Completed":
         return "bg-green-500 text-white whitespace-nowrap";
-      case "In Process":
+      case "In Progress":
         return "bg-blue-500 text-white whitespace-nowrap";
       case "Pending":
         return "bg-amber-500 text-white whitespace-nowrap";
-      case "Dismissed":
-        return "bg-red-500 text-white whitespace-nowrap";
       default:
         return "bg-gray-500 text-white whitespace-nowrap";
     }
@@ -170,7 +200,7 @@ const ApplicationTable = ({ data, onRowClick }) => {
                       className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
                       aria-label={`Status: ${caseDetail.status}`}
                     >
-                      {caseDetail.status === "In Process" && <FaSpinner className="animate-spin" />}
+                      {caseDetail.status === "In Progress" && <FaSpinner className="animate-spin" />}
                       {caseDetail.status}
                     </span>
                   </td>
@@ -231,7 +261,7 @@ const ApplicationTable = ({ data, onRowClick }) => {
                   className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
                   aria-label={`Status: ${caseDetail.status}`}
                 >
-                  {caseDetail.status === "In Process" && <FaSpinner className="animate-spin" />}
+                  {caseDetail.status === "In Progress" && <FaSpinner className="animate-spin" />}
                   {caseDetail.status}
                 </span>
               </div>
