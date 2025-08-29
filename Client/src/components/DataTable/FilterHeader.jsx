@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { RiFileExcel2Fill } from "react-icons/ri";
 import { CalendarDays } from "lucide-react";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css"; // Import DatePicker CSS
+import "react-datepicker/dist/react-datepicker.css";
 import DropdownButton from "../DropdownButton";
 
 const FilterHeader = ({
@@ -34,40 +34,44 @@ const FilterHeader = ({
   };
 
   return (
-    <div className="flex flex-col ml-16 p-6 gap-3 mb-4 relative" style={{ zIndex: 100 }}>
+    <div className=" relative z-10 bg-white shadow-lg rounded-xl p-6 mx-4 md:mx-16 mb-6 max-w-10xl">
       {/* Header and Search */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <h2 className="text-2xl font-semibold text-gray-700">Applications List</h2>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">Applications List</h2>
         <input
           type="text"
           placeholder="Search by name or description"
-          className="border border-gray-300 bg-white px-4 py-2 text-sm rounded-md focus:ring-[#ff5010] w-full md:w-80"
+          className="border border-gray-200 bg-gray-50 text-sm rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-80 transition-all"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div>
-          <p className="text-sm text-gray-500">
-            Showing {filteredCount} application{filteredCount !== 1 && "s"} filtered by
-            <strong className="text-gray-700"> {selectedStatus || "All"} status</strong>,
-            <strong className="text-gray-700"> {selectedDepartment || "All"} department</strong>,
-            <strong className="text-gray-700"> {selectedBlock || "All"} block</strong>,
-            <strong className="text-gray-700"> {selectedDate || "All"} date</strong>.
+      {/* Filters and Actions */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-gray-600">
+            Showing <span className="font-semibold">{filteredCount}</span> application
+            {filteredCount !== 1 ? "s" : ""} filtered by
+            <span className="font-semibold text-blue-600"> {selectedStatus || "All"} status</span>,
+            <span className="font-semibold text-blue-600"> {selectedDepartment || "All"} department</span>,
+            <span className="font-semibold text-blue-600"> {selectedBlock || "All"} block</span>,
+            <span className="font-semibold text-blue-600"> {selectedDate || "All"} date</span>.
           </p>
 
-          <div className="flex flex-wrap gap-3 mt-1">
-            {/* Status */}
+          <div className="flex flex-wrap gap-3">
+            {/* Status Dropdown */}
             <DropdownButton
               label={selectedStatus || "Select Status"}
               items={[
                 { label: "All", onClick: () => setSelectedStatus("") },
                 { label: "In Process", onClick: () => setSelectedStatus("In Process") },
               ]}
+              className="bg-gray-50 hover:bg-gray-100 border-gray-200"
+              menuClassName="z-[100]" // Increased z-index to appear above table header
             />
 
-            {/* Department */}
+            {/* Department Dropdown */}
             <DropdownButton
               label={selectedDepartment || "Select Department"}
               items={[
@@ -79,9 +83,11 @@ const FilterHeader = ({
                 { label: "BDO Tarari", onClick: () => setSelectedDepartment("BDO Tarari") },
                 { label: "RDO Mohsin Khan", onClick: () => setSelectedDepartment("RDO Mohsin Khan") },
               ]}
+              className="bg-gray-50 hover:bg-gray-100 border-gray-200"
+              menuClassName="z-[100]" // Increased z-index to appear above table header
             />
 
-            {/* Block */}
+            {/* Block Dropdown */}
             <DropdownButton
               label={selectedBlock || "Select Block"}
               items={[
@@ -94,10 +100,12 @@ const FilterHeader = ({
                 { label: "Behea", onClick: () => setSelectedBlock("Behea") },
                 { label: "Sahar", onClick: () => setSelectedBlock("Sahar") },
               ]}
+              className="bg-gray-50 hover:bg-gray-100 border-gray-200"
+              menuClassName="z-[100]" // Increased z-index to appear above table header
             />
 
             {/* Date Range Picker */}
-            <div className="flex items-center bg-white border px-3 py-2 rounded-xl text-sm space-x-1 relative">
+            <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm space-x-2">
               <CalendarDays className="text-gray-500" size={16} />
               <DatePicker
                 selected={startDate}
@@ -106,10 +114,10 @@ const FilterHeader = ({
                   handleDateChange(date, endDate);
                 }}
                 placeholderText="From"
-                className="outline-none bg-transparent w-[90px]"
+                className="outline-none bg-transparent w-24 text-sm"
                 dateFormat="dd/MM/yyyy"
-                popperClassName="z-[3000]" // Increased z-index further
-                popperPlacement="top" // Force upward direction
+                popperClassName="z-[100]" // Match dropdown z-index
+                popperPlacement="bottom-start"
               />
               <span className="text-gray-400">-</span>
               <CalendarDays className="text-gray-500" size={16} />
@@ -120,17 +128,17 @@ const FilterHeader = ({
                   handleDateChange(startDate, date);
                 }}
                 placeholderText="To"
-                className="outline-none bg-transparent w-[90px]"
+                className="outline-none bg-transparent w-24 text-sm"
                 dateFormat="dd/MM/yyyy"
-                popperClassName="z-[3000]" // Increased z-index further
-                popperPlacement="top" // Force upward direction
+                popperClassName="z-[100]" // Match dropdown z-index
+                popperPlacement="bottom-start"
               />
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap justify-end gap-3 mt-3">
+        <div className="flex flex-wrap justify-end gap-3">
           <button
             onClick={() => {
               setSearchQuery("");
@@ -141,36 +149,24 @@ const FilterHeader = ({
               setStartDate(null);
               setEndDate(null);
             }}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-5 py-3 rounded-xl font-medium shadow-md text-sm"
+            className="bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-300 font-medium text-sm transition-all"
           >
             Reset Filters
           </button>
           <button
             onClick={onAddClick}
-            className="flex items-center gap-2 bg-[#10b981] hover:bg-[#0ea769] text-white px-5 py-3 rounded-xl font-medium shadow-md text-sm"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 font-medium text-sm transition-all"
           >
             + Add New Application
           </button>
           <motion.button
             onClick={onExcelClick}
-            initial="rest"
-            whileHover="hover"
-            animate="rest"
-            className="flex items-center gap-3 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-6 py-3 rounded-xl shadow-lg hover:scale-[1.02] font-semibold text-sm"
+            initial={{ scale: 1 }}
+            whileHover={{ scale: 1.05 }}
+            className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2.5 rounded-lg font-medium text-sm shadow-md transition-all"
           >
-            <motion.div
-              variants={{ rest: { x: 0 }, hover: { x: 40 } }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              <RiFileExcel2Fill className="text-white text-xl" />
-            </motion.div>
-            <motion.span
-              variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }}
-              transition={{ duration: 0.3 }}
-              className="text-xs"
-            >
-              Download Excel
-            </motion.span>
+            <RiFileExcel2Fill className="text-white text-lg" />
+            <span>Download Excel</span>
           </motion.button>
         </div>
       </div>
