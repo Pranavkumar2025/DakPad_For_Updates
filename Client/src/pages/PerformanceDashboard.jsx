@@ -327,6 +327,8 @@ const ApplicationDashboard = () => {
       tableType = "pending";
     } else if (metricName.toLowerCase().includes("resolved")) {
       tableType = "resolved";
+    } else if (metricName.toLowerCase().includes("blocks involved")) {
+      tableType = "blocks";
     }
     setActiveTable(tableType);
 
@@ -357,6 +359,38 @@ const ApplicationDashboard = () => {
     }
   };
 
+  // Function to get unique blocks for display
+  const getUniqueBlocks = () => {
+    const { blocks } = PerformanceJson.dashboard;
+    
+    return blocks.map((block, index) => {
+      const blockApplications = filteredApplicationData.filter(
+        (app) => app["GP, Block"] && app["GP, Block"].toLowerCase().includes(block.name.toLowerCase())
+      );
+      const totalApps = blockApplications.length;
+      const pendingApps = blockApplications.filter(
+        (app) => app.Status === "Pending"
+      ).length;
+      const resolvedApps = blockApplications.filter(
+        (app) => app.Status === "Compliance"
+      ).length;
+      const rejectedApps = blockApplications.filter(
+        (app) => app.Status === "Not Accepted"
+      ).length;
+
+      return {
+        id: index + 1,
+        blockName: block.name,
+        division: block.division,
+        totalApplications: totalApps,
+        pendingApplications: pendingApps,
+        resolvedApplications: resolvedApps,
+        rejectedApplications: rejectedApps,
+        resolvedPercentage: totalApps > 0 ? Math.round((resolvedApps / totalApps) * 100) : 0
+      };
+    });
+  };
+
   // Function to get table title
   const getTableTitle = () => {
     switch (activeTable) {
@@ -364,6 +398,8 @@ const ApplicationDashboard = () => {
         return "Pending Applications";
       case "resolved":
         return "Resolved Applications";
+      case "blocks":
+        return "All Blocks Involved";
       default:
         return "All Applications";
     }
@@ -1094,7 +1130,9 @@ const ApplicationDashboard = () => {
                     (activeTable === "pending" &&
                       metric.name.toLowerCase().includes("pending")) ||
                     (activeTable === "resolved" &&
-                      metric.name.toLowerCase().includes("resolved"));
+                      metric.name.toLowerCase().includes("resolved")) ||
+                    (activeTable === "blocks" &&
+                      metric.name.toLowerCase().includes("blocks"));
 
                   return (
                     <div
@@ -1292,100 +1330,204 @@ const ApplicationDashboard = () => {
                     }
                     )
                   </button>
+                  <button
+                    onClick={() => setActiveTable("blocks")}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                      activeTable === "blocks"
+                        ? "bg-blue-600 text-white shadow-lg"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    Blocks ({getUniqueBlocks().length})
+                  </button>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-gray-100/50">
-                        <th className="p-3 text-gray-700 font-medium text-sm">
-                          S.No.
-                        </th>
-                        <th className="p-3 text-gray-700 font-medium text-sm">
-                          Date
-                        </th>
-                        <th className="p-3 text-gray-700 font-medium text-sm">
-                          Complainant
-                        </th>
-                        <th className="p-3 text-gray-700 font-medium text-sm">
-                          GP, Block
-                        </th>
-                        <th className="p-3 text-gray-700 font-medium text-sm">
-                          Concerned Officer
-                        </th>
-                        <th className="p-3 text-gray-700 font-medium text-sm">
-                          Pending Days
-                        </th>
-                        <th className="p-3 text-gray-700 font-medium text-sm">
-                          Status
-                        </th>
+                        {activeTable === "blocks" ? (
+                          <>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              S.No.
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Block Name
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Division
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Total Applications
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Pending
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Resolved
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Rejected
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Resolution Rate
+                            </th>
+                          </>
+                        ) : (
+                          <>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              S.No.
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Date
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Complainant
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              GP, Block
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Concerned Officer
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Pending Days
+                            </th>
+                            <th className="p-3 text-gray-700 font-medium text-sm">
+                              Status
+                            </th>
+                          </>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
-                      {getFilteredApplications().length > 0 ? (
-                        getFilteredApplications().map((app, index) => {
-                          const avgDays = Number(app["Pending Days"]) || 0;
-                          let colorClass = "";
-                          if (avgDays <= 30) colorClass = "text-green-600";
-                          else if (avgDays <= 60)
-                            colorClass = "text-yellow-600";
-                          else colorClass = "text-red-600";
-
-                          // Handle inconsistent S.No field names in the data
-                          const serialNo =
-                            app["S.No."] || app["S.No"] || index + 1;
-
-                          return (
+                      {activeTable === "blocks" ? (
+                        getUniqueBlocks().length > 0 ? (
+                          getUniqueBlocks().map((block, index) => (
                             <tr
-                              key={`app-${serialNo}-${index}`}
+                              key={`block-${block.id}`}
                               className="border-b border-gray-200/50 hover:bg-gray-50/50 transition-colors"
                             >
                               <td className="p-3 text-gray-600 text-sm">
-                                {serialNo}
+                                {block.id}
+                              </td>
+                              <td className="p-3 text-gray-600 text-sm font-medium">
+                                {block.blockName}
+                              </td>
+                              <td className="p-3 text-blue-600 text-sm">
+                                {block.division}
                               </td>
                               <td className="p-3 text-gray-600 text-sm">
-                                {formatDate(app.Date)}
+                                {block.totalApplications}
                               </td>
-                              <td className="p-3 text-gray-600 text-sm">
-                                {app["Name of the complainant"]}
+                              <td className="p-3 text-yellow-600 text-sm font-medium">
+                                {block.pendingApplications}
                               </td>
-                              <td className="p-3 text-gray-600 text-sm">
-                                {app["GP, Block"]}
+                              <td className="p-3 text-green-600 text-sm font-medium">
+                                {block.resolvedApplications}
                               </td>
-                              <td className="p-3 text-gray-600 text-sm">
-                                {app["Concerned Officer"]}
+                              <td className="p-3 text-red-600 text-sm font-medium">
+                                {block.rejectedApplications}
                               </td>
-                              <td
-                                className={`p-3 font-medium text-sm ${colorClass}`}
-                              >
-                                {app["Pending Days"]}
-                              </td>
-                              <td className="p-3 text-gray-600 text-sm">
-                                <span
-                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    app.Status === "Pending"
-                                      ? "bg-yellow-100 text-yellow-800"
-                                      : app.Status === "Compliance"
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-red-100 text-red-800"
-                                  }`}
-                                >
-                                  {app.Status}
-                                </span>
+                              <td className="p-3 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className={`font-medium ${
+                                    block.resolvedPercentage >= 70 ? 'text-green-600' :
+                                    block.resolvedPercentage >= 40 ? 'text-yellow-600' : 'text-red-600'
+                                  }`}>
+                                    {block.resolvedPercentage}%
+                                  </span>
+                                  <div className="w-12 bg-gray-200 rounded-full h-2">
+                                    <div
+                                      className={`h-2 rounded-full ${
+                                        block.resolvedPercentage >= 70 ? 'bg-green-500' :
+                                        block.resolvedPercentage >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                                      }`}
+                                      style={{
+                                        width: `${Math.max(block.resolvedPercentage, 2)}%`,
+                                      }}
+                                    ></div>
+                                  </div>
+                                </div>
                               </td>
                             </tr>
-                          );
-                        })
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan="8"
+                              className="p-3 text-center text-gray-500 text-sm"
+                            >
+                              No blocks available.
+                            </td>
+                          </tr>
+                        )
                       ) : (
-                        <tr>
-                          <td
-                            colSpan="7"
-                            className="p-3 text-center text-gray-500 text-sm"
-                          >
-                            No {activeTable === "total" ? "" : activeTable}{" "}
-                            applications available.
-                          </td>
-                        </tr>
+                        getFilteredApplications().length > 0 ? (
+                          getFilteredApplications().map((app, index) => {
+                            const avgDays = Number(app["Pending Days"]) || 0;
+                            let colorClass = "";
+                            if (avgDays <= 30) colorClass = "text-green-600";
+                            else if (avgDays <= 60)
+                              colorClass = "text-yellow-600";
+                            else colorClass = "text-red-600";
+
+                            // Handle inconsistent S.No field names in the data
+                            const serialNo =
+                              app["S.No."] || app["S.No"] || index + 1;
+
+                            return (
+                              <tr
+                                key={`app-${serialNo}-${index}`}
+                                className="border-b border-gray-200/50 hover:bg-gray-50/50 transition-colors"
+                              >
+                                <td className="p-3 text-gray-600 text-sm">
+                                  {serialNo}
+                                </td>
+                                <td className="p-3 text-gray-600 text-sm">
+                                  {formatDate(app.Date)}
+                                </td>
+                                <td className="p-3 text-gray-600 text-sm">
+                                  {app["Name of the complainant"]}
+                                </td>
+                                <td className="p-3 text-gray-600 text-sm">
+                                  {app["GP, Block"]}
+                                </td>
+                                <td className="p-3 text-gray-600 text-sm">
+                                  {app["Concerned Officer"]}
+                                </td>
+                                <td
+                                  className={`p-3 font-medium text-sm ${colorClass}`}
+                                >
+                                  {app["Pending Days"]}
+                                </td>
+                                <td className="p-3 text-gray-600 text-sm">
+                                  <span
+                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                      app.Status === "Pending"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : app.Status === "Compliance"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {app.Status}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan="7"
+                              className="p-3 text-center text-gray-500 text-sm"
+                            >
+                              No {activeTable === "total" ? "" : activeTable}{" "}
+                              applications available.
+                            </td>
+                          </tr>
+                        )
                       )}
                     </tbody>
                   </table>
@@ -1393,35 +1535,69 @@ const ApplicationDashboard = () => {
 
                 {/* Table Summary */}
                 <div className="mt-4 p-3 bg-gray-50/50 rounded-lg">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div className="text-center">
-                      <span className="text-gray-500">Total Applications</span>
-                      <p className="text-lg font-semibold text-gray-700">
-                        {filteredApplicationData.length}
-                      </p>
+                  {activeTable === "blocks" ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="text-center">
+                        <span className="text-gray-500">Total Blocks</span>
+                        <p className="text-lg font-semibold text-gray-700">
+                          {getUniqueBlocks().length}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-gray-500">
+                          Average Resolution Rate
+                        </span>
+                        <p className="text-lg font-semibold text-blue-600">
+                          {getUniqueBlocks().length > 0 
+                            ? Math.round(
+                                getUniqueBlocks().reduce((sum, block) => sum + block.resolvedPercentage, 0) /
+                                getUniqueBlocks().length
+                              )
+                            : 0}%
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-gray-500">Best Performing Block</span>
+                        <p className="text-lg font-semibold text-green-600">
+                          {getUniqueBlocks().length > 0 
+                            ? getUniqueBlocks().reduce((best, current) => 
+                                current.resolvedPercentage > best.resolvedPercentage ? current : best
+                              ).blockName
+                            : "N/A"}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <span className="text-gray-500">
-                        Average Pending Days
-                      </span>
-                      <p className="text-lg font-semibold text-yellow-600">
-                        {averageDays} days
-                      </p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="text-center">
+                        <span className="text-gray-500">Total Applications</span>
+                        <p className="text-lg font-semibold text-gray-700">
+                          {filteredApplicationData.length}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-gray-500">
+                          Average Pending Days
+                        </span>
+                        <p className="text-lg font-semibold text-yellow-600">
+                          {averageDays} days
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-gray-500">Resolution Rate</span>
+                        <p className="text-lg font-semibold text-green-600">
+                          {Math.round(
+                            (filteredApplicationData.filter(
+                              (app) => app.Status === "Compliance"
+                            ).length /
+                              filteredApplicationData.length) *
+                              100
+                          )}
+                          %
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <span className="text-gray-500">Resolution Rate</span>
-                      <p className="text-lg font-semibold text-green-600">
-                        {Math.round(
-                          (filteredApplicationData.filter(
-                            (app) => app.Status === "Compliance"
-                          ).length /
-                            filteredApplicationData.length) *
-                            100
-                        )}
-                        %
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

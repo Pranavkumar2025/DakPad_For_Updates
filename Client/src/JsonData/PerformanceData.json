@@ -98,6 +98,164 @@
         "note": "Data updated as of August 28, 2025, covering all 25 blocks"
       }
     ],
+    "blocks": [
+      {
+        "name": "Patna",
+        "division": "Patna Division"
+      },
+      {
+        "name": "Nalanda",
+        "division": "Patna Division"
+      },
+      {
+        "name": "Bhojpur",
+        "division": "Patna Division"
+      },
+      {
+        "name": "Rohtas",
+        "division": "Patna Division"
+      },
+      {
+        "name": "Buxar",
+        "division": "Patna Division"
+      },
+      {
+        "name": "Kaimur",
+        "division": "Patna Division"
+      },
+      {
+        "name": "Muzaffarpur",
+        "division": "Tirhut Division"
+      },
+      {
+        "name": "West Champaran",
+        "division": "Tirhut Division"
+      },
+      {
+        "name": "East Champaran",
+        "division": "Tirhut Division"
+      },
+      {
+        "name": "Sitamarhi",
+        "division": "Tirhut Division"
+      },
+      {
+        "name": "Sheohar",
+        "division": "Tirhut Division"
+      },
+      {
+        "name": "Vaishali",
+        "division": "Tirhut Division"
+      },
+      {
+        "name": "Gaya",
+        "division": "Magadh Division"
+      },
+      {
+        "name": "Nawada",
+        "division": "Magadh Division"
+      },
+      {
+        "name": "Jehanabad",
+        "division": "Magadh Division"
+      },
+      {
+        "name": "Aurangabad",
+        "division": "Magadh Division"
+      },
+      {
+        "name": "Arwal",
+        "division": "Magadh Division"
+      },
+      {
+        "name": "Purnia",
+        "division": "Purnia Division"
+      },
+      {
+        "name": "Katihar",
+        "division": "Purnia Division"
+      },
+      {
+        "name": "Kishanganj",
+        "division": "Purnia Division"
+      },
+      {
+        "name": "Araria",
+        "division": "Purnia Division"
+      },
+      {
+        "name": "Saharsa",
+        "division": "Kosi Division"
+      },
+      {
+        "name": "Madhepura",
+        "division": "Kosi Division"
+      },
+      {
+        "name": "Supaul",
+        "division": "Kosi Division"
+      },
+      {
+        "name": "Darbhanga",
+        "division": "Darbhanga Division"
+      },
+      {
+        "name": "Madhubani",
+        "division": "Darbhanga Division"
+      },
+      {
+        "name": "Samastipur",
+        "division": "Darbhanga Division"
+      },
+      {
+        "name": "Saran",
+        "division": "Saran Division"
+      },
+      {
+        "name": "Siwan",
+        "division": "Saran Division"
+      },
+      {
+        "name": "Gopalganj",
+        "division": "Saran Division"
+      },
+      {
+        "name": "Bhagalpur",
+        "division": "Bhagalpur Division"
+      },
+      {
+        "name": "Banka",
+        "division": "Bhagalpur Division"
+      },
+      {
+        "name": "Munger",
+        "division": "Munger Division"
+      },
+      {
+        "name": "Jamui",
+        "division": "Munger Division"
+      },
+      {
+        "name": "Khagaria",
+        "division": "Munger Division"
+      },
+      {
+        "name": "Lakhisarai",
+        "division": "Munger Division"
+      },
+      {
+        "name": "Begusarai",
+        "division": "Munger Division"
+      },
+      {
+        "name": "Sheikhpura",
+        "division": "Munger Division"
+      },
+      {
+        "name": "Other",
+        "division": "Uncategorized"
+      }
+    ],
     "applicationData": [
       {
         "S.No.": 1,
