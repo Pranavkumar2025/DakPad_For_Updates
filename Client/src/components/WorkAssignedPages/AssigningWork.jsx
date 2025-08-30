@@ -359,7 +359,7 @@ const AssigningWork = ({ data, onClose }) => {
         {/* Header */}
         <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
           <h2 className="text-xl font-semibold text-gray-900 font-['Montserrat']">
-            Assign Work: <span className="text-green-700">{applicationData.applicationId}</span>
+            Application Id: <span className="text-green-700">{applicationData.applicationId}</span>
           </h2>
           <motion.button
             className="text-gray-500 hover:text-red-600 text-xl transition-colors"
