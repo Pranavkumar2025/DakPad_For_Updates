@@ -204,12 +204,12 @@ const CaseDialog = ({ data, onClose }) => {
 
         <motion.span
           onClick={scrollToMarkCompliance}
-          className="text-green-600 hover:text-green-800 hover:underline text-sm font-semibold cursor-pointer mb-6 block"
-          whileHover={{ scale: 1.05 }}
+          className="text-green-600 hover:text-blue-800 hover:underline text-md font-semibold cursor-pointer mb-6 block"
+          whileHover={{ scale: .997 }}
           whileTap={{ scale: 0.95 }}
           aria-label="Visit Mark Compliance"
         >
-          Visit Mark Compliance
+          Mark Compliance 
         </motion.span>
 
         {/* Application Details Section */}
