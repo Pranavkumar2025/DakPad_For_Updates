@@ -17,62 +17,56 @@ const Navbar = () => {
   };
 
   return (
-    <motion.header
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm px-4 md:px-6 py-3 flex items-center justify-between ml-16 md:ml-20"
-    >
+    <div className="h-16 p-6 bg-white shadow-md flex items-center justify-between px-6 rounded-full">
+      {/* Logo with Icon */}
       <motion.div
-        className="flex items-center gap-3"
-        whileHover={{ scale: 1.02 }}
-        transition={{ duration: 0.2 }}
+        className="flex items-center gap-2"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        whileHover={{ scale: 1.05 }}
       >
         <FaUsers className="text-3xl text-[#ff5010]" />
         <span
-          className="text-lg md:text-2xl font-bold uppercase bg-clip-text text-transparent bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
+          className="text-2xl font-bold text-transparent uppercase bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
           style={{ fontFamily: "'Montserrat', sans-serif" }}
         >
           Jan Samadhan
         </span>
       </motion.div>
 
-      <div className="flex items-center gap-4 md:gap-6">
-        <span className="text-sm text-gray-500 hidden md:block">{today}</span>
-        <div className="flex items-center gap-2 border border-gray-200 py-1.5 px-3 rounded-full bg-gray-50">
+      <div className="flex items-center space-x-6">
+        <span className="text-sm text-gray-500">{today}</span>
+
+        <div className="flex items-center gap-3 border border-gray-200 py-1 px-3 rounded-full">
           <img
-            src="https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flzat-design-social-media-profiles_1281173-3806.jpg?semt=ais_hybrid&w=740"
-            alt="User profile"
-            className="w-8 h-8 rounded-full object-cover shadow-sm"
-            onError={(e) => (e.target.src = "/fallback-avatar.png")}
+            src="https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flat-design-social-media-profiles_1281173-3806.jpg?semt=ais_hybrid&w=740"
+            alt="user"
+            className="w-10 h-10 rounded-full shadow-md"
           />
           <div className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">Pranav Kumar</span>
-            <p className="text-xs text-[#ff5010] -mt-0.5">Admin</p>
           </div>
         </div>
-        <motion.button
-          className="group relative flex items-center justify-center w-10 h-10 bg-[#ff5010] rounded-full overflow-hidden hover:w-28 hover:rounded-full transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-[#ff5010] focus:ring-opacity-50"
-          onClick={handleLogout}
-          aria-label="Logout"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+
+        <button
+          className="group flex items-center justify-start w-11 h-11 bg-[#ff5010] rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-full active:translate-x-1 active:translate-y-1"
         >
-          <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:pl-3">
-            <svg className="w-4 h-4 text-white" viewBox="0 0 512 512" fill="currentColor">
-              <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64-0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
+          <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
+            <svg className="w-4 h-4" viewBox="0 0 512 512" fill="white">
+              <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64-0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"></path>
             </svg>
           </div>
-          <span className="absolute right-4 text-sm font-semibold text-white opacity-0 transform translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+          <div className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
             Logout
-          </span>
-        </motion.button>
+          </div>
+        </button>
       </div>
 
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
       `}</style>
-    </motion.header>
+    </div>
   );
 };
 
@@ -144,9 +138,9 @@ const ApplicationReceive = () => {
   const totalPages = Math.ceil(applications.length / recordsPerPage);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-100 flex">
       <Sidebar />
-      <main className="flex-1 ml-16 md:ml-20 pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 ml-16 md:ml-20 pt-6 pb-8 px-4 sm:px-6 lg:px-8">
         <Navbar />
         <div className="max-w-7xl mx-auto mt-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
