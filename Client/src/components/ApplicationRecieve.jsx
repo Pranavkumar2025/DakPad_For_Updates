@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { File, PlusCircle, Trash2, User, Calendar, BarChart2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FaUsers } from "react-icons/fa";
 import AddCaseForm from "../components/AddCaseForm";
 
 // Navbar Component
@@ -13,52 +14,64 @@ const Navbar = () => {
 
   const handleLogout = () => {
     console.log("User logged out");
-    // Add actual logout logic here
   };
 
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm px-4 py-3 md:px-6 flex items-center justify-between"
+      transition={{ duration: 0.5 }}
+      className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm px-4 md:px-6 py-3 flex items-center justify-between ml-16 md:ml-20"
     >
-      <div className="flex items-center gap-3">
-        <img
-          src="/logo.svg"
-          alt="Jan Samadhan Logo"
-          className="w-10 h-10 object-contain"
-          onError={(e) => (e.target.src = "/fallback-logo.png")} // Fallback for broken image
-        />
-        <h1 className="text-lg md:text-xl font-semibold text-gray-800">Jan Samadhan</h1>
-      </div>
-      <div className="flex items-center gap-4">
-        <span className="text-sm text-gray-600 hidden md:block">{today}</span>
-        <div className="flex items-center gap-2">
+      <motion.div
+        className="flex items-center gap-3"
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.2 }}
+      >
+        <FaUsers className="text-3xl text-[#ff5010]" />
+        <span
+          className="text-lg md:text-2xl font-bold uppercase bg-clip-text text-transparent bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
+          style={{ fontFamily: "'Montserrat', sans-serif" }}
+        >
+          Jan Samadhan
+        </span>
+      </motion.div>
+
+      <div className="flex items-center gap-4 md:gap-6">
+        <span className="text-sm text-gray-500 hidden md:block">{today}</span>
+        <div className="flex items-center gap-2 border border-gray-200 py-1.5 px-3 rounded-full bg-gray-50">
           <img
             src="https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flzat-design-social-media-profiles_1281173-3806.jpg?semt=ais_hybrid&w=740"
             alt="User profile"
-            className="w-8 h-8 rounded-full object-cover"
-            onError={(e) => (e.target.src = "/fallback-avatar.png")} // Fallback for broken image
+            className="w-8 h-8 rounded-full object-cover shadow-sm"
+            onError={(e) => (e.target.src = "/fallback-avatar.png")}
           />
-          <div className="hidden md:block">
-            <span className="text-sm font-medium text-gray-800">Pranav Kumar</span>
-            <p className="text-xs text-blue-500">Admin</p>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-gray-700">Pranav Kumar</span>
+            <p className="text-xs text-[#ff5010] -mt-0.5">Admin</p>
           </div>
         </div>
         <motion.button
+          className="group relative flex items-center justify-center w-10 h-10 bg-[#ff5010] rounded-full overflow-hidden hover:w-28 hover:rounded-full transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-[#ff5010] focus:ring-opacity-50"
+          onClick={handleLogout}
+          aria-label="Logout"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600 transition-colors"
-          aria-label="Logout"
         >
-          <svg className="w-4 h-4" viewBox="0 0 512 512" fill="currentColor">
-            <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64-0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
-          </svg>
-          <span className="hidden sm:inline">Logout</span>
+          <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:pl-3">
+            <svg className="w-4 h-4 text-white" viewBox="0 0 512 512" fill="currentColor">
+              <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64-0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
+            </svg>
+          </div>
+          <span className="absolute right-4 text-sm font-semibold text-white opacity-0 transform translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+            Logout
+          </span>
         </motion.button>
       </div>
+
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+      `}</style>
     </motion.header>
   );
 };
@@ -77,7 +90,7 @@ const Sidebar = () => {
           src="/logo.svg"
           alt="Jan Samadhan Logo"
           className="w-10 h-10 border border-gray-700 rounded-lg p-1"
-          onError={(e) => (e.target.src = "/fallback-logo.png")} // Fallback for broken image
+          onError={(e) => (e.target.src = "/fallback-logo.png")}
         />
       </div>
       <nav className="flex flex-col gap-4">
@@ -85,7 +98,7 @@ const Sidebar = () => {
           <a
             key={index}
             href={item.link}
-            className="group relative flex items-center justify-center p-2 rounded-lg hover:bg-orange-500 transition-colors"
+            className="group relative flex items-center justify-center p-2 rounded-lg hover:bg-[#ff5010] transition-colors"
             aria-label={item.label}
           >
             {item.icon}
@@ -133,19 +146,19 @@ const ApplicationReceive = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />
-      <main className="flex-1 ml-16 md:ml-20 pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 ml-16 md:ml-20 pt-20 pb-8 px-4 sm:px-6 lg:px-8">
         <Navbar />
         <div className="max-w-7xl mx-auto mt-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
             <h1 className="text-xl md:text-2xl font-semibold text-gray-800 flex items-center gap-2">
-              <File className="w-5 h-5 text-blue-500" />
+              <File className="w-5 h-5 text-[#2810ff]" />
               Applications
             </h1>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md text-sm font-medium hover:bg-green-600 transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-md text-md font-medium hover:bg-green-700 transition-colors"
               aria-label="Add Application"
             >
               <PlusCircle className="w-5 h-5" />
@@ -176,7 +189,7 @@ const ApplicationReceive = () => {
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-gray-700">
-                <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                <thead className="bg-gray-200 text-gray-600 uppercase text-xs">
                   <tr>
                     <th className="px-4 py-3 font-medium w-12">No.</th>
                     <th className="px-4 py-3 font-medium w-24">ID</th>
@@ -229,7 +242,7 @@ const ApplicationReceive = () => {
                           {app.attachment ? (
                             <a
                               href={app.attachment}
-                              className="flex items-center gap-1 text-blue-500 hover:underline text-xs"
+                              className="flex items-center gap-1 text-[#103cff] hover:underline text-xs"
                               target="_blank"
                               rel="noopener noreferrer"
                               aria-label={`View attachment for ${app.applicant}`}
@@ -284,7 +297,7 @@ const ApplicationReceive = () => {
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
                     className={`px-3 py-1.5 rounded-md text-sm ${
-                      currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      currentPage === i + 1 ? "bg-[#ff5010] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                     whileHover={{ scale: currentPage === i + 1 ? 1 : 1.05 }}
                     aria-label={`Page ${i + 1}`}
