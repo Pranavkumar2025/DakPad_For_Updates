@@ -67,8 +67,10 @@ const ApplicationDashboard = () => {
   const [filteredApplicationData, setFilteredApplicationData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTable, setActiveTable] = useState("total"); // 'total', 'pending', 'resolved'
-  const [timeFilter, setTimeFilter] = useState("all"); // 'all', 'month'
+  const [timeFilter, setTimeFilter] = useState("all"); // 'all', 'month', 'custom'
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedCustomMonth, setSelectedCustomMonth] = useState("2025-08"); // Default to August 2025
+  const [showCustomMonthSelector, setShowCustomMonthSelector] = useState(false);
 
   // Refs for auto-scrolling
   const tableRef = useRef(null);
@@ -111,18 +113,62 @@ const ApplicationDashboard = () => {
       const filtered = applicationData.filter((app) => {
         // Handle the date format "DD-MMM-YYYY" (e.g., "27-May-2025")
         if (app.Date) {
-          const dateParts = app.Date.split('-');
+          const dateParts = app.Date.split("-");
           if (dateParts.length === 3) {
             const month = dateParts[1].toLowerCase();
             const year = dateParts[2];
             // Check if it's August 2025
-            return month === 'aug' && year === '2025';
+            return month === "aug" && year === "2025";
           }
         }
         return false;
       });
-      
-      console.log('Filtered data for August 2025:', filtered); // Debug log
+
+      console.log("Filtered data for August 2025:", filtered); // Debug log
+      setFilteredApplicationData(filtered);
+
+      // Update metrics based on filtered data
+      updateMetricsForFilteredData(filtered);
+
+      // Update charts based on filtered data
+      updateChartsForFilteredData(filtered);
+    } else if (timeFilter === "custom") {
+      // Filter data for custom selected month
+      const [selectedYear, selectedMonth] = selectedCustomMonth.split("-");
+      const monthNames = [
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec",
+      ];
+      const selectedMonthName = monthNames[parseInt(selectedMonth) - 1];
+
+      const filtered = applicationData.filter((app) => {
+        // Handle the date format "DD-MMM-YYYY" (e.g., "27-May-2025")
+        if (app.Date) {
+          const dateParts = app.Date.split("-");
+          if (dateParts.length === 3) {
+            const month = dateParts[1].toLowerCase();
+            const year = dateParts[2];
+            // Check if it matches the selected custom month/year
+            return month === selectedMonthName && year === selectedYear;
+          }
+        }
+        return false;
+      });
+
+      console.log(
+        `Filtered data for ${selectedMonthName} ${selectedYear}:`,
+        filtered
+      ); // Debug log
       setFilteredApplicationData(filtered);
 
       // Update metrics based on filtered data
@@ -131,11 +177,11 @@ const ApplicationDashboard = () => {
       // Update charts based on filtered data
       updateChartsForFilteredData(filtered);
     }
-  }, [timeFilter, applicationData]);
+  }, [timeFilter, applicationData, selectedCustomMonth]);
 
   // Function to update metrics based on filtered data
   const updateMetricsForFilteredData = (filteredData) => {
-    if (timeFilter === "month") {
+    if (timeFilter === "month" || timeFilter === "custom") {
       const totalApplications = filteredData.length;
       const pendingApplications = filteredData.filter(
         (app) => app.Status === "Pending"
@@ -199,7 +245,7 @@ const ApplicationDashboard = () => {
 
   // Function to update charts based on filtered data
   const updateChartsForFilteredData = (filteredData) => {
-    if (timeFilter === "month") {
+    if (timeFilter === "month" || timeFilter === "custom") {
       // Update pending days distribution
       const pendingDaysRanges = [
         { label: "0-5 Days", min: 0, max: 5 },
@@ -212,7 +258,8 @@ const ApplicationDashboard = () => {
       const pendingDaysData = pendingDaysRanges.map((range) => ({
         label: range.label,
         value: filteredData.filter(
-          (app) => app["Pending Days"] >= range.min && app["Pending Days"] <= range.max
+          (app) =>
+            app["Pending Days"] >= range.min && app["Pending Days"] <= range.max
         ).length,
       }));
 
@@ -701,6 +748,166 @@ const ApplicationDashboard = () => {
     },
   };
 
+  // Top Performing Blocks Chart Data
+  const topPerformingChartData = {
+    labels: topPerforming.map((block) => block.blockName),
+    datasets: [
+      {
+        label: "Resolved Percentage",
+        data: topPerforming.map((block) => Math.max(block.resolvedPercentage, 1)), // Minimum 1% for visibility
+        backgroundColor: "#10b981",
+        borderColor: "#059669",
+        borderWidth: 1,
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  // Top Performing Blocks Chart Options
+  const topPerformingChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          title: function (tooltipItems) {
+            return tooltipItems[0].label;
+          },
+          label: function (context) {
+            const blockIndex = context.dataIndex;
+            const block = topPerforming[blockIndex];
+            return [
+              `Resolved: ${block.resolvedPercentage}%`, // Show actual percentage, not the inflated one
+              `Total: ${block.totalApplications}`,
+              `Compliance: ${block.complianceApplications}`,
+              `Pending: ${block.pendingApplications}`,
+            ];
+          },
+        },
+        backgroundColor: "#1f2937",
+        titleColor: "#facc15",
+        bodyColor: "#ffffff",
+        borderColor: "#e5e7eb",
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 6,
+        displayColors: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        ticks: {
+          color: "#6b7280",
+          font: { size: 10 },
+          callback: function (value) {
+            return value + "%";
+          },
+        },
+        title: {
+          display: true,
+          text: "Resolved Percentage",
+          color: "#6b7280",
+          font: { size: 11 },
+        },
+        grid: { color: "#e5e7eb" },
+      },
+      x: {
+        ticks: {
+          color: "#6b7280",
+          font: { size: 10 },
+          maxRotation: 45,
+          minRotation: 45,
+        },
+        grid: { display: false },
+      },
+    },
+  };
+
+  // Worst Performing Blocks Chart Data
+  const worstPerformingChartData = {
+    labels: worstPerforming.map((block) => block.blockName),
+    datasets: [
+      {
+        label: "Resolved Percentage",
+        data: worstPerforming.map((block) => Math.max(block.resolvedPercentage, 1)), // Minimum 1% for visibility
+        backgroundColor: "#ef4444",
+        borderColor: "#dc2626",
+        borderWidth: 1,
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  // Worst Performing Blocks Chart Options
+  const worstPerformingChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          title: function (tooltipItems) {
+            return tooltipItems[0].label;
+          },
+          label: function (context) {
+            const blockIndex = context.dataIndex;
+            const block = worstPerforming[blockIndex];
+            return [
+              `Resolved: ${block.resolvedPercentage}%`, // Show actual percentage, not the inflated one
+              `Total: ${block.totalApplications}`,
+              `Compliance: ${block.complianceApplications}`,
+              `Pending: ${block.pendingApplications}`,
+            ];
+          },
+        },
+        backgroundColor: "#1f2937",
+        titleColor: "#facc15",
+        bodyColor: "#ffffff",
+        borderColor: "#e5e7eb",
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 6,
+        displayColors: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        ticks: {
+          color: "#6b7280",
+          font: { size: 10 },
+          callback: function (value) {
+            return value + "%";
+          },
+        },
+        title: {
+          display: true,
+          text: "Resolved Percentage",
+          color: "#6b7280",
+          font: { size: 11 },
+        },
+        grid: { color: "#e5e7eb" },
+      },
+      x: {
+        ticks: {
+          color: "#6b7280",
+          font: { size: 10 },
+          maxRotation: 45,
+          minRotation: 45,
+        },
+        grid: { display: false },
+      },
+    },
+  };
+
   // Helper function to get icon for metrics
   const getMetricIcon = (metricName, index) => {
     const icons = [
@@ -762,8 +969,17 @@ const ApplicationDashboard = () => {
                   >
                     <div className="flex items-center gap-2">
                       <CalendarDays className="text-gray-500" size={16} />
-                      <span className="text-gray-700 text-sm font-medium pr-2">
-                        {timeFilter === "all" ? "All Time" : "This Month"}
+                      <span className="text-gray-700 text-sm font-medium pr-2 min-w-20">
+                        {timeFilter === "all"
+                          ? "All Time"
+                          : timeFilter === "month"
+                          ? "This Month"
+                          : `Custom (${new Date(
+                              selectedCustomMonth + "-01"
+                            ).toLocaleDateString("en-US", {
+                              month: "long",
+                              year: "numeric",
+                            })})`}
                       </span>
                       <svg
                         className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
@@ -803,6 +1019,60 @@ const ApplicationDashboard = () => {
                         }}
                       >
                         This Month
+                      </div>
+                      <div
+                        className="px-4 py-2 hover:bg-gray-50/70 cursor-pointer text-sm text-gray-700 transition-colors"
+                        onClick={() => {
+                          setShowCustomMonthSelector(true);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        Custom Month
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Custom Month Selector Modal */}
+                  {showCustomMonthSelector && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                      <div className="bg-white/95 backdrop-blur-md border border-gray-100 rounded-3xl p-6 max-w-sm w-full mx-4 drop-shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                          Select Custom Month
+                        </h3>
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Month & Year
+                          </label>
+                          <input
+                            type="month"
+                            value={selectedCustomMonth}
+                            onChange={(e) =>
+                              setSelectedCustomMonth(e.target.value)
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/80"
+                            min="2024-01"
+                            max="2025-12"
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => {
+                              setShowCustomMonthSelector(false);
+                            }}
+                            className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors text-sm font-medium"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleTimeFilterChange("custom");
+                              setShowCustomMonthSelector(false);
+                            }}
+                            className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors text-sm font-medium"
+                          >
+                            Apply Filter
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -899,9 +1169,9 @@ const ApplicationDashboard = () => {
                 </div>
               </div>
 
-              {/* Block Performance Tables */}
+              {/* Block Performance Charts */}
               <div className="flex flex-col md:flex-row gap-4 mb-4">
-                {/* Top Performing Blocks */}
+                {/* Top Performing Blocks Chart */}
                 <div className="md:w-1/2 bg-white/70 backdrop-blur-md border-gray-100/90 border rounded-3xl p-4 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
                   <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="text-green-500" size={20} />
@@ -909,66 +1179,15 @@ const ApplicationDashboard = () => {
                       Top Performing Blocks
                     </h3>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="bg-green-50/50">
-                          <th className="p-3 text-gray-700 font-medium text-sm">
-                            Block Name
-                          </th>
-                          <th className="p-3 text-gray-700 font-medium text-sm">
-                            Total
-                          </th>
-                          <th className="p-3 text-gray-700 font-medium text-sm">
-                            Compliance
-                          </th>
-                          <th className="p-3 text-gray-700 font-medium text-sm">
-                            Pending
-                          </th>
-                          <th className="p-3 text-gray-700 font-medium text-sm">
-                            Resolved %
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {topPerforming.map((block, index) => (
-                          <tr
-                            key={index}
-                            className="border-b border-gray-200/50 hover:bg-green-50/30 transition-colors"
-                          >
-                            <td className="p-3 text-gray-600 text-sm font-medium">
-                              {block.blockName}
-                            </td>
-                            <td className="p-3 text-gray-600 text-sm">
-                              {block.totalApplications}
-                            </td>
-                            <td className="p-3 text-green-600 text-sm font-medium">
-                              {block.complianceApplications}
-                            </td>
-                            <td className="p-3 text-yellow-600 text-sm font-medium">
-                              {block.pendingApplications}
-                            </td>
-                            <td className="p-3 text-green-700 text-sm font-bold">
-                              <div className="flex items-center gap-1">
-                                <span>{block.resolvedPercentage}%</span>
-                                <div className="w-12 bg-gray-200 rounded-full h-2">
-                                  <div
-                                    className="bg-green-500 h-2 rounded-full"
-                                    style={{
-                                      width: `${block.resolvedPercentage}%`,
-                                    }}
-                                  ></div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="w-full h-80">
+                    <Bar data={topPerformingChartData} options={topPerformingChartOptions} />
                   </div>
+                  <p className="text-xs italic text-gray-500 mt-2">
+                    Hover over bars to see detailed statistics
+                  </p>
                 </div>
 
-                {/* Worst Performing Blocks */}
+                {/* Worst Performing Blocks Chart */}
                 <div className="md:w-1/2 bg-white/70 backdrop-blur-md border-gray-100/90 border rounded-3xl p-4 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
                   <div className="flex items-center gap-2 mb-4">
                     <AlertCircle className="text-red-500" size={20} />
@@ -976,63 +1195,12 @@ const ApplicationDashboard = () => {
                       Worst Performing Blocks
                     </h3>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="bg-red-50/50">
-                          <th className="p-3 text-gray-700 font-medium text-sm">
-                            Block Name
-                          </th>
-                          <th className="p-3 text-gray-700 font-medium text-sm">
-                            Total
-                          </th>
-                          <th className="p-3 text-gray-700 font-medium text-sm">
-                            Compliance
-                          </th>
-                          <th className="p-3 text-gray-700 font-medium text-sm">
-                            Pending
-                          </th>
-                          <th className="p-3 text-gray-700 font-medium text-sm">
-                            Resolved %
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {worstPerforming.map((block, index) => (
-                          <tr
-                            key={index}
-                            className="border-b border-gray-200/50 hover:bg-red-50/30 transition-colors"
-                          >
-                            <td className="p-3 text-gray-600 text-sm font-medium">
-                              {block.blockName}
-                            </td>
-                            <td className="p-3 text-gray-600 text-sm">
-                              {block.totalApplications}
-                            </td>
-                            <td className="p-3 text-green-600 text-sm font-medium">
-                              {block.complianceApplications}
-                            </td>
-                            <td className="p-3 text-yellow-600 text-sm font-medium">
-                              {block.pendingApplications}
-                            </td>
-                            <td className="p-3 text-red-700 text-sm font-bold">
-                              <div className="flex items-center gap-1">
-                                <span>{block.resolvedPercentage}%</span>
-                                <div className="w-12 bg-gray-200 rounded-full h-2">
-                                  <div
-                                    className="bg-red-500 h-2 rounded-full"
-                                    style={{
-                                      width: `${block.resolvedPercentage}%`,
-                                    }}
-                                  ></div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="w-full h-80">
+                    <Bar data={worstPerformingChartData} options={worstPerformingChartOptions} />
                   </div>
+                  <p className="text-xs italic text-gray-500 mt-2">
+                    Hover over bars to see detailed statistics
+                  </p>
                 </div>
               </div>
 
@@ -1156,13 +1324,17 @@ const ApplicationDashboard = () => {
                             colorClass = "text-yellow-600";
                           else colorClass = "text-red-600";
 
+                          // Handle inconsistent S.No field names in the data
+                          const serialNo =
+                            app["S.No."] || app["S.No"] || index + 1;
+
                           return (
                             <tr
-                              key={`${app["S.No."]}-${index}`}
+                              key={`app-${serialNo}-${index}`}
                               className="border-b border-gray-200/50 hover:bg-gray-50/50 transition-colors"
                             >
                               <td className="p-3 text-gray-600 text-sm">
-                                {app["S.No."]}
+                                {serialNo}
                               </td>
                               <td className="p-3 text-gray-600 text-sm">
                                 {formatDate(app.Date)}

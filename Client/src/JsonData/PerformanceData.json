@@ -42,10 +42,30 @@
         "type": "bar",
         "title": "Pending Days Distribution",
         "data": [
-          { "range": "0-30 Days", "value": 6, "color": "#4CAF50", "highlight": false },
-          { "range": "31-60 Days", "value": 6, "color": "#FF9800", "highlight": false },
-          { "range": "61-90 Days", "value": 6, "color": "#F44336", "highlight": true },
-          { "range": "90+ Days", "value": 4, "color": "#9E9E9E", "highlight": true }
+          {
+            "range": "0-30 Days",
+            "value": 6,
+            "color": "#4CAF50",
+            "highlight": false
+          },
+          {
+            "range": "31-60 Days",
+            "value": 6,
+            "color": "#FF9800",
+            "highlight": false
+          },
+          {
+            "range": "61-90 Days",
+            "value": 6,
+            "color": "#F44336",
+            "highlight": true
+          },
+          {
+            "range": "90+ Days",
+            "value": 4,
+            "color": "#9E9E9E",
+            "highlight": true
+          }
         ],
         "labels": {
           "xAxis": "Pending Days Range",
@@ -57,9 +77,24 @@
         "type": "pie",
         "title": "Application Status Breakdown",
         "data": [
-          { "category": "Compliance", "value": 6, "color": "#4CAF50", "percentage": "33.3%" },
-          { "category": "Pending", "value": 12, "color": "#FF9800", "percentage": "66.7%" },
-          { "category": "Not Accepted", "value": 4, "color": "#F44336", "percentage": "22.2%" }
+          {
+            "category": "Compliance",
+            "value": 6,
+            "color": "#4CAF50",
+            "percentage": "33.3%"
+          },
+          {
+            "category": "Pending",
+            "value": 12,
+            "color": "#FF9800",
+            "percentage": "66.7%"
+          },
+          {
+            "category": "Not Accepted",
+            "value": 4,
+            "color": "#F44336",
+            "percentage": "22.2%"
+          }
         ],
         "note": "Data updated as of August 28, 2025, covering all 25 blocks"
       }
@@ -150,7 +185,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 7,
+        "S.No.": 7,
         "Date": "14-Jun-2025",
         "Name of the complainant": "Ravindra Kumar",
         "GP, Block": "Sahpur",
@@ -164,7 +199,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 8,
+        "S.No.": 8,
         "Date": "14-Jun-2025",
         "Name of the complainant": "Priyanka Kumari",
         "GP, Block": "Sahpur",
@@ -178,7 +213,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 9,
+        "S.No.": 9,
         "Date": "14-Jun-2025",
         "Name of the complainant": "Krishna Gaund",
         "GP, Block": "Barhara",
@@ -192,7 +227,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 10,
+        "S.No.": 10,
         "Date": "17-Jun-2025",
         "Name of the complainant": "Subhash Yadav",
         "GP, Block": "Barhara",
@@ -206,7 +241,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 11,
+        "S.No.": 11,
         "Date": "19-Jun-2025",
         "Name of the complainant": "Punam Devi",
         "GP, Block": "Barhara",
@@ -220,7 +255,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 12,
+        "S.No.": 12,
         "Date": "19-Jun-2025",
         "Name of the complainant": "Gangadhar Pandey",
         "GP, Block": "Sahpur",
@@ -234,7 +269,7 @@
         "Priority": "High"
       },
       {
-        "S.No": 13,
+        "S.No.": 13,
         "Date": "30-Jun-2025",
         "Name of the complainant": "Tuntun Kumar Mahto",
         "GP, Block": "Barhara",
@@ -248,7 +283,7 @@
         "Priority": "Medium"
       },
       {
-        "S.No": 14,
+        "S.No.": 14,
         "Date": "11-Jul-2025",
         "Name of the complainant": "Sona Devi",
         "GP, Block": "Barhara",
@@ -262,7 +297,7 @@
         "Priority": "Medium"
       },
       {
-        "S.No": 15,
+        "S.No.": 15,
         "Date": "05-Jul-2025",
         "Name of the complainant": "Rajkumar Yadav",
         "GP, Block": "Shahpur",
@@ -276,7 +311,7 @@
         "Priority": "Medium"
       },
       {
-        "S.No": 16,
+        "S.No.": 16,
         "Date": "05-Jul-2025",
         "Name of the complainant": "Girija Devi",
         "GP, Block": "Sandesh",
@@ -290,7 +325,7 @@
         "Priority": "Medium"
       },
       {
-        "S.No": 17,
+        "S.No.": 17,
         "Date": "18-Jul-2025",
         "Name of the complainant": "Gorakhnath Singh",
         "GP, Block": "Barhara",
@@ -304,7 +339,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 18,
+        "S.No.": 18,
         "Date": "18-Jul-2025",
         "Name of the complainant": "Ramtawakal Ram & Others",
         "GP, Block": "Ara Sadar",
@@ -318,7 +353,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 19,
+        "S.No.": 19,
         "Date": "30-Jul-2025",
         "Name of the complainant": "Suman Devi",
         "GP, Block": "Shahpur",
@@ -332,7 +367,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 20,
+        "S.No.": 20,
         "Date": "31-Jul-2025",
         "Name of the complainant": "Praful Kr Pandey",
         "GP, Block": "Ara Sadar",
@@ -346,7 +381,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 21,
+        "S.No.": 21,
         "Date": "02-Aug-2025",
         "Name of the complainant": "Lalan Ojha",
         "GP, Block": "Behea",
@@ -360,7 +395,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 22,
+        "S.No.": 22,
         "Date": "11-Aug-2025",
         "Name of the complainant": "Anwar Ali",
         "GP, Block": "Bagar, Tarari",
@@ -374,7 +409,7 @@
         "Priority": "Low"
       },
       {
-        "S.No": 23,
+        "S.No.": 23,
         "Date": "11-Aug-2025",
         "Name of the complainant": "Munna Singh & Others",
         "GP, Block": "Bagar, Tarari",
