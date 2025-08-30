@@ -76,12 +76,59 @@ const ApplicationDashboard = () => {
   const tableRef = useRef(null);
 
   useEffect(() => {
-    const { metrics, charts, applicationData } = PerformanceJson.dashboard;
+    const currentDate = new Date(); // Current date for pending days calculation
+    // Process applicationData to calculate Pending Days dynamically
+    const processedApplicationData = PerformanceJson.dashboard.applicationData.map(
+      (app) => {
+        let pendingDays = 0;
+        if (app["Issue Date"]) {
+          const issueDateParts = app["Issue Date"].split("-");
+          if (issueDateParts.length === 3) {
+            const [day, monthAbbr, year] = issueDateParts;
+            const monthNames = [
+              "jan",
+              "feb",
+              "mar",
+              "apr",
+              "may",
+              "jun",
+              "jul",
+              "aug",
+              "sep",
+              "oct",
+              "nov",
+              "dec",
+            ];
+            const monthIndex = monthNames.indexOf(monthAbbr.toLowerCase());
+            if (monthIndex !== -1) {
+              const issueDate = new Date(
+                parseInt(year),
+                monthIndex,
+                parseInt(day)
+              );
+              if (!isNaN(issueDate)) {
+                const timeDiff = currentDate - issueDate;
+                pendingDays = Math.max(
+                  0,
+                  Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+                ); // Convert milliseconds to days
+              }
+            }
+          }
+        }
+        return {
+          ...app,
+          "Pending Days": pendingDays,
+        };
+      }
+    );
+
+    const { metrics, charts } = PerformanceJson.dashboard;
     setMetrics(metrics);
     setPendingDaysData(charts[0].data);
     setStatusData(charts[1].data);
-    setApplicationData(applicationData);
-    setFilteredApplicationData(applicationData); // Initialize with all data
+    setApplicationData(processedApplicationData);
+    setFilteredApplicationData(processedApplicationData); // Initialize with processed data
     setLoading(false);
   }, []);
 
@@ -1369,7 +1416,7 @@ const ApplicationDashboard = () => {
                             <th className="p-3 text-gray-700 font-medium text-sm">
                               Rejected
                             </th>
-                            <th className="p-3 text-gray-700 font-medium text-sm">
+                            <th className="p-3 text-gray-700 font-main text-sm">
                               Resolution Rate
                             </th>
                           </>
