@@ -754,7 +754,9 @@ const ApplicationDashboard = () => {
     datasets: [
       {
         label: "Resolved Percentage",
-        data: topPerforming.map((block) => Math.max(block.resolvedPercentage, 1)), // Minimum 1% for visibility
+        data: topPerforming.map((block) =>
+          Math.max(block.resolvedPercentage, 1)
+        ), // Minimum 1% for visibility
         backgroundColor: "#10b981",
         borderColor: "#059669",
         borderWidth: 1,
@@ -834,7 +836,9 @@ const ApplicationDashboard = () => {
     datasets: [
       {
         label: "Resolved Percentage",
-        data: worstPerforming.map((block) => Math.max(block.resolvedPercentage, 1)), // Minimum 1% for visibility
+        data: worstPerforming.map((block) =>
+          Math.max(block.resolvedPercentage, 1)
+        ), // Minimum 1% for visibility
         backgroundColor: "#ef4444",
         borderColor: "#dc2626",
         borderWidth: 1,
@@ -951,9 +955,6 @@ const ApplicationDashboard = () => {
               <div className="text-center lg:text-left">
                 <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                   {PerformanceJson.dashboard.title}
-                </p>
-                <p className="text-gray-600 mt-2">
-                  {PerformanceJson.dashboard.subtitle}
                 </p>
                 <p className="text-gray-500 text-sm mt-2">
                   Last updated: {PerformanceJson.dashboard.lastUpdated}
@@ -1081,7 +1082,7 @@ const ApplicationDashboard = () => {
             </div>
           </div>
 
-          <div className="scale-90">
+          <div className="scale-100 px-20 pb-10">
             {/* Top Metrics Cards */}
             <div className="gap-4 flex flex-col">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -1180,7 +1181,10 @@ const ApplicationDashboard = () => {
                     </h3>
                   </div>
                   <div className="w-full h-80">
-                    <Bar data={topPerformingChartData} options={topPerformingChartOptions} />
+                    <Bar
+                      data={topPerformingChartData}
+                      options={topPerformingChartOptions}
+                    />
                   </div>
                   <p className="text-xs italic text-gray-500 mt-2">
                     Hover over bars to see detailed statistics
@@ -1196,7 +1200,10 @@ const ApplicationDashboard = () => {
                     </h3>
                   </div>
                   <div className="w-full h-80">
-                    <Bar data={worstPerformingChartData} options={worstPerformingChartOptions} />
+                    <Bar
+                      data={worstPerformingChartData}
+                      options={worstPerformingChartOptions}
+                    />
                   </div>
                   <p className="text-xs italic text-gray-500 mt-2">
                     Hover over bars to see detailed statistics
