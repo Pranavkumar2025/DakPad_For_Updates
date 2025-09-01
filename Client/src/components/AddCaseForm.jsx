@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import QRCode from "qrcode";
 
 // DropdownButton Component
 const DropdownButton = ({ label, items }) => {
@@ -14,12 +15,19 @@ const DropdownButton = ({ label, items }) => {
       >
         <span>{label}</span>
         <svg
-          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`w-4 h-4 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
       <AnimatePresence>
@@ -65,12 +73,17 @@ const AddCaseForm = ({ isOpen, onClose }) => {
   const [randomId, setRandomId] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
 
   const generateRandomId = () => {
     let id;
-    const existingApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+    const existingApplications = JSON.parse(
+      localStorage.getItem("applications") || "[]"
+    );
+
     do {
-      id = `BP${Math.floor(10000 + Math.random() * 90000)}`;
+      const randomNum = Math.floor(10000 + Math.random() * 90000);
+      id = `BP${randomNum}`;
     } while (existingApplications.some((app) => app.ApplicantId === id));
     return id;
   };
@@ -79,12 +92,41 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     setRandomId(generateRandomId());
   }, []);
 
+  const generateQRCode = async (id, name, date) => {
+    try {
+      const qrData = {
+        applicationId: id,
+        applicantName: name,
+        submissionDate: date,
+        type: "DakPad Application",
+        verificationUrl: `https://dakpad.com/verify/${id}`,
+      };
+
+      const qrString = JSON.stringify(qrData);
+      const qrCodeDataUrl = await QRCode.toDataURL(qrString, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#FFFFFF",
+        },
+      });
+
+      setQrCodeUrl(qrCodeDataUrl);
+    } catch (error) {
+      console.error("Error generating QR code:", error);
+    }
+  };
+
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!formData.applicationDate) newErrors.applicationDate = "Date is required";
-    if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = "Enter valid 10-digit phone number";
-    if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Enter a valid email";
+    if (!formData.applicationDate)
+      newErrors.applicationDate = "Date is required";
+    if (!/^\d{10}$/.test(formData.phone))
+      newErrors.phone = "Enter valid 10-digit phone number";
+    if (!/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "Enter a valid email";
     if (!formData.source) newErrors.source = "Please select a source";
     if (!formData.subject.trim()) newErrors.subject = "Subject is required";
     if (!formData.block) newErrors.block = "Please select a block"; // Added block validation
@@ -94,7 +136,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
       const newApplication = {
@@ -109,9 +151,14 @@ const AddCaseForm = ({ isOpen, onClose }) => {
         attachment: formData.attachment ? formData.attachment.name : "No file",
       };
 
-      const existingApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+      const existingApplications = JSON.parse(
+        localStorage.getItem("applications") || "[]"
+      );
       const updatedApplications = [...existingApplications, newApplication];
       localStorage.setItem("applications", JSON.stringify(updatedApplications));
+
+      // Generate QR code for the application
+      await generateQRCode(randomId, formData.name, formData.applicationDate);
 
       setShowModal(true);
 
@@ -133,11 +180,17 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     const { name, value, files } = e.target;
     if (name === "attachment" && files[0]) {
       if (files[0].type !== "application/pdf") {
-        setErrors((prev) => ({ ...prev, attachment: "Please upload a PDF file" }));
+        setErrors((prev) => ({
+          ...prev,
+          attachment: "Please upload a PDF file",
+        }));
         return;
       }
       if (files[0].size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({ ...prev, attachment: "File size must be less than 5MB" }));
+        setErrors((prev) => ({
+          ...prev,
+          attachment: "File size must be less than 5MB",
+        }));
         return;
       }
     }
@@ -167,11 +220,17 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     const file = e.dataTransfer.files[0];
     if (file) {
       if (file.type !== "application/pdf") {
-        setErrors((prev) => ({ ...prev, attachment: "Please upload a PDF file" }));
+        setErrors((prev) => ({
+          ...prev,
+          attachment: "Please upload a PDF file",
+        }));
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({ ...prev, attachment: "File size must be less than 5MB" }));
+        setErrors((prev) => ({
+          ...prev,
+          attachment: "File size must be less than 5MB",
+        }));
         return;
       }
       setFormData((prev) => ({ ...prev, attachment: file }));
@@ -198,16 +257,23 @@ const AddCaseForm = ({ isOpen, onClose }) => {
             className="w-5 h-5"
             strokeWidth="2"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
         <p className="text-xs mb-3">
-          Application ID: <span className="text-xs font-medium text-gray-600">{randomId}</span>
+          Application ID:{" "}
+          <span className="text-xs font-medium text-gray-600">{randomId}</span>
         </p>
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-medium text-gray-600">Applicant Name</label>
+              <label className="text-xs font-medium text-gray-600">
+                Applicant Name
+              </label>
               <input
                 type="text"
                 name="name"
@@ -216,10 +282,14 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                 placeholder="Enter applicant name"
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all duration-200"
               />
-              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+              )}
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-600">Application Date</label>
+              <label className="text-xs font-medium text-gray-600">
+                Application Date
+              </label>
               <input
                 type="date"
                 name="applicationDate"
@@ -229,11 +299,15 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all duration-200"
               />
               {errors.applicationDate && (
-                <p className="text-red-500 text-xs mt-1">{errors.applicationDate}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.applicationDate}
+                </p>
               )}
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-600">Phone Number</label>
+              <label className="text-xs font-medium text-gray-600">
+                Phone Number
+              </label>
               <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#ff5010] transition-all duration-200">
                 <span className="px-2 text-gray-500 text-sm">+91</span>
                 <input
@@ -245,10 +319,14 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                   className="w-full p-2 text-sm rounded-lg focus:outline-none"
                 />
               </div>
-              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+              {errors.phone && (
+                <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+              )}
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-600">Email ID</label>
+              <label className="text-xs font-medium text-gray-600">
+                Email ID
+              </label>
               <input
                 type="text"
                 name="email"
@@ -257,10 +335,14 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                 placeholder="example@hello.com"
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all duration-200"
               />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              )}
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-600">Source At</label>
+              <label className="text-xs font-medium text-gray-600">
+                Source At
+              </label>
               <select
                 name="source"
                 value={formData.source}
@@ -276,27 +358,68 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                 <option value="email">Email</option>
                 <option value="newspaper">Newspaper</option>
               </select>
-              {errors.source && <p className="text-red-500 text-xs mt-1">{errors.source}</p>}
+              {errors.source && (
+                <p className="text-red-500 text-xs mt-1">{errors.source}</p>
+              )}
             </div>
             <div>
               <label className="text-xs font-medium text-gray-600">Block</label>
               <DropdownButton
                 label={formData.block || "Select Block"}
                 items={[
-                  { label: "All", onClick: () => setFormData((prev) => ({ ...prev, block: "" })) },
-                  { label: "Barhara", onClick: () => setFormData((prev) => ({ ...prev, block: "Barhara" })) },
-                  { label: "Shahpur", onClick: () => setFormData((prev) => ({ ...prev, block: "Shahpur" })) },
-                  { label: "Ara Sadar", onClick: () => setFormData((prev) => ({ ...prev, block: "Ara Sadar" })) },
-                  { label: "Bagar, Tarari", onClick: () => setFormData((prev) => ({ ...prev, block: "Bagar, Tarari" })) },
-                  { label: "Sandesh", onClick: () => setFormData((prev) => ({ ...prev, block: "Sandesh" })) },
-                  { label: "Behea", onClick: () => setFormData((prev) => ({ ...prev, block: "Behea" })) },
-                  { label: "Sahar", onClick: () => setFormData((prev) => ({ ...prev, block: "Sahar" })) },
+                  {
+                    label: "All",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "" })),
+                  },
+                  {
+                    label: "Barhara",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Barhara" })),
+                  },
+                  {
+                    label: "Shahpur",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Shahpur" })),
+                  },
+                  {
+                    label: "Ara Sadar",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Ara Sadar" })),
+                  },
+                  {
+                    label: "Bagar, Tarari",
+                    onClick: () =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        block: "Bagar, Tarari",
+                      })),
+                  },
+                  {
+                    label: "Sandesh",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Sandesh" })),
+                  },
+                  {
+                    label: "Behea",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Behea" })),
+                  },
+                  {
+                    label: "Sahar",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Sahar" })),
+                  },
                 ]}
               />
-              {errors.block && <p className="text-red-500 text-xs mt-1">{errors.block}</p>}
+              {errors.block && (
+                <p className="text-red-500 text-xs mt-1">{errors.block}</p>
+              )}
             </div>
             <div className="col-span-2">
-              <label className="text-xs font-medium text-gray-600">Subject</label>
+              <label className="text-xs font-medium text-gray-600">
+                Subject
+              </label>
               <input
                 type="text"
                 name="subject"
@@ -305,14 +428,20 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                 placeholder="Enter subject"
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all duration-200"
               />
-              {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject}</p>}
+              {errors.subject && (
+                <p className="text-red-500 text-xs mt-1">{errors.subject}</p>
+              )}
             </div>
           </div>
           <div className="pt-4 pb-2">
-            <label className="text-xs font-medium text-gray-600">Attach Application PDF</label>
+            <label className="text-xs font-medium text-gray-600">
+              Attach Application PDF
+            </label>
             <div
               className={`w-full mt-1 p-4 bg-gray-50 rounded-lg border-2 border-dashed transition-all duration-200 ${
-                isDragging ? "border-[#ff5010] bg-orange-50" : "border-gray-300 hover:border-[#ff5010]"
+                isDragging
+                  ? "border-[#ff5010] bg-orange-50"
+                  : "border-gray-300 hover:border-[#ff5010]"
               }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -320,7 +449,9 @@ const AddCaseForm = ({ isOpen, onClose }) => {
             >
               <div className="flex flex-col items-center gap-2">
                 <svg
-                  className={`w-10 h-10 ${isDragging ? "text-[#ff5010]" : "text-gray-400"} transition-colors duration-200`}
+                  className={`w-10 h-10 ${
+                    isDragging ? "text-[#ff5010]" : "text-gray-400"
+                  } transition-colors duration-200`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -378,7 +509,9 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                   </div>
                 )}
                 {errors.attachment && (
-                  <p className="text-red-500 text-xs mt-1 font-medium">{errors.attachment}</p>
+                  <p className="text-red-500 text-xs mt-1 font-medium">
+                    {errors.attachment}
+                  </p>
                 )}
               </div>
             </div>
@@ -402,11 +535,12 @@ const AddCaseForm = ({ isOpen, onClose }) => {
       </div>
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
-          <div className="bg-white w-[90%] max-w-xs rounded-2xl shadow-xl p-6 relative animate-scaleIn border-t-4 border-green-500">
+          <div className="bg-white w-[90%] max-w-lg rounded-2xl shadow-xl p-6 relative animate-scaleIn border-t-4 border-green-500">
             <button
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition-colors duration-200"
               onClick={() => {
                 setShowModal(false);
+                setQrCodeUrl(null);
                 onClose();
               }}
               aria-label="Close"
@@ -426,7 +560,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                 />
               </svg>
             </button>
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-4">
               <svg
                 className="w-12 h-12 text-green-600 animate-check"
                 fill="none"
@@ -442,17 +576,57 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                 />
               </svg>
               <h2 className="text-xl font-bold text-gray-800 tracking-tight">
-                Application Added!
+                Application Submitted Successfully!
               </h2>
+
+              <div className="w-full space-y-4">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-2 font-medium">
+                    Your Application ID:
+                  </p>
+                  <p className="text-lg font-bold text-blue-600 break-all text-center">
+                    {randomId}
+                  </p>
+                </div>
+
+                {qrCodeUrl && (
+                  <div className="p-4 bg-gray-50 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-3 font-medium">
+                      QR Code for Quick Access:
+                    </p>
+                    <div className="flex justify-center mb-3">
+                      <img
+                        src={qrCodeUrl}
+                        alt="Application QR Code"
+                        className="border rounded-lg shadow-sm w-32 h-32"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        const link = document.createElement("a");
+                        link.download = `dakpad-application-${randomId}.png`;
+                        link.href = qrCodeUrl;
+                        link.click();
+                      }}
+                      className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      Download QR Code
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <p className="text-xs text-gray-600 text-center">
-                Your application has been successfully submitted.
+                Please save your Application ID for future reference.
               </p>
+
               <button
                 onClick={() => {
                   setShowModal(false);
+                  setQrCodeUrl(null);
                   onClose();
                 }}
-                className="mt-3 bg-[#ff5010] text-white px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-[#e6490f] transition-colors duration-200"
+                className="mt-3 bg-[#ff5010] text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-[#e6490f] transition-colors duration-200"
               >
                 Done
               </button>

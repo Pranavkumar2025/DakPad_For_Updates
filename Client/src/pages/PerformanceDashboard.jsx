@@ -27,6 +27,7 @@ import {
   BarChart3,
   Search,
 } from "lucide-react";
+import Navbar from "../components/Navbar";
 
 // Register Chart.js components
 ChartJS.register(
@@ -1087,8 +1088,9 @@ const ApplicationDashboard = () => {
   return (
     <ErrorBoundary>
       <div className="grid grid-cols-1 overflow-x-hidden">
-        <div className="md:px-4 pt-12  bg-gradient-to-br from-[#f3e8ff] via-[#e0f2f1] to-[#fce4ec] min-h-screen">
-          <div className="mx-auto max-w-7xl">
+        <div className="md:px-4 pt-8 pb-8  bg-gradient-to-br from-[#f3e8ff] via-[#e0f2f1] to-[#fce4ec] min-h-screen">
+          <Navbar />
+          <div className="mt-2 mx-auto max-w-7xl">
             {/* Header with Filter */}
             <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start pt-10 sm:pt-4 mb-8">
               <div className="text-center lg:text-left">
@@ -1101,7 +1103,7 @@ const ApplicationDashboard = () => {
               </div>
 
               {/* Time Filter Dropdown */}
-              <div className="mt-4 lg:mt-0 flex justify-center lg:justify-end">
+              <div className="mt-4 lg:mt-3 flex justify-center lg:justify-end">
                 <div className="relative">
                   <div
                     className="bg-white/70 backdrop-blur-md border border-gray-100/90 rounded-2xl p-2 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] cursor-pointer"
