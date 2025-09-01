@@ -25,6 +25,7 @@ import {
   CheckCircle2,
   TrendingUp,
   BarChart3,
+  Search,
 } from "lucide-react";
 
 // Register Chart.js components
@@ -72,63 +73,23 @@ const ApplicationDashboard = () => {
   const [selectedCustomMonth, setSelectedCustomMonth] = useState("2025-08"); // Default to August 2025
   const [showCustomMonthSelector, setShowCustomMonthSelector] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+
   // Refs for auto-scrolling
   const tableRef = useRef(null);
 
   useEffect(() => {
-    const currentDate = new Date(); // Current date for pending days calculation
-    // Process applicationData to calculate Pending Days dynamically
-    const processedApplicationData = PerformanceJson.dashboard.applicationData.map(
-      (app) => {
-        let pendingDays = 0;
-        if (app["Issue Date"]) {
-          const issueDateParts = app["Issue Date"].split("-");
-          if (issueDateParts.length === 3) {
-            const [day, monthAbbr, year] = issueDateParts;
-            const monthNames = [
-              "jan",
-              "feb",
-              "mar",
-              "apr",
-              "may",
-              "jun",
-              "jul",
-              "aug",
-              "sep",
-              "oct",
-              "nov",
-              "dec",
-            ];
-            const monthIndex = monthNames.indexOf(monthAbbr.toLowerCase());
-            if (monthIndex !== -1) {
-              const issueDate = new Date(
-                parseInt(year),
-                monthIndex,
-                parseInt(day)
-              );
-              if (!isNaN(issueDate)) {
-                const timeDiff = currentDate - issueDate;
-                pendingDays = Math.max(
-                  0,
-                  Math.floor(timeDiff / (1000 * 60 * 60 * 24))
-                ); // Convert milliseconds to days
-              }
-            }
-          }
-        }
-        return {
-          ...app,
-          "Pending Days": pendingDays,
-        };
-      }
-    );
-
-    const { metrics, charts } = PerformanceJson.dashboard;
+    const { metrics, charts, applicationData } = PerformanceJson.dashboard;
     setMetrics(metrics);
     setPendingDaysData(charts[0].data);
     setStatusData(charts[1].data);
-    setApplicationData(processedApplicationData);
-    setFilteredApplicationData(processedApplicationData); // Initialize with processed data
+    setApplicationData(applicationData);
+    setFilteredApplicationData(applicationData); // Initialize with all data
     setLoading(false);
   }, []);
 
@@ -225,6 +186,16 @@ const ApplicationDashboard = () => {
       updateChartsForFilteredData(filtered);
     }
   }, [timeFilter, applicationData, selectedCustomMonth]);
+
+  // Reset pagination when active table changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTable]);
+
+  // Reset pagination when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   // Function to update metrics based on filtered data
   const updateMetricsForFilteredData = (filteredData) => {
@@ -390,29 +361,56 @@ const ApplicationDashboard = () => {
     }, 100);
   };
 
-  // Function to filter applications based on active table
+  // Function to filter applications based on active table and search term
   const getFilteredApplications = () => {
+    let filtered;
     switch (activeTable) {
       case "pending":
-        return filteredApplicationData.filter(
+        filtered = filteredApplicationData.filter(
           (app) => app.Status === "Pending"
         );
+        break;
       case "resolved":
-        return filteredApplicationData.filter(
+        filtered = filteredApplicationData.filter(
           (app) => app.Status === "Compliance"
         );
+        break;
       default:
-        return filteredApplicationData;
+        filtered = filteredApplicationData;
     }
+
+    // Apply search filter if search term exists
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter((app) => {
+        return (
+          (app["Name of the complainant"] &&
+            app["Name of the complainant"]
+              .toLowerCase()
+              .includes(searchLower)) ||
+          (app["GP, Block"] &&
+            app["GP, Block"].toLowerCase().includes(searchLower)) ||
+          (app["Concerned Officer"] &&
+            app["Concerned Officer"].toLowerCase().includes(searchLower)) ||
+          (app.Status && app.Status.toLowerCase().includes(searchLower)) ||
+          (app["Issue Letter No"] &&
+            app["Issue Letter No"].toLowerCase().includes(searchLower))
+        );
+      });
+    }
+
+    return filtered;
   };
 
   // Function to get unique blocks for display
   const getUniqueBlocks = () => {
     const { blocks } = PerformanceJson.dashboard;
-    
-    return blocks.map((block, index) => {
+
+    let blocksData = blocks.map((block, index) => {
       const blockApplications = filteredApplicationData.filter(
-        (app) => app["GP, Block"] && app["GP, Block"].toLowerCase().includes(block.name.toLowerCase())
+        (app) =>
+          app["GP, Block"] &&
+          app["GP, Block"].toLowerCase().includes(block.name.toLowerCase())
       );
       const totalApps = blockApplications.length;
       const pendingApps = blockApplications.filter(
@@ -433,9 +431,67 @@ const ApplicationDashboard = () => {
         pendingApplications: pendingApps,
         resolvedApplications: resolvedApps,
         rejectedApplications: rejectedApps,
-        resolvedPercentage: totalApps > 0 ? Math.round((resolvedApps / totalApps) * 100) : 0
+        resolvedPercentage:
+          totalApps > 0 ? Math.round((resolvedApps / totalApps) * 100) : 0,
       };
     });
+
+    // Apply search filter if search term exists and we're in blocks view
+    if (searchTerm.trim() && activeTable === "blocks") {
+      const searchLower = searchTerm.toLowerCase();
+      blocksData = blocksData.filter((block) => {
+        return (
+          (block.blockName &&
+            block.blockName.toLowerCase().includes(searchLower)) ||
+          (block.division && block.division.toLowerCase().includes(searchLower))
+        );
+      });
+    }
+
+    return blocksData;
+  };
+
+  // Pagination helper functions
+  const getPaginatedData = (data) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return data.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = (data) => {
+    return Math.ceil(data.length / itemsPerPage);
+  };
+
+  const getPageNumbers = (totalPages) => {
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+    }
+
+    return pageNumbers;
+  };
+
+  // Function to get paginated applications
+  const getPaginatedApplications = () => {
+    const allData = getFilteredApplications();
+    return getPaginatedData(allData);
+  };
+
+  // Function to get paginated blocks
+  const getPaginatedBlocks = () => {
+    const allBlocks = getUniqueBlocks();
+    return getPaginatedData(allBlocks);
   };
 
   // Function to get table title
@@ -1323,14 +1379,76 @@ const ApplicationDashboard = () => {
                   </h2>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500">
-                      Showing {getFilteredApplications().length} of{" "}
-                      {filteredApplicationData.length} applications
+                      {activeTable === "blocks" ? (
+                        <>
+                          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                          {Math.min(
+                            currentPage * itemsPerPage,
+                            getUniqueBlocks().length
+                          )}{" "}
+                          of {getUniqueBlocks().length} blocks
+                        </>
+                      ) : (
+                        <>
+                          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                          {Math.min(
+                            currentPage * itemsPerPage,
+                            getFilteredApplications().length
+                          )}{" "}
+                          of {getFilteredApplications().length} applications
+                        </>
+                      )}
                     </span>
                     <AlertCircle
                       className="text-gray-400 cursor-pointer hover:text-gray-600"
                       size={20}
                     />
                   </div>
+                </div>
+
+                {/* Search Bar - For Applications and Blocks */}
+                <div className="mb-4">
+                  <div className="relative max-w-md">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Search className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder={
+                        activeTable === "blocks"
+                          ? "Search blocks by name or division..."
+                          : "Search applications by name, block, officer, status..."
+                      }
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                    />
+                    {searchTerm && (
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        <span className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer">
+                          ✕
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                  {searchTerm && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {activeTable === "blocks" ? (
+                        <>
+                          Found {getUniqueBlocks().length} blocks matching "
+                          {searchTerm}"
+                        </>
+                      ) : (
+                        <>
+                          Found {getFilteredApplications().length} applications
+                          matching "{searchTerm}"
+                        </>
+                      )}
+                    </p>
+                  )}
                 </div>
 
                 {/* Table Navigation Buttons */}
@@ -1416,7 +1534,7 @@ const ApplicationDashboard = () => {
                             <th className="p-3 text-gray-700 font-medium text-sm">
                               Rejected
                             </th>
-                            <th className="p-3 text-gray-700 font-main text-sm">
+                            <th className="p-3 text-gray-700 font-medium text-sm">
                               Resolution Rate
                             </th>
                           </>
@@ -1449,14 +1567,14 @@ const ApplicationDashboard = () => {
                     </thead>
                     <tbody>
                       {activeTable === "blocks" ? (
-                        getUniqueBlocks().length > 0 ? (
-                          getUniqueBlocks().map((block, index) => (
+                        getPaginatedBlocks().length > 0 ? (
+                          getPaginatedBlocks().map((block, index) => (
                             <tr
                               key={`block-${block.id}`}
                               className="border-b border-gray-200/50 hover:bg-gray-50/50 transition-colors"
                             >
                               <td className="p-3 text-gray-600 text-sm">
-                                {block.id}
+                                {(currentPage - 1) * itemsPerPage + index + 1}
                               </td>
                               <td className="p-3 text-gray-600 text-sm font-medium">
                                 {block.blockName}
@@ -1478,20 +1596,31 @@ const ApplicationDashboard = () => {
                               </td>
                               <td className="p-3 text-sm">
                                 <div className="flex items-center gap-2">
-                                  <span className={`font-medium ${
-                                    block.resolvedPercentage >= 70 ? 'text-green-600' :
-                                    block.resolvedPercentage >= 40 ? 'text-yellow-600' : 'text-red-600'
-                                  }`}>
+                                  <span
+                                    className={`font-medium ${
+                                      block.resolvedPercentage >= 70
+                                        ? "text-green-600"
+                                        : block.resolvedPercentage >= 40
+                                        ? "text-yellow-600"
+                                        : "text-red-600"
+                                    }`}
+                                  >
                                     {block.resolvedPercentage}%
                                   </span>
                                   <div className="w-12 bg-gray-200 rounded-full h-2">
                                     <div
                                       className={`h-2 rounded-full ${
-                                        block.resolvedPercentage >= 70 ? 'bg-green-500' :
-                                        block.resolvedPercentage >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                                        block.resolvedPercentage >= 70
+                                          ? "bg-green-500"
+                                          : block.resolvedPercentage >= 40
+                                          ? "bg-yellow-500"
+                                          : "bg-red-500"
                                       }`}
                                       style={{
-                                        width: `${Math.max(block.resolvedPercentage, 2)}%`,
+                                        width: `${Math.max(
+                                          block.resolvedPercentage,
+                                          2
+                                        )}%`,
                                       }}
                                     ></div>
                                   </div>
@@ -1509,76 +1638,183 @@ const ApplicationDashboard = () => {
                             </td>
                           </tr>
                         )
-                      ) : (
-                        getFilteredApplications().length > 0 ? (
-                          getFilteredApplications().map((app, index) => {
-                            const avgDays = Number(app["Pending Days"]) || 0;
-                            let colorClass = "";
-                            if (avgDays <= 30) colorClass = "text-green-600";
-                            else if (avgDays <= 60)
-                              colorClass = "text-yellow-600";
-                            else colorClass = "text-red-600";
+                      ) : getPaginatedApplications().length > 0 ? (
+                        getPaginatedApplications().map((app, index) => {
+                          const avgDays = Number(app["Pending Days"]) || 0;
+                          let colorClass = "";
+                          if (avgDays <= 30) colorClass = "text-green-600";
+                          else if (avgDays <= 60)
+                            colorClass = "text-yellow-600";
+                          else colorClass = "text-red-600";
 
-                            // Handle inconsistent S.No field names in the data
-                            const serialNo =
-                              app["S.No."] || app["S.No"] || index + 1;
+                          // Handle inconsistent S.No field names in the data
+                          const serialNo =
+                            app["S.No."] ||
+                            app["S.No"] ||
+                            (currentPage - 1) * itemsPerPage + index + 1;
 
-                            return (
-                              <tr
-                                key={`app-${serialNo}-${index}`}
-                                className="border-b border-gray-200/50 hover:bg-gray-50/50 transition-colors"
-                              >
-                                <td className="p-3 text-gray-600 text-sm">
-                                  {serialNo}
-                                </td>
-                                <td className="p-3 text-gray-600 text-sm">
-                                  {formatDate(app.Date)}
-                                </td>
-                                <td className="p-3 text-gray-600 text-sm">
-                                  {app["Name of the complainant"]}
-                                </td>
-                                <td className="p-3 text-gray-600 text-sm">
-                                  {app["GP, Block"]}
-                                </td>
-                                <td className="p-3 text-gray-600 text-sm">
-                                  {app["Concerned Officer"]}
-                                </td>
-                                <td
-                                  className={`p-3 font-medium text-sm ${colorClass}`}
-                                >
-                                  {app["Pending Days"]}
-                                </td>
-                                <td className="p-3 text-gray-600 text-sm">
-                                  <span
-                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                      app.Status === "Pending"
-                                        ? "bg-yellow-100 text-yellow-800"
-                                        : app.Status === "Compliance"
-                                        ? "bg-green-100 text-green-800"
-                                        : "bg-red-100 text-red-800"
-                                    }`}
-                                  >
-                                    {app.Status}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })
-                        ) : (
-                          <tr>
-                            <td
-                              colSpan="7"
-                              className="p-3 text-center text-gray-500 text-sm"
+                          return (
+                            <tr
+                              key={`app-${serialNo}-${index}`}
+                              className="border-b border-gray-200/50 hover:bg-gray-50/50 transition-colors"
                             >
-                              No {activeTable === "total" ? "" : activeTable}{" "}
-                              applications available.
-                            </td>
-                          </tr>
-                        )
+                              <td className="p-3 text-gray-600 text-sm">
+                                {serialNo}
+                              </td>
+                              <td className="p-3 text-gray-600 text-sm">
+                                {formatDate(app.Date)}
+                              </td>
+                              <td className="p-3 text-gray-600 text-sm">
+                                {app["Name of the complainant"]}
+                              </td>
+                              <td className="p-3 text-gray-600 text-sm">
+                                {app["GP, Block"]}
+                              </td>
+                              <td className="p-3 text-gray-600 text-sm">
+                                {app["Concerned Officer"]}
+                              </td>
+                              <td
+                                className={`p-3 font-medium text-sm ${colorClass}`}
+                              >
+                                {app["Pending Days"]}
+                              </td>
+                              <td className="p-3 text-gray-600 text-sm">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    app.Status === "Pending"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : app.Status === "Compliance"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {app.Status}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="7"
+                            className="p-3 text-center text-gray-500 text-sm"
+                          >
+                            No {activeTable === "total" ? "" : activeTable}{" "}
+                            applications available.
+                          </td>
+                        </tr>
                       )}
                     </tbody>
                   </table>
                 </div>
+
+                {/* Pagination Controls */}
+                {((activeTable === "blocks" && getUniqueBlocks().length > 0) ||
+                  (activeTable !== "blocks" &&
+                    getFilteredApplications().length > 0)) && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      {activeTable === "blocks" ? (
+                        <>
+                          Page {currentPage} of{" "}
+                          {Math.max(1, getTotalPages(getUniqueBlocks()))}(
+                          {getUniqueBlocks().length} total blocks)
+                        </>
+                      ) : (
+                        <>
+                          Page {currentPage} of{" "}
+                          {Math.max(
+                            1,
+                            getTotalPages(getFilteredApplications())
+                          )}
+                          ({getFilteredApplications().length} total
+                          applications)
+                        </>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* Previous Button */}
+                      <button
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={currentPage === 1}
+                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          currentPage === 1
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        }`}
+                      >
+                        Previous
+                      </button>
+
+                      {/* Page Numbers */}
+                      <div className="flex items-center gap-1">
+                        {getPageNumbers(
+                          activeTable === "blocks"
+                            ? Math.max(1, getTotalPages(getUniqueBlocks()))
+                            : Math.max(
+                                1,
+                                getTotalPages(getFilteredApplications())
+                              )
+                        ).map((pageNumber) => (
+                          <button
+                            key={pageNumber}
+                            onClick={() => setCurrentPage(pageNumber)}
+                            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 ${
+                              currentPage === pageNumber
+                                ? "bg-purple-600 text-white shadow-lg"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                          >
+                            {pageNumber}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Next Button */}
+                      <button
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(
+                              prev + 1,
+                              activeTable === "blocks"
+                                ? Math.max(1, getTotalPages(getUniqueBlocks()))
+                                : Math.max(
+                                    1,
+                                    getTotalPages(getFilteredApplications())
+                                  )
+                            )
+                          )
+                        }
+                        disabled={
+                          currentPage ===
+                          (activeTable === "blocks"
+                            ? Math.max(1, getTotalPages(getUniqueBlocks()))
+                            : Math.max(
+                                1,
+                                getTotalPages(getFilteredApplications())
+                              ))
+                        }
+                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          currentPage ===
+                          (activeTable === "blocks"
+                            ? Math.max(1, getTotalPages(getUniqueBlocks()))
+                            : Math.max(
+                                1,
+                                getTotalPages(getFilteredApplications())
+                              ))
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        }`}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Table Summary */}
                 <div className="mt-4 p-3 bg-gray-50/50 rounded-lg">
@@ -1595,20 +1831,29 @@ const ApplicationDashboard = () => {
                           Average Resolution Rate
                         </span>
                         <p className="text-lg font-semibold text-blue-600">
-                          {getUniqueBlocks().length > 0 
+                          {getUniqueBlocks().length > 0
                             ? Math.round(
-                                getUniqueBlocks().reduce((sum, block) => sum + block.resolvedPercentage, 0) /
-                                getUniqueBlocks().length
+                                getUniqueBlocks().reduce(
+                                  (sum, block) =>
+                                    sum + block.resolvedPercentage,
+                                  0
+                                ) / getUniqueBlocks().length
                               )
-                            : 0}%
+                            : 0}
+                          %
                         </p>
                       </div>
                       <div className="text-center">
-                        <span className="text-gray-500">Best Performing Block</span>
+                        <span className="text-gray-500">
+                          Best Performing Block
+                        </span>
                         <p className="text-lg font-semibold text-green-600">
-                          {getUniqueBlocks().length > 0 
-                            ? getUniqueBlocks().reduce((best, current) => 
-                                current.resolvedPercentage > best.resolvedPercentage ? current : best
+                          {getUniqueBlocks().length > 0
+                            ? getUniqueBlocks().reduce((best, current) =>
+                                current.resolvedPercentage >
+                                best.resolvedPercentage
+                                  ? current
+                                  : best
                               ).blockName
                             : "N/A"}
                         </p>
@@ -1617,7 +1862,9 @@ const ApplicationDashboard = () => {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div className="text-center">
-                        <span className="text-gray-500">Total Applications</span>
+                        <span className="text-gray-500">
+                          Total Applications
+                        </span>
                         <p className="text-lg font-semibold text-gray-700">
                           {filteredApplicationData.length}
                         </p>
