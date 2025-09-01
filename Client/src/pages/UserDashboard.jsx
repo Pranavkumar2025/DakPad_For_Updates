@@ -165,81 +165,162 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50">
       <UserNavbar />
 
-      {/* Search Section */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-2xl text-center">
-          <motion.h1
-            className="text-4xl font-bold text-gray-900 mb-3 font-['Montserrat']"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            Track Your Application
-          </motion.h1>
-          <motion.p
-            className="text-lg text-gray-600 mb-8 font-['Montserrat']"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-          >
-            Enter your Application ID to view the latest status and timeline
-          </motion.p>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-transparent opacity-60"></div>
+        <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-orange-100 to-transparent rounded-full transform translate-x-32 -translate-y-32 opacity-40"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-50 to-transparent rounded-full transform -translate-x-48 translate-y-48 opacity-30"></div>
 
-          {/* Search Input */}
-          <motion.div
-            className="flex items-center shadow-md rounded-xl border border-gray-200 bg-white max-w-xl mx-auto"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            <Search className="ml-4 text-gray-500" size={22} />
-            <input
-              type="text"
-              value={applicationIdInput}
-              onChange={(e) => setApplicationIdInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              className="flex-1 px-4 py-4 text-gray-900 rounded-xl focus:outline-none text-base font-['Montserrat']"
-              placeholder="e.g., BPXXXXX"
-              aria-label="Application ID"
-            />
-            <motion.button
-              onClick={handleApplicationIdSearch}
-              disabled={isLoading || !applicationIdInput.trim()}
-              className="mr-2 px-6 py-2.5 rounded-full font-semibold text-sm bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-['Montserrat'] shadow-sm"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Search application"
+        <div className="relative container mx-auto px-4 py-16">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Main Heading */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-8"
             >
-              {isLoading ? (
-                <div className="flex items-center">
-                  <Loader2 className="animate-spin mr-2" size={18} />
-                  Searching...
-                </div>
-              ) : (
-                "Check"
-              )}
-            </motion.button>
-          </motion.div>
+              <h1 className="text-5xl md:text-6xl font-bold mb-4 font-['Montserrat']">
+                <span className="text-gray-800">Track Your</span>
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c]">
+                  Application
+                </span>
+              </h1>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-['Montserrat']">
+                Stay updated with real-time tracking of your Bihar RTPS
+                applications. Enter your Application ID below to view detailed
+                status and timeline.
+              </p>
+            </motion.div>
 
-          {/* Error Message */}
-          <AnimatePresence>
-            {foundApplication === false &&
-              applicationIdInput.trim() &&
-              !isLoading && (
-                <motion.p
-                  className="mt-4 text-red-600 text-sm font-['Montserrat']"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.3 }}
+            {/* Search Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 max-w-2xl mx-auto"
+            >
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-[#ff5010] to-[#fc641c] rounded-2xl flex items-center justify-center shadow-lg">
+                  <Search className="text-white" size={28} />
+                </div>
+              </div>
+
+              <h2 className="text-2xl font-bold text-gray-800 mb-2 font-['Montserrat']">
+                Enter Application ID
+              </h2>
+              <p className="text-gray-600 mb-8 font-['Montserrat']">
+                Track your application status instantly
+              </p>
+
+              {/* Enhanced Search Input */}
+              <div className="relative">
+                <div className="flex items-center bg-gray-50 rounded-2xl border-2 border-gray-200 focus-within:border-orange-300 focus-within:bg-white transition-all duration-300 overflow-hidden">
+                  <Search className="ml-6 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    value={applicationIdInput}
+                    onChange={(e) => setApplicationIdInput(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    className="flex-1 px-4 py-5 bg-transparent text-gray-900 focus:outline-none text-lg font-['Montserrat'] placeholder-gray-400"
+                    placeholder="e.g., BP12345"
+                    aria-label="Application ID"
+                  />
+                  <motion.button
+                    onClick={handleApplicationIdSearch}
+                    disabled={isLoading || !applicationIdInput.trim()}
+                    className="mr-2 px-8 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-[#ff5010] to-[#fc641c] hover:shadow-lg disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-300 font-['Montserrat']"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    aria-label="Search application"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center">
+                        <Loader2 className="animate-spin mr-2" size={20} />
+                        Searching...
+                      </div>
+                    ) : (
+                      "Track Now"
+                    )}
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* Error Message */}
+              <AnimatePresence>
+                {foundApplication === false &&
+                  applicationIdInput.trim() &&
+                  !isLoading && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl"
+                    >
+                      <div className="flex items-center">
+                        <XCircle className="text-red-500 mr-2" size={20} />
+                        <p className="text-red-700 font-['Montserrat'] font-medium">
+                          No application found with this ID. Please check and
+                          try again.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Features Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+              {[
+                {
+                  icon: Clock,
+                  title: "Real-time Updates",
+                  desc: "Get instant status updates",
+                },
+                {
+                  icon: QrCode,
+                  title: "QR Code Access",
+                  desc: "Quick access via QR code",
+                },
+                {
+                  icon: Download,
+                  title: "Download Reports",
+                  desc: "Get detailed timeline PDFs",
+                },
+                {
+                  icon: CheckCircle,
+                  title: "Secure Tracking",
+                  desc: "Safe and encrypted data",
+                },
+              ].map((feature, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ y: -5 }}
+                  className="text-center p-6"
                 >
-                  No application found with this ID.
-                </motion.p>
-              )}
-          </AnimatePresence>
+                  <div className="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                    <feature.icon className="text-orange-500" size={24} />
+                  </div>
+                  <h3 className="font-semibold text-gray-800 mb-2 font-['Montserrat']">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm font-['Montserrat']">
+                    {feature.desc}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         </div>
       </div>
 
