@@ -27,7 +27,7 @@ import {
   BarChart3,
   Search,
 } from "lucide-react";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/SuperAdminComponents/SuperAdminNavbar";
 
 // Register Chart.js components
 ChartJS.register(

@@ -17,19 +17,26 @@ const AdminLogin = () => {
     setError("");
 
     // ✅ Hardcoded credentials check
-    if (adminId === "0519" && password === "@Dakpad2025") {
+    if (adminId === "0519" && password === "@admin2025") {
       localStorage.setItem("adminToken", "hardcoded-token");
       navigate("/Admin");
-    } else {
+    }
+    else if (adminId === "0520" && password === "@superadmin2025") 
+    {localStorage.setItem("adminToken", "hardcoded-token");
+      navigate("/SuperAdmin");
+    }
+    else if(adminId === "0521" && password === "@workassigned2025") {
+      localStorage.setItem("adminToken", "hardcoded-token");
+      navigate("/work-assigned");
+    }
+    else if(adminId === "0522" && password === "@recieve2025") {
+      localStorage.setItem("adminToken", "hardcoded-token");
+      navigate("/application-receive");
+    }
+    else {
       setError("Invalid Admin ID or Password");
     }
 
-    if (adminId === "0520" && password === "@Dakpad2026") {
-      localStorage.setItem("adminToken", "hardcoded-token");
-      navigate("/work-assigned");
-    } else {
-      setError("Invalid Admin ID or Password");
-    }
   };
 
   return (

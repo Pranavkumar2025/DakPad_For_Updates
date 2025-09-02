@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FaFilePdf, FaSpinner } from "react-icons/fa";
+import { Trash2 } from "lucide-react";
 
-
-const ApplicationTable = ({ data, onRowClick }) => {
+const SuperAdminApplicationTable = ({ data, onRowClick }) => {
   const [applications, setApplications] = useState([]);
 
   // Calculate pending days based on issue date and status
@@ -320,4 +320,4 @@ const ApplicationTable = ({ data, onRowClick }) => {
   );
 };
 
-export default ApplicationTable;
+export default SuperAdminApplicationTable;

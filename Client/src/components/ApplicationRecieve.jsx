@@ -45,7 +45,7 @@ const Navbar = () => {
             className="w-10 h-10 rounded-full shadow-md"
           />
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-gray-700">Pranav Kumar</span>
+            <span className="text-sm font-medium text-gray-700">Siddharth Singh</span>
           </div>
         </div>
 
@@ -74,7 +74,7 @@ const Navbar = () => {
 const Sidebar = () => {
   const menuItems = [
     { icon: <User className="w-5 h-5" />, label: "Users", link: "/user" },
-    { icon: <BarChart2 className="w-5 h-5" />, label: "Performance", link: "/performance" },
+   
   ];
 
   return (

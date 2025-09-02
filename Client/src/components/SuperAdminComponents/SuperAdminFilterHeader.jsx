@@ -6,7 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import DropdownButton from "../DropdownButton";
 
-const FilterHeader = ({
+const SuperAdminFilterHeader = ({
   searchQuery,
   setSearchQuery,
   filteredCount,
@@ -61,7 +61,7 @@ const FilterHeader = ({
     <div className="p-6 max-w-7xl mx-auto my-6 font-['Montserrat']">
       {/* Header and Search */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <h2 className="text-3xl font-bold text-gray-800">Application Management Dashboard</h2>
+        <h2 className="text-3xl font-bold text-gray-800">Super Admin Dashboard</h2>
         <input
           type="text"
           placeholder="Search by name or description"
@@ -78,6 +78,8 @@ const FilterHeader = ({
             Showing <span className="font-semibold">{filteredCount}</span> case
             {filteredCount !== 1 ? "s" : ""} filtered by
             <span className="font-semibold text-blue-600"> {selectedStatus || "All"} status</span>,
+            <span className="font-semibold text-blue-600"> {selectedDepartment || "All"} department</span>,
+            <span className="font-semibold text-blue-600"> {selectedBlock || "All"} block</span>,
             <span className="font-semibold text-blue-600"> {selectedDate || "All"} date</span>.
           </p>
 
@@ -91,6 +93,39 @@ const FilterHeader = ({
                 { label: "In Process", onClick: () => setSelectedStatus("In Process") },
                 { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
                 { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
+              ]}
+              className="bg-gray-50 hover:bg-gray-100 border-gray-200"
+              menuClassName="z-[1000]"
+            />
+
+            {/* Department Dropdown */}
+            <DropdownButton
+              label={selectedDepartment || "Select Department"}
+              items={[
+                { label: "All", onClick: () => setSelectedDepartment("") },
+                { label: "BDO, Barhara", onClick: () => setSelectedDepartment("BDO, Barhara") },
+                { label: "Director Accounts, DRDA", onClick: () => setSelectedDepartment("Director Accounts, DRDA") },
+                { label: "BDO Shahpur", onClick: () => setSelectedDepartment("BDO Shahpur") },
+                { label: "BDO Ara Sadar", onClick: () => setSelectedDepartment("BDO Ara Sadar") },
+                { label: "BDO Tarari", onClick: () => setSelectedDepartment("BDO Tarari") },
+                { label: "RDO Mohsin Khan", onClick: () => setSelectedDepartment("RDO Mohsin Khan") },
+              ]}
+              className="bg-gray-50 hover:bg-gray-100 border-gray-200"
+              menuClassName="z-[1000]"
+            />
+
+            {/* Block Dropdown */}
+            <DropdownButton
+              label={selectedBlock || "Select Block"}
+              items={[
+                { label: "All", onClick: () => setSelectedBlock("") },
+                { label: "Barhara", onClick: () => setSelectedBlock("Barhara") },
+                { label: "Shahpur", onClick: () => setSelectedBlock("Shahpur") },
+                { label: "Ara Sadar", onClick: () => setSelectedBlock("Ara Sadar") },
+                { label: "Bagar, Tarari", onClick: () => setSelectedBlock("Bagar, Tarari") },
+                { label: "Sandesh", onClick: () => setSelectedBlock("Sandesh") },
+                { label: "Behea", onClick: () => setSelectedBlock("Behea") },
+                { label: "Sahar", onClick: () => setSelectedBlock("Sahar") },
               ]}
               className="bg-gray-50 hover:bg-gray-100 border-gray-200"
               menuClassName="z-[1000]"
@@ -194,4 +229,4 @@ const FilterHeader = ({
   );
 };
 
-export default FilterHeader;
+export default SuperAdminFilterHeader;

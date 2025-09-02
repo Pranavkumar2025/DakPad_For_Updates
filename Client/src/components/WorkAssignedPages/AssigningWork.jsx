@@ -7,57 +7,84 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const AssigningWork = ({ data, onClose }) => {
   // State management
-  const [selectedDepartment, setSelectedDepartment] = useState({
+  const [selectedType, setSelectedType] = useState({
+    value: "",
+    label: "Select a type",
+  });
+  const [selectedOption, setSelectedOption] = useState({
     value: data.concernedOfficer || "",
-    label: data.concernedOfficer || "Select a department",
+    label: data.concernedOfficer || "Select an option",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
   const [isEditConfirmOpen, setIsEditConfirmOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [assignmentNote, setAssignmentNote] = useState("");
   const [uploadedFile, setUploadedFile] = useState(null);
   const [applicationData, setApplicationData] = useState(data);
   const [editIndex, setEditIndex] = useState(null);
-  const [editDepartment, setEditDepartment] = useState(null);
+  const [editType, setEditType] = useState(null);
+  const [editOption, setEditOption] = useState(null);
   const [editNote, setEditNote] = useState("");
 
-  // Department options
-  const departments = [
-    { value: "Inspection from committee (Director DRDA Accounts, DC Ranjay, Mis Santosh)", label: "DRDA Committee" },
-    { value: "Director Accounts, DRDA", label: "Director Accounts, DRDA" },
-    { value: "Complainant & Related (RDD, Patna)", label: "RDD, Patna" },
-    { value: "Senior Charged Officer, Sandesh cum DTO Bhojpur", label: "Senior Charged Officer, Sandesh" },
-    { value: "Hearing dt. 20-06-2025", label: "Hearing Committee" },
-    { value: "BDO, Barhara", label: "BDO, Barhara" },
-    { value: "Inspection from committee (DMWO, Senior Charged Officer, Sahpur Hina madam cum and MIS Pmay G)", label: "DMWO Committee" },
-    { value: "Hearing Of Awas Sahayak and Complainer", label: "Awas Sahayak Hearing" },
-    { value: "Hearing Of Awas Sahayak, Awas Parwechhak Mukhiya and Complainer", label: "Awas Sahayak and Mukhiya Hearing" },
-    { value: "BDO Sandesh & CO Sandesh", label: "BDO Sandesh & CO Sandesh" },
-    { value: "BDO Ara Sadar", label: "BDO Ara Sadar" },
-    { value: "BDO Shahpur", label: "BDO Shahpur" },
-    { value: "RDO Mohsin Khan", label: "RDO Mohsin Khan" },
-    { value: "BDO Tarari", label: "BDO Tarari" },
+  // Type options
+  const types = [
+    { value: "Department", label: "Department" },
+    { value: "Sub Division", label: "Sub Division" },
+    { value: "Block", label: "Block" },
   ];
 
+  // Options for each type
+  const optionsByType = {
+    Department: [
+      { value: "Inspection from committee (Director DRDA Accounts, DC Ranjay, Mis Santosh)", label: "DRDA Committee" },
+      { value: "Director Accounts, DRDA", label: "Director Accounts, DRDA" },
+      { value: "Complainant & Related (RDD, Patna)", label: "RDD, Patna" },
+      { value: "Senior Charged Officer, Sandesh cum DTO Bhojpur", label: "Senior Charged Officer, Sandesh" },
+      { value: "Hearing dt. 20-06-2025", label: "Hearing Committee" },
+      { value: "Inspection from committee (DMWO, Senior Charged Officer, Sahpur Hina madam cum and MIS Pmay G)", label: "DMWO Committee" },
+      { value: "Hearing Of Awas Sahayak and Complainer", label: "Awas Sahayak Hearing" },
+      { value: "Hearing Of Awas Sahayak, Awas Parwechhak Mukhiya and Complainer", label: "Awas Sahayak and Mukhiya Hearing" },
+    ],
+    SubDivision: [
+      { value: "Ara", label: "Ara" },
+      { value: "Jagdishpur", label: "Jagdishpur" },
+      { value: "Piro", label: "Piro" },
+      { value: "Udwantnagar", label: "Udwantnagar" },
+    ],
+    Block: [
+      { value: "BDO, Barhara", label: "BDO, Barhara" },
+      { value: "BDO Sandesh & CO Sandesh", label: "BDO Sandesh & CO Sandesh" },
+      { value: "BDO Ara Sadar", label: "BDO Ara Sadar" },
+      { value: "BDO Shahpur", label: "BDO Shahpur" },
+      { value: "RDO Mohsin Khan", label: "RDO Mohsin Khan" },
+      { value: "BDO Tarari", label: "BDO Tarari" },
+    ],
+  };
+
   // Calculate pending days
-  const calculatePendingDays = (issueDate) => {
+  const calculatePendingDays = (issueDate, status) => {
+    if (status === "Compliance" || status === "Closed") return 0;
     const issue = new Date(issueDate);
     const today = new Date();
     const diffTime = Math.abs(today - issue);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  // Determine dynamic status based on timeline
-  const determineStatus = (timeline) => {
-    if (!timeline || timeline.length === 0) return "Pending";
+  // Determine dynamic status based on timeline and concernedOfficer
+  const determineStatus = (timeline, concernedOfficer) => {
+    if (!concernedOfficer || concernedOfficer === "N/A" || concernedOfficer === "") {
+      return "Not Assigned Yet";
+    }
+    if (!timeline || timeline.length === 0) return "In Process";
     const latestEntry = timeline[timeline.length - 1].section.toLowerCase();
-    if (latestEntry.includes("received") || latestEntry.includes("assigned")) return "Pending";
     if (latestEntry.includes("compliance")) return "Compliance";
     if (latestEntry.includes("dismissed")) return "Dismissed";
+    if (latestEntry.includes("closed")) return "Closed";
     return "In Process";
   };
 
@@ -66,8 +93,8 @@ const AssigningWork = ({ data, onClose }) => {
     const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
     const matchedApp = storedApplications.find((app) => app.ApplicantId === data.applicationId);
     if (matchedApp) {
-      const pendingDays = calculatePendingDays(matchedApp.applicationDate);
-      const status = determineStatus(matchedApp.timeline);
+      const status = determineStatus(matchedApp.timeline, matchedApp.concernedOfficer);
+      const pendingDays = calculatePendingDays(matchedApp.applicationDate, status);
       setApplicationData({
         ...data,
         applicationId: matchedApp.ApplicantId,
@@ -92,10 +119,22 @@ const AssigningWork = ({ data, onClose }) => {
           },
         ],
       });
+      // Set initial type and option based on concernedOfficer
+      const officer = matchedApp.concernedOfficer;
+      if (officer) {
+        const foundType = Object.keys(optionsByType).find((type) =>
+          optionsByType[type].some((opt) => opt.value === officer)
+        );
+        if (foundType) {
+          setSelectedType({ value: foundType, label: foundType });
+          const foundOption = optionsByType[foundType].find((opt) => opt.value === officer);
+          setSelectedOption(foundOption || { value: "", label: "Select an option" });
+        }
+      }
     }
   };
 
-  // Real-time localStorage updates and Escape key listener for details modal
+  // Real-time localStorage updates and Escape key listener
   useEffect(() => {
     updateApplicationData();
     const handleStorageChange = (event) => {
@@ -119,9 +158,17 @@ const AssigningWork = ({ data, onClose }) => {
     };
   }, [data.applicationId, uploadedFile, isDetailsOpen]);
 
-  // Handle department selection
-  const handleDepartmentChange = (option) => {
-    setSelectedDepartment(option || { value: "", label: "Select a department" });
+  // Handle type selection
+  const handleTypeChange = (option) => {
+    setSelectedType(option || { value: "", label: "Select a type" });
+    setSelectedOption({ value: "", label: "Select an option" }); // Reset option when type changes
+    setSaveSuccess(false);
+    setErrorMessage("");
+  };
+
+  // Handle option selection
+  const handleOptionChange = (option) => {
+    setSelectedOption(option || { value: "", label: "Select an option" });
     setSaveSuccess(false);
     setErrorMessage("");
   };
@@ -145,12 +192,16 @@ const AssigningWork = ({ data, onClose }) => {
 
   // Handle save assignment
   const handleSaveAssignment = () => {
-    if (!selectedDepartment?.value) {
-      setErrorMessage("Please select a department.");
+    if (!selectedType?.value) {
+      setErrorMessage("Please select a type.");
       return;
     }
-    if (selectedDepartment.value === applicationData.concernedOfficer) {
-      setErrorMessage("Selected department is already assigned.");
+    if (!selectedOption?.value) {
+      setErrorMessage(`Please select a ${selectedType.value.toLowerCase()}.`);
+      return;
+    }
+    if (selectedOption.value === applicationData.concernedOfficer) {
+      setErrorMessage(`Selected ${selectedType.value.toLowerCase()} is already assigned.`);
       return;
     }
     setIsConfirmOpen(true);
@@ -166,16 +217,7 @@ const AssigningWork = ({ data, onClose }) => {
         app.ApplicantId === applicationData.applicationId
           ? {
               ...app,
-              concernedOfficer: selectedDepartment.value,
-              status: determineStatus([
-                ...(app.timeline || []),
-                {
-                  section: selectedDepartment.label,
-                  comment: assignmentNote || "Assigned to department",
-                  date: new Date().toLocaleDateString("en-GB"),
-                  pdfLink: uploadedFile?.url || null,
-                },
-              ]),
+              concernedOfficer: selectedOption.value,
               timeline: [
                 ...(app.timeline || [
                   {
@@ -186,8 +228,8 @@ const AssigningWork = ({ data, onClose }) => {
                   },
                 ]),
                 {
-                  section: selectedDepartment.label,
-                  comment: assignmentNote || "Assigned to department",
+                  section: selectedOption.label,
+                  comment: assignmentNote || `Assigned to ${selectedType.value.toLowerCase()}`,
                   date: new Date().toLocaleDateString("en-GB"),
                   pdfLink: uploadedFile?.url || null,
                 },
@@ -198,16 +240,26 @@ const AssigningWork = ({ data, onClose }) => {
       localStorage.setItem("applications", JSON.stringify(updatedApplications));
       setApplicationData((prev) => ({
         ...prev,
-        concernedOfficer: selectedDepartment.value,
-        status: determineStatus([
-          ...(prev.timeline || []),
-          {
-            section: selectedDepartment.label,
-            comment: assignmentNote || "Assigned to department",
-            date: new Date().toLocaleDateString("en-GB"),
-            pdfLink: uploadedFile?.url || null,
-          },
-        ]),
+        concernedOfficer: selectedOption.value,
+        status: determineStatus(
+          [
+            ...(prev.timeline || [
+              {
+                section: "Application Received",
+                comment: `Application received at ${prev.gpBlock || "N/A"} on ${prev.dateOfApplication}`,
+                date: prev.dateOfApplication,
+                pdfLink: prev.pdfLink || null,
+              },
+            ]),
+            {
+              section: selectedOption.label,
+              comment: assignmentNote || `Assigned to ${selectedType.value.toLowerCase()}`,
+              date: new Date().toLocaleDateString("en-GB"),
+              pdfLink: uploadedFile?.url || null,
+            },
+          ],
+          selectedOption.value
+        ),
         timeline: [
           ...(prev.timeline || [
             {
@@ -218,8 +270,8 @@ const AssigningWork = ({ data, onClose }) => {
             },
           ]),
           {
-            section: selectedDepartment.label,
-            comment: assignmentNote || "Assigned to department",
+            section: selectedOption.label,
+            comment: assignmentNote || `Assigned to ${selectedType.value.toLowerCase()}`,
             date: new Date().toLocaleDateString("en-GB"),
             pdfLink: uploadedFile?.url || null,
           },
@@ -227,8 +279,72 @@ const AssigningWork = ({ data, onClose }) => {
       }));
       setIsSaving(false);
       setSaveSuccess(true);
-      setSelectedDepartment({ value: "", label: "Select a department" });
+      setSelectedType({ value: "", label: "Select a type" });
+      setSelectedOption({ value: "", label: "Select an option" });
       setAssignmentNote("");
+      setUploadedFile(null);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }, 1000);
+  };
+
+  // Handle close application
+  const handleCloseApplication = () => {
+    setIsCloseConfirmOpen(true);
+  };
+
+  // Confirm close
+  const confirmClose = () => {
+    setIsSaving(true);
+    setIsCloseConfirmOpen(false);
+    setTimeout(() => {
+      const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+      const updatedApplications = storedApplications.map((app) =>
+        app.ApplicantId === applicationData.applicationId
+          ? {
+              ...app,
+              timeline: [
+                ...(app.timeline || [
+                  {
+                    section: "Application Received",
+                    comment: `Application received at ${app.block || "N/A"} on ${app.applicationDate}`,
+                    date: app.applicationDate,
+                    pdfLink: app.attachment || null,
+                  },
+                ]),
+                {
+                  section: "Closed",
+                  comment: `Application closed on ${new Date().toLocaleDateString("en-GB")}`,
+                  date: new Date().toLocaleDateString("en-GB"),
+                  pdfLink: uploadedFile?.url || null,
+                },
+              ],
+            }
+          : app
+      );
+      localStorage.setItem("applications", JSON.stringify(updatedApplications));
+      setApplicationData((prev) => ({
+        ...prev,
+        status: "Closed",
+        pendingDays: 0,
+        timeline: [
+          ...(prev.timeline || [
+            {
+              section: "Application Received",
+              comment: `Application received at ${prev.gpBlock || "N/A"} on ${prev.dateOfApplication}`,
+              date: prev.dateOfApplication,
+              pdfLink: prev.pdfLink || null,
+            },
+          ]),
+          {
+            section: "Closed",
+            comment: `Application closed on ${new Date().toLocaleDateString("en-GB")}`,
+            date: new Date().toLocaleDateString("en-GB"),
+            pdfLink: uploadedFile?.url || null,
+          },
+        ],
+      }));
+      setIsSaving(false);
+      setSaveSuccess(true);
       setUploadedFile(null);
       setTimeout(() => setSaveSuccess(false), 3000);
     }, 1000);
@@ -237,20 +353,38 @@ const AssigningWork = ({ data, onClose }) => {
   // Handle edit timeline entry
   const handleEditTimeline = (index, entry) => {
     setEditIndex(index);
-    setEditDepartment(
-      departments.find((dept) => dept.label === entry.section) || {
-        value: "",
-        label: "Select a department",
-      }
+    const foundType = Object.keys(optionsByType).find((type) =>
+      optionsByType[type].some((opt) => opt.label === entry.section)
+    );
+    setEditType(
+      foundType ? { value: foundType, label: foundType } : { value: "", label: "Select a type" }
+    );
+    setEditOption(
+      foundType
+        ? optionsByType[foundType].find((opt) => opt.label === entry.section) || {
+            value: "",
+            label: "Select an option",
+          }
+        : { value: "", label: "Select an option" }
     );
     setEditNote(entry.comment);
     setIsEditConfirmOpen(true);
   };
 
+  // Handle edit type change
+  const handleEditTypeChange = (option) => {
+    setEditType(option || { value: "", label: "Select a type" });
+    setEditOption({ value: "", label: "Select an option" }); // Reset option when type changes
+  };
+
   // Confirm edit
   const confirmEdit = () => {
-    if (!editDepartment?.value) {
-      setErrorMessage("Please select a department for editing.");
+    if (!editType?.value) {
+      setErrorMessage("Please select a type for editing.");
+      return;
+    }
+    if (!editOption?.value) {
+      setErrorMessage(`Please select a ${editType.value.toLowerCase()} for editing.`);
       return;
     }
     setIsSaving(true);
@@ -261,26 +395,27 @@ const AssigningWork = ({ data, onClose }) => {
         app.ApplicantId === applicationData.applicationId
           ? {
               ...app,
-              concernedOfficer: editDepartment.value,
+              concernedOfficer: editOption.value,
               status: determineStatus(
                 app.timeline.map((entry, idx) =>
                   idx === editIndex
                     ? {
                         ...entry,
-                        section: editDepartment.label,
-                        comment: editNote || "Assigned to department",
+                        section: editOption.label,
+                        comment: editNote || `Assigned to ${editType.value.toLowerCase()}`,
                         date: new Date().toLocaleDateString("en-GB"),
                         pdfLink: uploadedFile?.url || entry.pdfLink,
                       }
                     : entry
-                )
+                ),
+                editOption.value
               ),
               timeline: app.timeline.map((entry, idx) =>
                 idx === editIndex
                   ? {
                       ...entry,
-                      section: editDepartment.label,
-                      comment: editNote || "Assigned to department",
+                      section: editOption.label,
+                      comment: editNote || `Assigned to ${editType.value.toLowerCase()}`,
                       date: new Date().toLocaleDateString("en-GB"),
                       pdfLink: uploadedFile?.url || entry.pdfLink,
                     }
@@ -292,26 +427,27 @@ const AssigningWork = ({ data, onClose }) => {
       localStorage.setItem("applications", JSON.stringify(updatedApplications));
       setApplicationData((prev) => ({
         ...prev,
-        concernedOfficer: editDepartment.value,
+        concernedOfficer: editOption.value,
         status: determineStatus(
           prev.timeline.map((entry, idx) =>
             idx === editIndex
               ? {
                   ...entry,
-                  section: editDepartment.label,
-                  comment: editNote || "Assigned to department",
+                  section: editOption.label,
+                  comment: editNote || `Assigned to ${editType.value.toLowerCase()}`,
                   date: new Date().toLocaleDateString("en-GB"),
                   pdfLink: uploadedFile?.url || entry.pdfLink,
                 }
               : entry
-          )
+          ),
+          editOption.value
         ),
         timeline: prev.timeline.map((entry, idx) =>
           idx === editIndex
             ? {
                 ...entry,
-                section: editDepartment.label,
-                comment: editNote || "Assigned to department",
+                section: editOption.label,
+                comment: editNote || `Assigned to ${editType.value.toLowerCase()}`,
                 date: new Date().toLocaleDateString("en-GB"),
                 pdfLink: uploadedFile?.url || entry.pdfLink,
               }
@@ -321,7 +457,8 @@ const AssigningWork = ({ data, onClose }) => {
       setIsSaving(false);
       setSaveSuccess(true);
       setEditIndex(null);
-      setEditDepartment(null);
+      setEditType(null);
+      setEditOption(null);
       setEditNote("");
       setUploadedFile(null);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -331,14 +468,18 @@ const AssigningWork = ({ data, onClose }) => {
   // Status styling
   const getStatusStyle = (status) => {
     switch (status) {
-      case "Pending":
-        return { bg: "bg-amber-100", text: "text-amber-700", badge: "bg-amber-500 text-white", icon: <Loader2 size={20} /> };
+      case "Not Assigned Yet":
+        return { bg: "bg-gray-100", text: "text-gray-700", badge: "bg-gray-500 text-white", icon: <Loader2 size={20} /> };
+      case "In Process":
+        return { bg: "bg-blue-100", text: "text-blue-700", badge: "bg-blue-600 text-white", icon: <FaSpinner className="animate-spin-slow" size={20} /> };
       case "Compliance":
         return { bg: "bg-green-100", text: "text-green-700", badge: "bg-green-600 text-white", icon: <CheckCircle size={20} /> };
       case "Dismissed":
         return { bg: "bg-red-100", text: "text-red-700", badge: "bg-red-600 text-white", icon: <XCircle size={20} /> };
+      case "Closed":
+        return { bg: "bg-purple-100", text: "text-purple-700", badge: "bg-purple-500 text-white", icon: <CheckCircle size={20} /> };
       default:
-        return { bg: "bg-blue-100", text: "text-blue-700", badge: "bg-blue-600 text-white", icon: <FaSpinner className="animate-spin-slow" size={20} /> };
+        return { bg: "bg-gray-100", text: "text-gray-700", badge: "bg-gray-500 text-white", icon: <Loader2 size={20} /> };
     }
   };
 
@@ -361,15 +502,28 @@ const AssigningWork = ({ data, onClose }) => {
           <h2 className="text-xl font-semibold text-gray-900 font-['Montserrat']">
             Application Id: <span className="text-green-700">{applicationData.applicationId}</span>
           </h2>
-          <motion.button
-            className="text-gray-500 hover:text-red-600 text-xl transition-colors"
-            onClick={onClose}
-            aria-label="Close dialog"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <IoClose />
-          </motion.button>
+          <div className="flex gap-2">
+            {applicationData.status !== "Closed" && (
+              <motion.button
+                onClick={handleCloseApplication}
+                className="text-gray-500 hover:text-red-600 text-xl transition-colors"
+                aria-label="Close application"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <IoClose />
+              </motion.button>
+            )}
+            <motion.button
+              onClick={onClose}
+              className="text-gray-500 hover:text-red-600 text-xl transition-colors"
+              aria-label="Close dialog"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <IoClose />
+            </motion.button>
+          </div>
         </div>
 
         {/* Assigning Work Section */}
@@ -379,7 +533,7 @@ const AssigningWork = ({ data, onClose }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 font-['Montserrat']">Assign Department</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 font-['Montserrat']">Assign Work</h3>
           <div className="space-y-6">
             <div className={`p-4 rounded-xl ${getStatusStyle(applicationData.status).bg}`}>
               <div className="flex items-center gap-3">
@@ -399,16 +553,17 @@ const AssigningWork = ({ data, onClose }) => {
               </div>
             </div>
             <div>
-              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Select Department</span>
+              <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Select Type</span>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-2">
                 <Select
-                  options={departments}
-                  value={selectedDepartment}
-                  onChange={handleDepartmentChange}
-                  className="w-full sm:w-80 text-sm"
-                  placeholder="Select a department"
+                  options={types}
+                  value={selectedType}
+                  onChange={handleTypeChange}
+                  className="w-full sm:w-40 text-sm"
+                  placeholder="Select a type"
                   isClearable
                   isSearchable
+                  isDisabled={applicationData.status === "Closed"}
                   styles={{
                     control: (base) => ({
                       ...base,
@@ -429,26 +584,68 @@ const AssigningWork = ({ data, onClose }) => {
                       fontSize: "0.875rem",
                     }),
                   }}
-                  aria-label="Select department for assignment"
+                  aria-label="Select type for assignment"
                 />
+                <AnimatePresence>
+                  {selectedType?.value && (
+                    <motion.div
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Select
+                        options={optionsByType[selectedType.value] || []}
+                        value={selectedOption}
+                        onChange={handleOptionChange}
+                        className="w-full sm:w-80 text-sm"
+                        placeholder={`Select a ${selectedType.value.toLowerCase()}`}
+                        isClearable
+                        isSearchable
+                        isDisabled={applicationData.status === "Closed"}
+                        styles={{
+                          control: (base) => ({
+                            ...base,
+                            borderColor: "#d1d5db",
+                            borderRadius: "0.5rem",
+                            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                            "&:hover": { borderColor: "#16a34a" },
+                            padding: "0.25rem",
+                            fontFamily: "'Montserrat', sans-serif",
+                            fontSize: "0.875rem",
+                          }),
+                          option: (base, { isFocused, isSelected }) => ({
+                            ...base,
+                            backgroundColor: isSelected ? "#16a34a" : isFocused ? "#f0fff4" : "white",
+                            color: isSelected ? "white" : "#111827",
+                            cursor: "pointer",
+                            fontFamily: "'Montserrat', sans-serif",
+                            fontSize: "0.875rem",
+                          }),
+                        }}
+                        aria-label={`Select ${selectedType.value.toLowerCase()} for assignment`}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 <motion.button
                   onClick={handleSaveAssignment}
-                  disabled={isSaving || selectedDepartment?.value === applicationData.concernedOfficer}
+                  disabled={isSaving || !selectedType?.value || !selectedOption?.value || applicationData.status === "Closed"}
                   className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg shadow-sm transition font-['Montserrat'] ${
-                    isSaving || selectedDepartment?.value === applicationData.concernedOfficer
+                    isSaving || !selectedType?.value || !selectedOption?.value || applicationData.status === "Closed"
                       ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                       : "bg-green-600 text-white hover:bg-green-700"
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  aria-label="Save department assignment"
+                  aria-label="Save assignment"
                 >
                   {isSaving ? (
                     <>
                       <FaSpinner className="animate-spin-slow" /> Saving...
                     </>
                   ) : (
-                    "Assign Department"
+                    "Assign"
                   )}
                 </motion.button>
               </div>
@@ -457,7 +654,8 @@ const AssigningWork = ({ data, onClose }) => {
                 rows={3}
                 value={assignmentNote}
                 onChange={(e) => setAssignmentNote(e.target.value)}
-                className="w-full mt-4 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600 transition font-['Montserrat'] shadow-sm"
+                disabled={applicationData.status === "Closed"}
+                className="w-full mt-4 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600 transition font-['Montserrat'] shadow-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                 aria-label="Assignment notes"
               />
               {saveSuccess && (
@@ -467,7 +665,7 @@ const AssigningWork = ({ data, onClose }) => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <FaCheckCircle /> Assignment saved successfully!
+                  <FaCheckCircle /> Action saved successfully!
                 </motion.p>
               )}
               {errorMessage && (
@@ -483,16 +681,21 @@ const AssigningWork = ({ data, onClose }) => {
             </div>
             <div>
               <span className="text-sm font-medium text-gray-600 font-['Montserrat']">Upload Document (Optional)</span>
-              <label className="flex items-center justify-center w-full h-24 mt-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-600 transition bg-white shadow-sm">
+              <label
+                className={`flex items-center justify-center w-full h-24 mt-2 border-2 border-dashed border-gray-300 rounded-lg transition bg-white shadow-sm ${
+                  applicationData.status === "Closed" ? "cursor-not-allowed" : "cursor-pointer hover:border-green-600"
+                }`}
+              >
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
                   onChange={handleFileUpload}
                   className="hidden"
+                  disabled={applicationData.status === "Closed"}
                   aria-label="Upload document"
                 />
                 <div className="flex items-center gap-2 text-gray-600">
-                  <FaUpload className="text-green-600" />
+                  <FaUpload className={applicationData.status === "Closed" ? "text-gray-400" : "text-green-600"} />
                   <span className="text-sm font-['Montserrat']">
                     {uploadedFile ? uploadedFile.name : "Drag or click to upload (PDF, JPEG, PNG, max 5MB)"}
                   </span>
@@ -521,16 +724,21 @@ const AssigningWork = ({ data, onClose }) => {
                       <div className="relative pl-6">
                         <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-green-200"></div>
                         {applicationData.timeline.map((entry, idx) => {
-                          const isCompleted = idx < applicationData.timeline.length - 1 || entry.section.toLowerCase().includes("compliance");
-                          const isPending = entry.section.toLowerCase().includes("received") || entry.section.toLowerCase().includes("assigned");
+                          const isCompleted =
+                            idx < applicationData.timeline.length - 1 ||
+                            entry.section.toLowerCase().includes("compliance") ||
+                            entry.section.toLowerCase().includes("closed");
+                          const isNotAssigned = applicationData.status === "Not Assigned Yet";
                           const isRejected = entry.section.toLowerCase().includes("dismissed");
                           const dotClass = isCompleted
-                            ? "bg-green-600 border-2 border-white"
-                            : isPending
-                            ? "bg-amber-500"
+                            ? entry.section.toLowerCase().includes("closed")
+                              ? "bg-purple-600 border-2 border-white"
+                              : "bg-green-600 border-2 border-white"
+                            : isNotAssigned
+                            ? "bg-gray-500"
                             : isRejected
                             ? "bg-red-600"
-                            : "bg-gray-300";
+                            : "bg-blue-600";
                           const icon = isCompleted ? <CheckCircle size={18} className="text-white" /> : null;
                           return (
                             <motion.div
@@ -564,7 +772,7 @@ const AssigningWork = ({ data, onClose }) => {
                                     </motion.a>
                                   )}
                                 </div>
-                                {idx !== 0 && idx === applicationData.timeline.length - 1 && (
+                                {idx !== 0 && idx === applicationData.timeline.length - 1 && applicationData.status !== "Closed" && (
                                   <motion.button
                                     onClick={() => handleEditTimeline(idx, entry)}
                                     className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-1 font-['Montserrat']"
@@ -697,7 +905,9 @@ const AssigningWork = ({ data, onClose }) => {
                     <p>
                       <span
                         className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${
-                          applicationData.pendingDays <= 10
+                          applicationData.pendingDays === 0
+                            ? "bg-green-600 text-white"
+                            : applicationData.pendingDays <= 10
                             ? "bg-green-600 text-white"
                             : applicationData.pendingDays <= 15
                             ? "bg-amber-600 text-white"
@@ -756,7 +966,7 @@ const AssigningWork = ({ data, onClose }) => {
                 <h3 className="text-lg font-semibold text-gray-900 text-center font-['Montserrat']">Confirm Assignment</h3>
                 <p className="text-sm text-gray-600 mt-2 text-center font-['Montserrat']">
                   Assign this application to{" "}
-                  <span className="font-semibold text-green-700">{selectedDepartment?.label}</span>?
+                  <span className="font-semibold text-green-700">{selectedOption?.label}</span> ({selectedType?.label})?
                 </p>
                 <div className="mt-6 flex gap-4 justify-center">
                   <motion.button
@@ -774,6 +984,52 @@ const AssigningWork = ({ data, onClose }) => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     aria-label="Cancel assignment"
+                  >
+                    Cancel
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Close Confirmation Modal */}
+        <AnimatePresence>
+          {isCloseConfirmOpen && (
+            <motion.div
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-60"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h3 className="text-lg font-semibold text-gray-900 text-center font-['Montserrat']">Confirm Closure</h3>
+                <p className="text-sm text-gray-600 mt-2 text-center font-['Montserrat']">
+                  Are you sure you want to close this application? This will update its status to "Closed".
+                </p>
+                <div className="mt-6 flex gap-4 justify-center">
+                  <motion.button
+                    className="px-6 py-2.5 text-sm font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition font-['Montserrat'] shadow-sm"
+                    onClick={confirmClose}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Confirm closure"
+                  >
+                    Confirm
+                  </motion.button>
+                  <motion.button
+                    className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition font-['Montserrat'] shadow-sm"
+                    onClick={() => setIsCloseConfirmOpen(false)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Cancel closure"
                   >
                     Cancel
                   </motion.button>
@@ -801,16 +1057,14 @@ const AssigningWork = ({ data, onClose }) => {
                 transition={{ duration: 0.3 }}
               >
                 <h3 className="text-lg font-semibold text-gray-900 text-center font-['Montserrat']">Edit Assignment</h3>
-                <p className="text-sm text-gray-600 mt-2 text-center font-['Montserrat']">Modify the department and note.</p>
+                <p className="text-sm text-gray-600 mt-2 text-center font-['Montserrat']">Modify the type, option, and note.</p>
                 <div className="mt-4 space-y-4">
                   <Select
-                    options={departments}
-                    value={editDepartment}
-                    onChange={(option) =>
-                      setEditDepartment(option || { value: "", label: "Select a department" })
-                    }
+                    options={types}
+                    value={editType}
+                    onChange={handleEditTypeChange}
                     className="w-full text-sm"
-                    placeholder="Select a department"
+                    placeholder="Select a type"
                     isClearable
                     isSearchable
                     styles={{
@@ -833,8 +1087,42 @@ const AssigningWork = ({ data, onClose }) => {
                         fontSize: "0.875rem",
                       }),
                     }}
-                    aria-label="Select department for editing"
+                    aria-label="Select type for editing"
                   />
+                  {editType?.value && (
+                    <Select
+                      options={optionsByType[editType.value] || []}
+                      value={editOption}
+                      onChange={(option) =>
+                        setEditOption(option || { value: "", label: "Select an option" })
+                      }
+                      className="w-full text-sm"
+                      placeholder={`Select a ${editType.value.toLowerCase()}`}
+                      isClearable
+                      isSearchable
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          borderColor: "#d1d5db",
+                          borderRadius: "0.5rem",
+                          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                          "&:hover": { borderColor: "#16a34a" },
+                          padding: "0.25rem",
+                          fontFamily: "'Montserrat', sans-serif",
+                          fontSize: "0.875rem",
+                        }),
+                        option: (base, { isFocused, isSelected }) => ({
+                          ...base,
+                          backgroundColor: isSelected ? "#16a34a" : isFocused ? "#f0fff4" : "white",
+                          color: isSelected ? "white" : "#111827",
+                          cursor: "pointer",
+                          fontFamily: "'Montserrat', sans-serif",
+                          fontSize: "0.875rem",
+                        }),
+                      }}
+                      aria-label={`Select ${editType.value.toLowerCase()} for editing`}
+                    />
+                  )}
                   <textarea
                     placeholder="Edit assignment note (optional)"
                     rows={3}
@@ -910,6 +1198,10 @@ const AssigningWork = ({ data, onClose }) => {
           button:focus,
           select:focus {
             outline: none;
+          }
+          .backdrop-blur-sm {
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
           }
         `}</style>
       </motion.div>

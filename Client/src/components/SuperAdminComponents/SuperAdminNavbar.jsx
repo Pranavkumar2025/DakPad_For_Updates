@@ -2,7 +2,7 @@ import React from "react";
 import { FaBell, FaUsers } from "react-icons/fa"; // Added FaUsers for logo icon
 import { motion } from "framer-motion";
 
-const WorkAssignNavbar = () => {
+const SuperAdminNavbar = () => {
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -16,21 +16,23 @@ const WorkAssignNavbar = () => {
   return (
     <div className="h-16 ml-16 p-6 bg-white shadow-md flex items-center justify-between px-6 rounded-full">
       {/* Logo with Icon */}
-      <motion.div
-        className="flex items-center gap-2"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        whileHover={{ scale: 1.05 }}
-      >
-        <FaUsers className="text-3xl text-[#ff5010]" />
-        <span
-          className="text-2xl font-bold text-transparent uppercase bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
-          style={{ fontFamily: "'Montserrat', sans-serif" }}
+      <a href="/SuperAdmin" aria-label="Jan Samadhan Home">
+        <motion.div
+          className="flex items-center gap-2"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          whileHover={{ scale: 1.05 }}
         >
-          Jan Samadhan
-        </span>
-      </motion.div>
+          <FaUsers className="text-3xl text-[#ff5010]" />
+          <span
+            className="text-2xl font-bold text-transparent uppercase bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
+          >
+            Jan Samadhan
+          </span>
+        </motion.div>
+      </a>
 
       <div className="flex items-center space-x-6">
         <span className="text-sm text-gray-500">{today}</span>
@@ -42,7 +44,7 @@ const WorkAssignNavbar = () => {
             className="w-10 h-10 rounded-full shadow-md"
           />
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-gray-700">Pranav Kumar</span>
+            <span className="text-sm font-medium text-gray-700">Prashant Singh</span>
           </div>
         </div>
 
@@ -67,4 +69,4 @@ const WorkAssignNavbar = () => {
   );
 };
 
-export default WorkAssignNavbar;
+export default SuperAdminNavbar;

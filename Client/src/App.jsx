@@ -10,12 +10,15 @@ import AdminLogin from "./pages/AdminLogin";
 import PerformanceDashboard from "./pages/PerformanceDashboard";
 import WorkAssignedDashboard from "./components/WorkAssignedPages/WorkAssignedDashboard";
 import ApplicationReceive from "./components/ApplicationRecieve";
+import SuperAdminDashboard from "./components/SuperAdminComponents/SuperAdminDashboard";
 
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route path="/Admin" element={<AdminDashboard />} />
+        <Route path="/SuperAdmin" element={<SuperAdminDashboard />} />
+
 
         {/* ✅ Protected Route */}
         {/* <Route

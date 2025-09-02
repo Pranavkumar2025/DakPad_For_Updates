@@ -1,34 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { FaFilePdf, FaSpinner } from "react-icons/fa";
-import { Trash2 } from "lucide-react";
+import { X } from "lucide-react";
 
 const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
   const [applications, setApplications] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedApplicationId, setSelectedApplicationId] = useState(null);
 
   // Calculate pending days based on issue date and status
   const calculatePendingDays = (issueDate, status) => {
-    if (status === "Compliance") return 0; // Return 0 for Compliance status
+    if (status === "Compliance" || status === "Closed") return 0;
     const issue = new Date(issueDate);
     const today = new Date();
     const diffTime = Math.abs(today - issue);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  // Determine dynamic status based on timeline (from AssigningWork)
-  const determineStatus = (timeline) => {
-    if (!timeline || timeline.length === 0) return "Pending";
+  // Determine dynamic status based on timeline and concernedOfficer
+  const determineStatus = (timeline, concernedOfficer) => {
+    if (!concernedOfficer || concernedOfficer === "N/A" || concernedOfficer === "") return "Not Assigned Yet";
+    if (!timeline || timeline.length === 0) return "In Process";
     const latestEntry = timeline[timeline.length - 1].section.toLowerCase();
-    if (latestEntry.includes("received") || latestEntry.includes("assigned")) return "Pending";
     if (latestEntry.includes("compliance")) return "Compliance";
     if (latestEntry.includes("dismissed")) return "Dismissed";
+    if (latestEntry.includes("closed")) return "Closed";
     return "In Process";
   };
 
-  // Function to update applications from localStorage and JSON data
+  // Update applications from localStorage and JSON data
   const updateApplications = () => {
     const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
-
-    // Map localStorage data to match WorkAssignedApplicationTable structure
     const mappedStoredApplications = storedApplications
       .map((app, index) => {
         const timeline = app.timeline || [
@@ -39,10 +40,10 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
             pdfLink: app.attachment || null,
           },
         ];
-        const status = determineStatus(timeline); // Use determineStatus for status
+        const status = determineStatus(timeline, app.concernedOfficer);
         return {
           applicationId: app.ApplicantId,
-          sNo: index + 1, // Temporary sNo
+          sNo: index + 1,
           dateOfApplication: app.applicationDate,
           applicantName: app.applicant,
           subject: app.subject,
@@ -53,12 +54,11 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
           attachment: app.attachment,
           concernedOfficer: app.concernedOfficer || "N/A",
           isFromLocalStorage: true,
-          timeline: timeline, // Include timeline for status calculation
+          timeline: timeline,
         };
       })
       .sort((a, b) => new Date(b.dateOfApplication) - new Date(a.dateOfApplication));
 
-    // Merge with JSON data, avoiding duplicates
     const storedAppIds = new Set(mappedStoredApplications.map((app) => app.applicationId));
     const filteredData = data.filter((item) => !storedAppIds.has(item.applicationId));
     const combinedData = [
@@ -72,7 +72,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
             pdfLink: item.attachment || null,
           },
         ];
-        const status = determineStatus(timeline); // Use determineStatus for JSON data
+        const status = determineStatus(timeline, item.concernedOfficer);
         return {
           ...item,
           sNo: mappedStoredApplications.length + index + 1,
@@ -82,7 +82,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
           timeline: timeline,
         };
       }),
-    ].map((item, index) => ({ ...item, sNo: index + 1 })); // Re-index sNo
+    ].map((item, index) => ({ ...item, sNo: index + 1 }));
 
     setApplications(combinedData);
   };
@@ -96,11 +96,9 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
       }
     };
     window.addEventListener("storage", handleStorageChange);
-
-    // Polling for same-tab updates
     const intervalId = setInterval(() => {
       updateApplications();
-    }, 1000); // Check every 1 second
+    }, 1000);
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
@@ -108,20 +106,47 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
     };
   }, [data]);
 
-  // Handle removal of localStorage applications
-  const handleRemove = (applicationId) => {
-    if (window.confirm("Are you sure you want to remove this application?")) {
-      const updatedStoredApplications = JSON.parse(localStorage.getItem("applications") || "[]").filter(
-        (app) => app.ApplicantId !== applicationId
-      );
-      localStorage.setItem("applications", JSON.stringify(updatedStoredApplications));
+  // Handle opening the confirmation modal
+  const handleOpenModal = (applicationId) => {
+    setSelectedApplicationId(applicationId);
+    setIsModalOpen(true);
+  };
+
+  // Handle closing the application (update status to Closed)
+  const handleCloseApplication = () => {
+    if (selectedApplicationId) {
+      const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+      const updatedApplications = storedApplications.map((app) => {
+        if (app.ApplicantId === selectedApplicationId) {
+          const newTimeline = [
+            ...app.timeline,
+            {
+              section: "Closed",
+              comment: `Application closed on ${new Date().toISOString().split("T")[0]}`,
+              date: new Date().toISOString().split("T")[0],
+              pdfLink: null,
+            },
+          ];
+          return { ...app, timeline: newTimeline };
+        }
+        return app;
+      });
+      localStorage.setItem("applications", JSON.stringify(updatedApplications));
       updateApplications();
+      setIsModalOpen(false);
+      setSelectedApplicationId(null);
     }
+  };
+
+  // Close the modal without action
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setSelectedApplicationId(null);
   };
 
   // Color for pending days
   const getPendingDaysColor = (days) => {
-    if (days === 0) return "bg-green-500 text-white"; // For Compliance (0 days)
+    if (days === 0) return "bg-green-500 text-white";
     if (days <= 10) return "bg-green-500 text-white";
     if (days <= 15) return "bg-orange-500 text-white";
     return "bg-red-500 text-white";
@@ -130,14 +155,16 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
   // Style for status
   const getStatusStyle = (status) => {
     switch (status) {
-      case "Compliance":
-        return "bg-green-500 text-white whitespace-nowrap";
+      case "Not Assigned Yet":
+        return "bg-gray-500 text-white whitespace-nowrap";
       case "In Process":
         return "bg-blue-500 text-white whitespace-nowrap";
-      case "Pending":
-        return "bg-amber-500 text-white whitespace-nowrap";
+      case "Compliance":
+        return "bg-green-500 text-white whitespace-nowrap";
       case "Dismissed":
         return "bg-red-500 text-white whitespace-nowrap";
+      case "Closed":
+        return "bg-purple-500 text-white whitespace-nowrap";
       default:
         return "bg-gray-500 text-white whitespace-nowrap";
     }
@@ -160,7 +187,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                 "Pending Days",
                 "Status",
                 "Attachment",
-                "Remove",
+                "Action",
               ].map((header, idx) => (
                 <th key={idx} className="px-6 py-4 text-left whitespace-nowrap">
                   {header}
@@ -218,17 +245,16 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                     </button>
                   </td>
                   <td className="px-6 py-4">
-                    {caseDetail.isFromLocalStorage ? (
+                    {caseDetail.isFromLocalStorage && caseDetail.status !== "Closed" ? (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleRemove(caseDetail.applicationId);
+                          handleOpenModal(caseDetail.applicationId);
                         }}
-                        className="inline-flex items-center gap-1 px-4 py-1.5 text-sm rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition"
-                        aria-label="Remove application"
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600 transition"
+                        aria-label="Close application"
                       >
-                        <Trash2 className="w-4 h-4" />
-                        Remove
+                        <X className="w-4 h-4" />
                       </button>
                     ) : (
                       <span className="text-gray-400 text-xs">N/A</span>
@@ -308,17 +334,16 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                 >
                   <FaFilePdf /> PDF
                 </button>
-                {caseDetail.isFromLocalStorage && (
+                {caseDetail.isFromLocalStorage && caseDetail.status !== "Closed" && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRemove(caseDetail.applicationId);
+                      handleOpenModal(caseDetail.applicationId);
                     }}
-                    className="inline-flex items-center gap-1 px-4 py-1.5 text-xs rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition"
-                    aria-label="Remove application"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600 transition"
+                    aria-label="Close application"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    Remove
+                    <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -327,7 +352,46 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
         )}
       </div>
 
-      {/* Custom CSS for slow spin animation and Montserrat font */}
+      {/* Confirmation Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 font-['Montserrat']">
+                Confirm Closure
+              </h3>
+              <button
+                onClick={handleCancel}
+                className="text-gray-600 hover:text-gray-800 transition"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-6 font-['Montserrat']">
+              Are you sure you want to close this application? This will update its status to "Closed".
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleCancel}
+                className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition font-['Montserrat']"
+                aria-label="Cancel closure"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCloseApplication}
+                className="px-4 py-2 text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition font-['Montserrat']"
+                aria-label="Confirm closure"
+              >
+                Close Application
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom CSS */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
         .animate-spin-slow {
@@ -340,6 +404,10 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
           100% {
             transform: rotate(360deg);
           }
+        }
+        .backdrop-blur-sm {
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
         }
       `}</style>
     </div>

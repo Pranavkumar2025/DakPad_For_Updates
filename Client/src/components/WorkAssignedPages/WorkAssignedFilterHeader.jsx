@@ -17,14 +17,13 @@ const WorkAssignedFilterHeader = ({
   setSelectedBlock,
   selectedDate,
   setSelectedDate,
-  onAddClick,
   onExcelClick,
 }) => {
   return (
-    <div className="flex flex-col ml-16 p-6 gap-3 mb-4">
+    <div className="flex flex-col ml-16 p-6 gap-3 mb-4 font-['Montserrat']">
       {/* Header and Search */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <h2 className="text-2xl font-semibold text-gray-700">Applications List</h2>
+        <h2 className="text-3xl font-bold text-gray-700 mb-3">Work Assign Application Dashboard</h2>
         <input
           type="text"
           placeholder="Search by name or description"
@@ -36,7 +35,7 @@ const WorkAssignedFilterHeader = ({
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 mb-2">
             Showing {filteredCount} application{filteredCount !== 1 && "s"} filtered by
             <strong className="text-gray-700"> {selectedStatus || "All"} status</strong>,
             <strong className="text-gray-700"> {selectedDepartment || "All"} department</strong>,

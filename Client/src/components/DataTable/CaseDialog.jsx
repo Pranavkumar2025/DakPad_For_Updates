@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaFilePdf, FaUpload, FaSpinner, FaPaperPlane, FaCheckCircle, FaHistory } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
-import { User, Calendar, Mail, Phone, FileText } from "lucide-react";
+import { User, Calendar, Mail, Phone, FileText, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const CaseDialog = ({ data, onClose }) => {
@@ -12,16 +12,28 @@ const CaseDialog = ({ data, onClose }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isTimelineOpen, setIsTimelineOpen] = useState(false); // Timeline hidden by default
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const markComplianceRef = useRef(null); // Ref for Mark Compliance section
+  const markComplianceRef = useRef(null);
 
   // Calculate pending days
-  const calculatePendingDays = (issueDate) => {
+  const calculatePendingDays = (issueDate, status) => {
+    if (status === "Compliance" || status === "Closed") return 0; // Updated to include "Closed"
     const issue = new Date(issueDate);
     const today = new Date();
     const diffTime = Math.abs(today - issue);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  // Determine dynamic status based on timeline and concernedOfficer
+  const determineStatus = (timeline, concernedOfficer) => {
+    if (!concernedOfficer || concernedOfficer === "N/A" || concernedOfficer === "") return "Not Assigned Yet";
+    if (!timeline || timeline.length === 0) return "In Process";
+    const latestEntry = timeline[timeline.length - 1].section.toLowerCase();
+    if (latestEntry.includes("closed")) return "Closed"; // Check for "Closed"
+    if (latestEntry.includes("compliance")) return "Compliance"; // Simplified to handle both "compliance" and "compliance completed"
+    if (latestEntry.includes("dismissed")) return "Dismissed";
+    return "In Process";
   };
 
   // Update application data from localStorage
@@ -29,7 +41,16 @@ const CaseDialog = ({ data, onClose }) => {
     const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
     const matchedApp = storedApplications.find((app) => app.ApplicantId === data.applicationId);
     if (matchedApp) {
-      const pendingDays = calculatePendingDays(matchedApp.applicationDate);
+      const timeline = matchedApp.timeline || [
+        {
+          section: "Application Received",
+          comment: `Application received at ${matchedApp.block || "N/A"} on ${matchedApp.applicationDate}`,
+          date: matchedApp.applicationDate,
+          pdfLink: matchedApp.attachment || null,
+        },
+      ];
+      const status = determineStatus(timeline, matchedApp.concernedOfficer);
+      const pendingDays = calculatePendingDays(matchedApp.applicationDate, status);
       setApplicationData({
         ...data,
         applicationId: matchedApp.ApplicantId,
@@ -41,18 +62,11 @@ const CaseDialog = ({ data, onClose }) => {
         email: matchedApp.emailId || "N/A",
         issueDate: matchedApp.applicationDate,
         issueLetterNo: data.issueLetterNo || "N/A",
-        status: matchedApp.status || "In Progress",
+        status: status,
         concernedOfficer: matchedApp.concernedOfficer || "N/A",
         pendingDays: pendingDays,
         pdfLink: matchedApp.attachment,
-        timeline: matchedApp.timeline || [
-          {
-            section: "Application Received",
-            comment: `Application received at ${matchedApp.block || "N/A"} on ${matchedApp.applicationDate}`,
-            date: matchedApp.applicationDate,
-            pdfLink: matchedApp.attachment || null,
-          },
-        ],
+        timeline: timeline,
       });
     }
   };
@@ -112,7 +126,7 @@ const CaseDialog = ({ data, onClose }) => {
         app.ApplicantId === applicationData.applicationId
           ? {
               ...app,
-              status: "Compliance", // Store "Compliance" instead of "Compliance Completed"
+              status: "Compliance",
               timeline: [
                 ...(app.timeline || [
                   {
@@ -123,8 +137,8 @@ const CaseDialog = ({ data, onClose }) => {
                   },
                 ]),
                 {
-                  section: "Compliance Completed", // Keep timeline entry as "Compliance Completed"
-                  comment: comment || "Compliance marked as completed",
+                  section: "Compliance",
+                  comment: comment || "Compliance marked",
                   date: new Date().toLocaleDateString("en-GB"),
                   pdfLink: uploadedFile?.url || null,
                 },
@@ -136,7 +150,7 @@ const CaseDialog = ({ data, onClose }) => {
       localStorage.setItem("applications", JSON.stringify(updatedApplications));
       setApplicationData((prev) => ({
         ...prev,
-        status: "Compliance", // Update state to "Compliance"
+        status: "Compliance",
         timeline: [
           ...(prev.timeline || [
             {
@@ -147,12 +161,13 @@ const CaseDialog = ({ data, onClose }) => {
             },
           ]),
           {
-            section: "Compliance Completed",
-            comment: comment || "Compliance marked as completed",
+            section: "Compliance",
+            comment: comment || "Compliance marked",
             date: new Date().toLocaleDateString("en-GB"),
             pdfLink: uploadedFile?.url || null,
           },
         ],
+        pendingDays: 0,
       }));
       setIsSaving(false);
       setSaveSuccess(true);
@@ -167,9 +182,22 @@ const CaseDialog = ({ data, onClose }) => {
     markComplianceRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Display status for UI (shortened for Compliance Completed)
-  const getDisplayStatus = (status) => {
-    return status === "Compliance Completed" ? "Compliance" : status;
+  // Status styling
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "Not Assigned Yet":
+        return { bg: "bg-gray-100", text: "text-gray-700", badge: "bg-gray-500 text-white", icon: <Loader2 size={20} /> };
+      case "In Process":
+        return { bg: "bg-blue-100", text: "text-blue-700", badge: "bg-blue-500 text-white", icon: <FaSpinner className="animate-spin-slow" size={20} /> };
+      case "Compliance":
+        return { bg: "bg-green-100", text: "text-green-700", badge: "bg-green-600 text-white", icon: <CheckCircle size={20} /> };
+      case "Dismissed":
+        return { bg: "bg-red-100", text: "text-red-700", badge: "bg-red-600 text-white", icon: <XCircle size={20} /> };
+      case "Closed":
+        return { bg: "bg-purple-100", text: "text-purple-700", badge: "bg-purple-500 text-white", icon: <CheckCircle size={20} /> }; // Added for "Closed"
+      default:
+        return { bg: "bg-gray-100", text: "text-gray-700", badge: "bg-gray-500 text-white", icon: <Loader2 size={20} /> };
+    }
   };
 
   return (
@@ -181,7 +209,7 @@ const CaseDialog = ({ data, onClose }) => {
       transition={{ duration: 0.3 }}
     >
       <motion.div
-        className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6"
+        className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 font-['Montserrat']"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3 }}
@@ -204,12 +232,14 @@ const CaseDialog = ({ data, onClose }) => {
 
         <motion.span
           onClick={scrollToMarkCompliance}
-          className="text-green-600 hover:text-blue-800 hover:underline text-md font-semibold cursor-pointer mb-6 block"
-          whileHover={{ scale: .997 }}
-          whileTap={{ scale: 0.95 }}
+          className={`text-green-600 hover:text-green-800 hover:underline text-md font-semibold cursor-pointer mb-6 block ${
+            applicationData.status === "Closed" ? "pointer-events-none opacity-50" : ""
+          }`}
+          whileHover={{ scale: applicationData.status === "Closed" ? 1 : 0.99 }}
+          whileTap={{ scale: applicationData.status === "Closed" ? 1 : 0.95 }}
           aria-label="Visit Mark Compliance"
         >
-          Mark Compliance 
+          Mark Compliance
         </motion.span>
 
         {/* Application Details Section */}
@@ -253,14 +283,10 @@ const CaseDialog = ({ data, onClose }) => {
               <span className="text-sm font-medium text-gray-600">Status</span>
               <p>
                 <span
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${
-                    applicationData.status === "Compliance" || applicationData.status === "Compliance Completed"
-                      ? "bg-green-600 text-white"
-                      : "bg-blue-500 text-white"
-                  }`}
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusStyle(applicationData.status).badge}`}
                 >
-                  {applicationData.status === "In Progress" && <FaSpinner className="animate-spin" />}
-                  {getDisplayStatus(applicationData.status)}
+                  {getStatusStyle(applicationData.status).icon}
+                  {applicationData.status}
                 </span>
               </p>
             </div>
@@ -273,7 +299,9 @@ const CaseDialog = ({ data, onClose }) => {
               <p>
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
-                    applicationData.pendingDays <= 10
+                    applicationData.pendingDays === 0
+                      ? "bg-green-500 text-white"
+                      : applicationData.pendingDays <= 10
                       ? "bg-green-500 text-white"
                       : applicationData.pendingDays <= 15
                       ? "bg-orange-500 text-white"
@@ -322,49 +350,69 @@ const CaseDialog = ({ data, onClose }) => {
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Application Timeline</h3>
               {applicationData.timeline?.length > 0 ? (
                 <div className="relative space-y-4">
-                  {applicationData.timeline.map((item, idx) => (
-                    <div key={idx} className="relative flex items-start pl-10">
-                      <div className="absolute left-0 top-0 w-6 h-6 rounded-full bg-green-600 border-2 border-white shadow-md z-10 flex items-center justify-center">
-                        <div className="w-3 h-3 rounded-full bg-white" />
-                      </div>
-                      <div
-                        className={`absolute left-2.5 top-6 bottom-0 w-0.5 ${
-                          idx === applicationData.timeline.length - 1 ? "bg-transparent" : "bg-green-300"
-                        }`}
-                      />
-                      <div
-                        className={`w-full p-4 rounded-lg border transition-all duration-200 ${
-                          idx === applicationData.timeline.length - 1
-                            ? "bg-green-50 border-green-300 shadow-lg"
-                            : "bg-white border-gray-200 shadow-sm hover:shadow-md"
-                        }`}
-                      >
-                        <div className="flex justify-between items-center mb-1">
-                          <h4 className="text-sm font-semibold text-blue-700">{item.section}</h4>
-                          <span className="text-xs text-gray-500 font-medium">{item.date}</span>
+                  {applicationData.timeline.map((item, idx) => {
+                    const isCompleted =
+                      idx < applicationData.timeline.length - 1 ||
+                      item.section.toLowerCase().includes("compliance") ||
+                      item.section.toLowerCase().includes("closed"); // Updated for "Closed"
+                    const isNotAssigned = applicationData.status === "Not Assigned Yet";
+                    const isRejected = item.section.toLowerCase().includes("dismissed");
+                    const dotClass = isCompleted
+                      ? item.section.toLowerCase().includes("closed")
+                        ? "bg-purple-600 border-2 border-white" // Purple for "Closed"
+                        : "bg-green-600 border-2 border-white"
+                      : isNotAssigned
+                      ? "bg-gray-500"
+                      : isRejected
+                      ? "bg-red-600"
+                      : "bg-blue-600";
+                    const icon = isCompleted ? <CheckCircle size={18} className="text-white" /> : null;
+                    return (
+                      <div key={idx} className="relative flex items-start pl-10">
+                        <div className={`absolute left-0 top-0 w-6 h-6 ${dotClass} rounded-full shadow-md z-10 flex items-center justify-center`}>
+                          {icon}
                         </div>
-                        <p className="text-sm text-gray-700 flex items-center gap-2">
-                          {item.comment}
-                          {item.pdfLink && (
-                            <motion.a
-                              href={item.pdfLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-green-600 hover:text-green-800 transition-colors"
-                              title="View PDF"
-                              whileHover={{ scale: 1.05 }}
-                              aria-label="View timeline document"
-                            >
-                              <FaFilePdf />
-                            </motion.a>
+                        <div
+                          className={`absolute left-2.5 top-6 bottom-0 w-0.5 ${
+                            idx === applicationData.timeline.length - 1 ? "bg-transparent" : item.section.toLowerCase().includes("closed") ? "bg-purple-300" : "bg-green-300"
+                          }`}
+                        />
+                        <div
+                          className={`w-full p-4 rounded-lg border transition-all duration-200 ${
+                            idx === applicationData.timeline.length - 1
+                              ? item.section.toLowerCase().includes("closed")
+                                ? "bg-purple-50 border-purple-300 shadow-lg" // Purple for "Closed"
+                                : "bg-green-50 border-green-300 shadow-lg"
+                              : "bg-white border-gray-200 shadow-sm hover:shadow-md"
+                          }`}
+                        >
+                          <div className="flex justify-between items-center mb-1">
+                            <h4 className="text-sm font-semibold text-blue-700">{item.section}</h4>
+                            <span className="text-xs text-gray-500 font-medium">{item.date}</span>
+                          </div>
+                          <p className="text-sm text-gray-700 flex items-center gap-2">
+                            {item.comment}
+                            {item.pdfLink && (
+                              <motion.a
+                                href={item.pdfLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-green-600 hover:text-green-800 transition-colors"
+                                title="View PDF"
+                                whileHover={{ scale: 1.05 }}
+                                aria-label="View timeline document"
+                              >
+                                <FaFilePdf />
+                              </motion.a>
+                            )}
+                          </p>
+                          {idx === applicationData.timeline.length - 1 && (
+                            <p className="text-blue-600 text-xs font-semibold mt-1.5">Latest Update</p>
                           )}
-                        </p>
-                        {idx === applicationData.timeline.length - 1 && (
-                          <p className="text-blue-600 text-xs font-semibold mt-1.5">Latest Update</p>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-sm italic text-gray-500">No timeline entries available.</p>
@@ -376,14 +424,15 @@ const CaseDialog = ({ data, onClose }) => {
         {/* Mark Compliance Section */}
         <div ref={markComplianceRef}>
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Mark Compliance</h3>
-          <form className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6" onSubmit={handleCompliance}>
+          <form
+            className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6"
+            onSubmit={handleCompliance}
+          >
             <div className="space-y-6">
               <div>
                 <span className="text-sm font-medium text-gray-600">Current Status</span>
-                <p className="text-base font-semibold text-gray-900">
-                  {applicationData.timeline?.length > 0
-                    ? applicationData.timeline[applicationData.timeline.length - 1].section
-                    : "No status available"}
+                <p className={`text-base font-semibold ${getStatusStyle(applicationData.status).text}`}>
+                  {applicationData.status}
                 </p>
                 <p className="text-xs text-gray-500">
                   Last updated on{" "}
@@ -399,7 +448,10 @@ const CaseDialog = ({ data, onClose }) => {
                   rows={4}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  className="w-full mt-2 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition shadow-sm"
+                  className={`w-full mt-2 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition shadow-sm ${
+                    applicationData.status === "Closed" ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
+                  disabled={applicationData.status === "Closed"}
                   aria-label="Compliance comment"
                 />
                 {saveSuccess && (
@@ -419,22 +471,27 @@ const CaseDialog = ({ data, onClose }) => {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <FaCheckCircle className="rotate-45" /> {errorMessage}
+                    <XCircle size={16} /> {errorMessage}
                   </motion.p>
                 )}
               </div>
               <div>
                 <span className="text-sm font-medium text-gray-600">Upload Document (Optional)</span>
-                <label className="flex items-center justify-center w-full h-24 mt-2 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-green-500 transition bg-white shadow-sm">
+                <label
+                  className={`flex items-center justify-center w-full h-24 mt-2 border-2 border-dashed border-gray-300 rounded-xl transition bg-white shadow-sm ${
+                    applicationData.status === "Closed" ? "cursor-not-allowed" : "cursor-pointer hover:border-green-500"
+                  }`}
+                >
                   <input
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={handleFileUpload}
                     className="hidden"
+                    disabled={applicationData.status === "Closed"}
                     aria-label="Upload document"
                   />
                   <div className="flex items-center gap-2 text-gray-600">
-                    <FaUpload className="text-green-600" />
+                    <FaUpload className={applicationData.status === "Closed" ? "text-gray-400" : "text-green-600"} />
                     <span className="text-sm">
                       {uploadedFile ? uploadedFile.name : "Drag or click to upload (PDF, JPEG, PNG, max 5MB)"}
                     </span>
@@ -443,17 +500,19 @@ const CaseDialog = ({ data, onClose }) => {
               </div>
               <motion.button
                 type="submit"
-                disabled={isSaving}
+                disabled={isSaving || applicationData.status === "Closed"}
                 className={`w-full py-2.5 text-sm font-semibold rounded-xl shadow-sm transition ${
-                  isSaving ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"
+                  isSaving || applicationData.status === "Closed"
+                    ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    : "bg-green-600 text-white hover:bg-green-700"
                 }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: applicationData.status === "Closed" ? 1 : 1.05 }}
+                whileTap={{ scale: applicationData.status === "Closed" ? 1 : 0.95 }}
                 aria-label="Mark compliance"
               >
                 {isSaving ? (
                   <>
-                    <FaSpinner className="animate-spin inline mr-2" /> Saving...
+                    <FaSpinner className="animate-spin-slow inline mr-2" /> Saving...
                   </>
                 ) : (
                   <>
@@ -510,6 +569,28 @@ const CaseDialog = ({ data, onClose }) => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Custom CSS */}
+        <style jsx global>{`
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+          .animate-spin-slow {
+            animation: spin 2s linear infinite;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          .shadow-sm {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          }
+          .shadow-xl {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+          }
+          .backdrop-blur-sm {
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+          }
+        `}</style>
       </motion.div>
     </motion.div>
   );

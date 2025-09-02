@@ -1,10 +1,9 @@
-import { LayoutDashboard, Settings, User, BarChart2 } from "lucide-react";
+import { LayoutDashboard, Settings, User } from "lucide-react";
 
 const Sidebar = () => {
   const menuItems = [
     { icon: <LayoutDashboard className="w-6 h-6" />, label: "Dashboard", link: "#" },
     { icon: <User className="w-6 h-6" />, label: "Users", link: "/user" },
-    { icon: <BarChart2 className="w-6 h-6" />, label: "Performance", link: "/performance" },
     { icon: <Settings className="w-6 h-6" />, label: "Settings", link: "#" },
   ];
 
