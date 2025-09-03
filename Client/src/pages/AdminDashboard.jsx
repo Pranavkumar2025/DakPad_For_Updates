@@ -1,5 +1,5 @@
 import Navbar from "../components/Navbar";
-import DataTable from "../components/DataTable";
+import DataTable from "../components/AdminComponents/DataTable";
 import Sidebar from "../components/Sidebar";
 
 const AdminDashboard = () => {
@@ -10,7 +10,11 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <Navbar />
+        <Navbar
+      userName="Aditya Kumar"
+      userPosition="Management Officer"
+      logoLink="/Admin"
+    />
         <div className="mt-6">
           <DataTable />
         </div>

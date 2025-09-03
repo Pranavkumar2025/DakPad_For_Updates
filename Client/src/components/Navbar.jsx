@@ -1,8 +1,8 @@
 import React from "react";
-import { FaBell, FaUsers } from "react-icons/fa"; // Added FaUsers for logo icon
+import { FaUsers } from "react-icons/fa";
 import { motion } from "framer-motion";
 
-const Navbar = () => {
+const Navbar = ({ userName, userPosition, logoLink = "/" }) => {
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -14,40 +14,48 @@ const Navbar = () => {
   };
 
   return (
-    <div className="h-16 ml-16 p-6 bg-white shadow-md flex items-center justify-between px-6 rounded-full">
+    <div
+      className={`h-16 p-6 bg-white shadow-md flex items-center justify-between px-6 rounded-full ${
+        logoLink !== "/" ? "ml-16" : ""
+      }`} // Conditionally apply margin for non-home routes
+    >
       {/* Logo with Icon */}
-      <motion.div
-        className="flex items-center gap-2"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        whileHover={{ scale: 1.05 }}
-      >
-        <FaUsers className="text-3xl text-[#ff5010]" />
-        <span
-          className="text-2xl font-bold text-transparent uppercase bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
-          style={{ fontFamily: "'Montserrat', sans-serif" }}
+      <a href={logoLink} aria-label="Jan Samadhan Home">
+        <motion.div
+          className="flex items-center gap-2"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          whileHover={{ scale: 1.05 }}
         >
-          Jan Samadhan
-        </span>
-      </motion.div>
+          <FaUsers className="text-3xl text-[#ff5010]" />
+          <span
+            className="text-2xl font-bold text-transparent uppercase bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
+          >
+            Jan Samadhan
+          </span>
+        </motion.div>
+      </a>
 
       <div className="flex items-center space-x-6">
         <span className="text-sm text-gray-500">{today}</span>
 
-        <div className="flex items-center gap-3 border border-gray-200 py-1 px-3 rounded-full">
+        <div className="flex items-center gap-3 border border-gray-200 py-2 px-4 rounded-full">
           <img
             src="https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flat-design-social-media-profiles_1281173-3806.jpg?semt=ais_hybrid&w=740"
             alt="user"
             className="w-10 h-10 rounded-full shadow-md"
           />
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-gray-700">Aditya Kumar</span>
+            <span className="text-sm font-medium text-gray-700">{userName}</span>
+            <span className="text-xs text-gray-500 font-light">{userPosition}</span>
           </div>
         </div>
 
         <button
           className="group flex items-center justify-start w-11 h-11 bg-[#ff5010] rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-full active:translate-x-1 active:translate-y-1"
+          onClick={handleLogout}
         >
           <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
             <svg className="w-4 h-4" viewBox="0 0 512 512" fill="white">
@@ -61,7 +69,7 @@ const Navbar = () => {
       </div>
 
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+        @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap");
       `}</style>
     </div>
   );

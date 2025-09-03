@@ -2,15 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 // import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
-import ApplicationForm from "./pages/ApplicationForm";
-import ProtectedRoute from "./components/ProtectedRoute"; 
 import NotFound from "./pages/NotFound";
-import AddCaseForm from "./components/AddCaseForm";
 import AdminLogin from "./pages/AdminLogin";
 import PerformanceDashboard from "./pages/PerformanceDashboard";
-import WorkAssignedDashboard from "./components/WorkAssignedPages/WorkAssignedDashboard";
-import ApplicationReceive from "./components/ApplicationRecieve";
-import SuperAdminDashboard from "./components/SuperAdminComponents/SuperAdminDashboard";
+import WorkAssignedDashboard from "./pages/WorkAssignedDashboard";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import ApplicationReceive from "./pages/ApplicationRecieve";
 
 const App = () => {
   return (
@@ -31,9 +28,6 @@ const App = () => {
         /> */}
 
         <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/application-form" element={<ApplicationForm />} />
-        <Route path="/addCaseForm" element= {<AddCaseForm />} />
-
         <Route path="/" element= {<UserDashboard />} />
         <Route path="/performance" element={<PerformanceDashboard />} />
         <Route path="/work-assigned" element={<WorkAssignedDashboard />} />

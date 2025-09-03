@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
-import casesData from "../JsonData/DataTable.json";
-import AddCaseForm from "./AddCaseForm";
-import FilterHeader from "./DataTable/FilterHeader";
-import ApplicationTable from "./DataTable/ApplicationTable";
-import CaseDialog from "./DataTable/CaseDialog";
+import casesData from "../../JsonData/DataTable.json";
+import AddCaseForm from "../AddCaseForm";
+import FilterHeader from "./FilterHeader";
+import ApplicationTable from "./ApplicationTable";
+import CaseDialog from "./CaseDialog";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
