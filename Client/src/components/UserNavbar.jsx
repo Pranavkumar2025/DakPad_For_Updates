@@ -56,7 +56,7 @@ const UserNavbar = () => {
 
         {/* Info Section (Optional for Public) */}
         <div className="hidden md:flex flex-col items-end text-xs leading-tight">
-          <p className="text-gray-600">Serving Citizens of Bhojpur</p>
+          <p className="text-gray-600">Serving Citizens of Arrah Bhojpur</p>
           <p className="text-[#ff5010] font-medium">Public User Access</p>
         </div>
 
