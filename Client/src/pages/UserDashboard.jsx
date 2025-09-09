@@ -81,30 +81,29 @@ const UserDashboard = () => {
       );
       const foundApp = match
         ? {
-            applicationId: match.ApplicantId,
-            applicantName: match.applicant,
-            dateOfApplication: match.applicationDate,
-            subject: match.subject,
-            description: match.subject,
-            status:
-              match.status === "Compliance Completed"
-                ? "Compliance"
-                : match.status || "Pending",
-            timeline: match.timeline || [
-              {
-                section: "Application Received",
-                comment: `Application received at ${match.block || "N/A"} on ${
-                  match.applicationDate
+          applicationId: match.ApplicantId,
+          applicantName: match.applicant,
+          dateOfApplication: match.applicationDate,
+          subject: match.subject,
+          description: match.subject,
+          status:
+            match.status === "Compliance Completed"
+              ? "Compliance"
+              : match.status || "Pending",
+          timeline: match.timeline || [
+            {
+              section: "Application Received",
+              comment: `Application received at ${match.block || "N/A"} on ${match.applicationDate
                 }`,
-                date: match.applicationDate,
-                pdfLink: match.attachment || null,
-              },
-            ],
-            lastUpdated:
-              match.timeline?.length > 0
-                ? match.timeline[match.timeline.length - 1].date
-                : match.applicationDate,
-          }
+              date: match.applicationDate,
+              pdfLink: match.attachment || null,
+            },
+          ],
+          lastUpdated:
+            match.timeline?.length > 0
+              ? match.timeline[match.timeline.length - 1].date
+              : match.applicationDate,
+        }
         : false;
 
       setFoundApplication(foundApp);
@@ -178,24 +177,49 @@ const UserDashboard = () => {
         <div className="relative container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             {/* Main Heading */}
+
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="mb-8"
+              className="mb-8 text-center"
             >
-              <h1 className="text-5xl md:text-6xl font-bold mb-4 font-['Montserrat']">
-                <span className="text-gray-800">Track Your</span>
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c]">
-                  Application
-                </span>
+              <h1 className="text-5xl md:text-6xl font-bold mb-4 font-['Montserrat'] flex justify-center gap-2">
+                <motion.span
+                  className="text-gray-800"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8 }}
+                >
+                  Track Your
+                </motion.span>
+                <motion.span
+                  className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                >
+                  {Array.from("Application").map((letter, index) => (
+                    <motion.span
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
+                      className="inline-block"
+                    >
+                      {letter}
+                    </motion.span>
+                  ))}
+                </motion.span>
               </h1>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-['Montserrat']">
-                Stay updated with real-time tracking of your Bihar RTPS
-                applications. Enter your Application ID below to view detailed
-                status and timeline.
-              </p>
+              <motion.p
+                className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-['Montserrat']"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+              >
+                Stay updated with real-time tracking of your Bihar RTPS applications. Enter your Application ID below to view detailed status and timeline.
+              </motion.p>
             </motion.div>
 
             {/* Search Section */}
@@ -373,9 +397,8 @@ const UserDashboard = () => {
                   <div className="space-y-8">
                     {/* Status Card */}
                     <motion.div
-                      className={`p-6 rounded-xl shadow-md ${
-                        getStatusStyle(foundApplication.status).bg
-                      } flex items-center gap-5`}
+                      className={`p-6 rounded-xl shadow-md ${getStatusStyle(foundApplication.status).bg
+                        } flex items-center gap-5`}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4 }}
@@ -384,24 +407,21 @@ const UserDashboard = () => {
                       <div>
                         <div className="flex items-center gap-3">
                           <h2
-                            className={`text-xl font-semibold ${
-                              getStatusStyle(foundApplication.status).text
-                            } font-['Montserrat']`}
+                            className={`text-xl font-semibold ${getStatusStyle(foundApplication.status).text
+                              } font-['Montserrat']`}
                           >
                             Status: {foundApplication.status}
                           </h2>
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              getStatusStyle(foundApplication.status).badge
-                            }`}
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusStyle(foundApplication.status).badge
+                              }`}
                           >
                             {foundApplication.status}
                           </span>
                         </div>
                         <p
-                          className={`text-sm ${
-                            getStatusStyle(foundApplication.status).text
-                          } mt-1 font-['Montserrat']`}
+                          className={`text-sm ${getStatusStyle(foundApplication.status).text
+                            } mt-1 font-['Montserrat']`}
                         >
                           {foundApplication.status === "Pending" &&
                             "Your application is under review. Check the timeline for updates."}
@@ -482,9 +502,8 @@ const UserDashboard = () => {
                         ].map((item, idx) => (
                           <motion.div
                             key={idx}
-                            className={`flex items-start gap-3 ${
-                              item.colSpan ? "sm:col-span-2" : ""
-                            }`}
+                            className={`flex items-start gap-3 ${item.colSpan ? "sm:col-span-2" : ""
+                              }`}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.4, delay: idx * 0.06 }}
@@ -570,10 +589,10 @@ const UserDashboard = () => {
                               const dotClass = isCompleted
                                 ? "bg-green-600 border-2 border-white"
                                 : isPending
-                                ? "bg-orange-500"
-                                : isRejected
-                                ? "bg-red-600"
-                                : "bg-gray-300";
+                                  ? "bg-orange-500"
+                                  : isRejected
+                                    ? "bg-red-600"
+                                    : "bg-gray-300";
                               const icon = isCompleted ? (
                                 <CheckCircle size={18} className="text-white" />
                               ) : null;
