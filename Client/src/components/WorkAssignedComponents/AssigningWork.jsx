@@ -503,7 +503,7 @@ const AssigningWork = ({ data, onClose }) => {
             Application Id: <span className="text-green-700">{applicationData.applicationId}</span>
           </h2>
           <div className="flex gap-2">
-            {applicationData.status !== "Closed" && (
+            {/* {applicationData.status !== "Closed" && (
               <motion.button
                 onClick={handleCloseApplication}
                 className="text-gray-500 hover:text-red-600 text-xl transition-colors"
@@ -513,7 +513,7 @@ const AssigningWork = ({ data, onClose }) => {
               >
                 <IoClose />
               </motion.button>
-            )}
+            )} */}
             <motion.button
               onClick={onClose}
               className="text-gray-500 hover:text-red-600 text-xl transition-colors"
