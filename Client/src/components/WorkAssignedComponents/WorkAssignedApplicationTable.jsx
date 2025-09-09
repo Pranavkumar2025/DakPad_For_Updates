@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { FaFilePdf, FaSpinner } from "react-icons/fa";
+import { FaFilePdf, FaSpinner, FaTimesCircle } from "react-icons/fa";
 import { X } from "lucide-react";
+import { motion } from "framer-motion";
 
 const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
   const [applications, setApplications] = useState([]);
@@ -246,16 +247,18 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                   </td>
                   <td className="px-6 py-4">
                     {caseDetail.isFromLocalStorage && caseDetail.status !== "Closed" ? (
-                      <button
+                      <motion.button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleOpenModal(caseDetail.applicationId);
                         }}
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600 transition"
+                        className="inline-flex items-center justify-center px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-200 rounded-lg hover:bg-red-100 hover:text-red-600 transition font-['Montserrat'] shadow-lg"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         aria-label="Close application"
                       >
-                        <X className="w-4 h-4" />
-                      </button>
+                        Close
+                      </motion.button>
                     ) : (
                       <span className="text-gray-400 text-xs">N/A</span>
                     )}

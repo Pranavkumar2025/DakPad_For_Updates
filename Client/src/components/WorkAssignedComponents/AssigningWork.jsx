@@ -31,38 +31,175 @@ const AssigningWork = ({ data, onClose }) => {
   const [editOption, setEditOption] = useState(null);
   const [editNote, setEditNote] = useState("");
 
-  // Type options
+// Updated Type options
   const types = [
-    { value: "Department", label: "Department" },
-    { value: "Sub Division", label: "Sub Division" },
-    { value: "Block", label: "Block" },
+    { value: "District Level Offices", label: "District Level Offices" },
+    { value: "Sub-Division Level Offices", label: "Sub-Division Level Offices" },
+    { value: "Block Level Offices", label: "Block Level Offices" },
   ];
 
-  // Options for each type
+  // Updated Options for each type
   const optionsByType = {
-    Department: [
-      { value: "Inspection from committee (Director DRDA Accounts, DC Ranjay, Mis Santosh)", label: "DRDA Committee" },
-      { value: "Director Accounts, DRDA", label: "Director Accounts, DRDA" },
-      { value: "Complainant & Related (RDD, Patna)", label: "RDD, Patna" },
-      { value: "Senior Charged Officer, Sandesh cum DTO Bhojpur", label: "Senior Charged Officer, Sandesh" },
-      { value: "Hearing dt. 20-06-2025", label: "Hearing Committee" },
-      { value: "Inspection from committee (DMWO, Senior Charged Officer, Sahpur Hina madam cum and MIS Pmay G)", label: "DMWO Committee" },
-      { value: "Hearing Of Awas Sahayak and Complainer", label: "Awas Sahayak Hearing" },
-      { value: "Hearing Of Awas Sahayak, Awas Parwechhak Mukhiya and Complainer", label: "Awas Sahayak and Mukhiya Hearing" },
+    "District Level Offices": [
+      { value: "District Magistrate Office", label: "District Magistrate (DM) Office" },
+      { value: "Deputy Development Commissioner", label: "Deputy Development Commissioner (DDC)" },
+      { value: "Additional Collector General", label: "Additional Collector / ADM (General)" },
+      { value: "Additional Collector Revenue", label: "Additional Collector / ADM (Revenue)" },
+      { value: "District Education Office", label: "District Education Office (DEO)" },
+      { value: "District Health Society", label: "District Health Society / Civil Surgeon Office" },
+      { value: "District Agriculture Office", label: "District Agriculture Office" },
+      { value: "District Animal Husbandry Office", label: "District Animal Husbandry Office" },
+      { value: "District Social Welfare Office", label: "District Social Welfare Office (ICDS, Women & Child Development)" },
+      { value: "District Rural Development Agency", label: "District Rural Development Agency (DRDA)" },
+      { value: "District Supply Office", label: "District Supply Office (DSO – Food & Civil Supplies)" },
+      { value: "District Transport Office", label: "District Transport Office (DTO)" },
+      { value: "District Employment Exchange", label: "District Employment Exchange" },
+      { value: "District Industries Centre", label: "District Industries Centre (DIC)" },
+      { value: "District Planning Office", label: "District Planning Office" },
+      { value: "District Registration Office", label: "District Registration Office (Registry / Land Records)" },
+      { value: "District Cooperative Office", label: "District Cooperative Office" },
+      { value: "District Treasury Office", label: "District Treasury Office" },
+      { value: "District Election Office", label: "District Election Office" },
+      { value: "Police Offices SP DSP", label: "Police Offices (SP, DSP HQ)" },
+      { value: "Judicial Offices District Court", label: "Judicial Offices (District Court, Ara)" },
     ],
-    SubDivision: [
-      { value: "Ara", label: "Ara" },
-      { value: "Jagdishpur", label: "Jagdishpur" },
-      { value: "Piro", label: "Piro" },
-      { value: "Udwantnagar", label: "Udwantnagar" },
+    "Sub-Division Level Offices": [
+      { value: "SDM Ara Sadar", label: "Sub-Divisional Magistrate (SDM/SDO) Office - Ara Sadar" },
+      { value: "SDM Jagdishpur", label: "Sub-Divisional Magistrate (SDM/SDO) Office - Jagdishpur" },
+      { value: "SDM Piro", label: "Sub-Divisional Magistrate (SDM/SDO) Office - Piro" },
+      { value: "SDPO Ara Sadar", label: "Sub-Divisional Police Officer (SDPO/DSP) Office - Ara Sadar" },
+      { value: "SDPO Jagdishpur", label: "Sub-Divisional Police Officer (SDPO/DSP) Office - Jagdishpur" },
+      { value: "SDPO Piro", label: "Sub-Divisional Police Officer (SDPO/DSP) Office - Piro" },
+      { value: "Sub-Divisional Education Office Ara", label: "Sub-Divisional Education Office - Ara" },
+      { value: "Sub-Divisional Education Office Jagdishpur", label: "Sub-Divisional Education Office - Jagdishpur" },
+      { value: "Sub-Divisional Education Office Piro", label: "Sub-Divisional Education Office - Piro" },
+      { value: "Sub-Divisional Health Office Ara", label: "Sub-Divisional Health Office (SD Civil Surgeon In-charge) - Ara" },
+      { value: "Sub-Divisional Health Office Jagdishpur", label: "Sub-Divisional Health Office (SD Civil Surgeon In-charge) - Jagdishpur" },
+      { value: "Sub-Divisional Health Office Piro", label: "Sub-Divisional Health Office (SD Civil Surgeon In-charge) - Piro" },
+      { value: "Sub-Divisional Agriculture Office Ara", label: "Sub-Divisional Agriculture Office - Ara" },
+      { value: "Sub-Divisional Agriculture Office Jagdishpur", label: "Sub-Divisional Agriculture Office - Jagdishpur" },
+      { value: "Sub-Divisional Agriculture Office Piro", label: "Sub-Divisional Agriculture Office - Piro" },
+      { value: "LRDC Ara", label: "Land Reforms Deputy Collector (LRDC) - Ara" },
+      { value: "LRDC Jagdishpur", label: "Land Reforms Deputy Collector (LRDC) - Jagdishpur" },
+      { value: "LRDC Piro", label: "Land Reforms Deputy Collector (LRDC) - Piro" },
+      { value: "Sub-Divisional Supply Office Ara", label: "Sub-Divisional Supply Office - Ara" },
+      { value: "Sub-Divisional Supply Office Jagdishpur", label: "Sub-Divisional Supply Office - Jagdishpur" },
+      { value: "Sub-Divisional Supply Office Piro", label: "Sub-Divisional Supply Office - Piro" },
+      { value: "Sub-Divisional Cooperative Office Ara", label: "Sub-Divisional Cooperative Office - Ara" },
+      { value: "Sub-Divisional Cooperative Office Jagdishpur", label: "Sub-Divisional Cooperative Office - Jagdishpur" },
+      { value: "Sub-Divisional Cooperative Office Piro", label: "Sub-Divisional Cooperative Office - Piro" },
+      { value: "Sub-Divisional Election Office Ara", label: "Sub-Divisional Election Office - Ara" },
+      { value: "Sub-Divisional Election Office Jagdishpur", label: "Sub-Divisional Election Office - Jagdishpur" },
+      { value: "Sub-Divisional Election Office Piro", label: "Sub-Divisional Election Office - Piro" },
+      { value: "Sub-Divisional Court Ara", label: "Sub-Divisional Court - Ara" },
+      { value: "Sub-Divisional Court Jagdishpur", label: "Sub-Divisional Court - Jagdishpur" },
+      { value: "Sub-Divisional Court Piro", label: "Sub-Divisional Court - Piro" },
     ],
-    Block: [
-      { value: "BDO, Barhara", label: "BDO, Barhara" },
-      { value: "BDO Sandesh & CO Sandesh", label: "BDO Sandesh & CO Sandesh" },
-      { value: "BDO Ara Sadar", label: "BDO Ara Sadar" },
-      { value: "BDO Shahpur", label: "BDO Shahpur" },
-      { value: "RDO Mohsin Khan", label: "RDO Mohsin Khan" },
-      { value: "BDO Tarari", label: "BDO Tarari" },
+    "Block Level Offices": [
+      { value: "BDO Ara Sadar", label: "Block Development Office (BDO) - Ara Sadar" },
+      { value: "BDO Udwantnagar", label: "Block Development Office (BDO) - Udwantnagar" },
+      { value: "BDO Barhara", label: "Block Development Office (BDO) - Barhara" },
+      { value: "BDO Sahar", label: "Block Development Office (BDO) - Sahar" },
+      { value: "BDO Jagdishpur", label: "Block Development Office (BDO) - Jagdishpur" },
+      { value: "BDO Piro", label: "Block Development Office (BDO) - Piro" },
+      { value: "BDO Charpokhari", label: "Block Development Office (BDO) - Charpokhari" },
+      { value: "BDO Agiaon", label: "Block Development Office (BDO) - Agiaon" },
+      { value: "CO Ara Sadar", label: "Circle Officer (CO – Land & Revenue) - Ara Sadar" },
+      { value: "CO Udwantnagar", label: "Circle Officer (CO – Land & Revenue) - Udwantnagar" },
+      { value: "CO Barhara", label: "Circle Officer (CO – Land & Revenue) - Barhara" },
+      { value: "CO Sahar", label: "Circle Officer (CO – Land & Revenue) - Sahar" },
+      { value: "CO Jagdishpur", label: "Circle Officer (CO – Land & Revenue) - Jagdishpur" },
+      { value: "CO Piro", label: "Circle Officer (CO – Land & Revenue) - Piro" },
+      { value: "CO Charpokhari", label: "Circle Officer (CO – Land & Revenue) - Charpokhari" },
+      { value: "CO Agiaon", label: "Circle Officer (CO – Land & Revenue) - Agiaon" },
+      { value: "BEO Ara Sadar", label: "Block Education Office (BEO) - Ara Sadar" },
+      { value: "BEO Udwantnagar", label: "Block Education Office (BEO) - Udwantnagar" },
+      { value: "BEO Barhara", label: "Block Education Office (BEO) - Barhara" },
+      { value: "BEO Sahar", label: "Block Education Office (BEO) - Sahar" },
+      { value: "BEO Jagdishpur", label: "Block Education Office (BEO) - Jagdishpur" },
+      { value: "BEO Piro", label: "Block Education Office (BEO) - Piro" },
+      { value: "BEO Charpokhari", label: "Block Education Office (BEO) - Charpokhari" },
+      { value: "BEO Agiaon", label: "Block Education Office (BEO) - Agiaon" },
+      { value: "Block Agriculture Office Ara Sadar", label: "Block Agriculture Office - Ara Sadar" },
+      { value: "Block Agriculture Office Udwantnagar", label: "Block Agriculture Office - Udwantnagar" },
+      { value: "Block Agriculture Office Barhara", label: "Block Agriculture Office - Barhara" },
+      { value: "Block Agriculture Office Sahar", label: "Block Agriculture Office - Sahar" },
+      { value: "Block Agriculture Office Jagdishpur", label: "Block Agriculture Office - Jagdishpur" },
+      { value: "Block Agriculture Office Piro", label: "Block Agriculture Office - Piro" },
+      { value: "Block Agriculture Office Charpokhari", label: "Block Agriculture Office - Charpokhari" },
+      { value: "Block Agriculture Office Agiaon", label: "Block Agriculture Office - Agiaon" },
+      { value: "Block Health Office Ara Sadar", label: "Block Health Office (Medical Officer In-Charge / PHC) - Ara Sadar" },
+      { value: "Block Health Office Udwantnagar", label: "Block Health Office (Medical Officer In-Charge / PHC) - Udwantnagar" },
+      { value: "Block Health Office Barhara", label: "Block Health Office (Medical Officer In-Charge / PHC) - Barhara" },
+      { value: "Block Health Office Sahar", label: "Block Health Office (Medical Officer In-Charge / PHC) - Sahar" },
+      { value: "Block Health Office Jagdishpur", label: "Block Health Office (Medical Officer In-Charge / PHC) - Jagdishpur" },
+      { value: "Block Health Office Piro", label: "Block Health Office (Medical Officer In-Charge / PHC) - Piro" },
+      { value: "Block Health Office Charpokhari", label: "Block Health Office (Medical Officer In-Charge / PHC) - Charpokhari" },
+      { value: "Block Health Office Agiaon", label: "Block Health Office (Medical Officer In-Charge / PHC) - Agiaon" },
+      { value: "Block Animal Husbandry Office Ara Sadar", label: "Block Animal Husbandry Office - Ara Sadar" },
+      { value: "Block Animal Husbandry Office Udwantnagar", label: "Block Animal Husbandry Office - Udwantnagar" },
+      { value: "Block Animal Husbandry Office Barhara", label: "Block Animal Husbandry Office - Barhara" },
+      { value: "Block Animal Husbandry Office Sahar", label: "Block Animal Husbandry Office - Sahar" },
+      { value: "Block Animal Husbandry Office Jagdishpur", label: "Block Animal Husbandry Office - Jagdishpur" },
+      { value: "Block Animal Husbandry Office Piro", label: "Block Animal Husbandry Office - Piro" },
+      { value: "Block Animal Husbandry Office Charpokhari", label: "Block Animal Husbandry Office - Charpokhari" },
+      { value: "Block Animal Husbandry Office Agiaon", label: "Block Animal Husbandry Office - Agiaon" },
+      { value: "Block Social Welfare Office Ara Sadar", label: "Block Social Welfare Office (ICDS / Anganwadi CDPO) - Ara Sadar" },
+      { value: "Block Social Welfare Office Udwantnagar", label: "Block Social Welfare Office (ICDS / Anganwadi CDPO) - Udwantnagar" },
+      { value: "Block Social Welfare Office Barhara", label: "Block Social Welfare Office (ICDS / Anganwadi CDPO) - Barhara" },
+      { value: "Block Social Welfare Office Sahar", label: "Block Social Welfare Office (ICDS / Anganwadi CDPO) - Sahar" },
+      { value: "Block Social Welfare Office Jagdishpur", label: "Block Social Welfare Office (ICDS / Anganwadi CDPO) - Jagdishpur" },
+      { value: "Block Social Welfare Office Piro", label: "Block Social Welfare Office (ICDS / Anganwadi CDPO) - Piro" },
+      { value: "Block Social Welfare Office Charpokhari", label: "Block Social Welfare Office (ICDS / Anganwadi CDPO) - Charpokhari" },
+      { value: "Block Social Welfare Office Agiaon", label: "Block Social Welfare Office (ICDS / Anganwadi CDPO) - Agiaon" },
+      { value: "Block Cooperative Office Ara Sadar", label: "Block Cooperative Office - Ara Sadar" },
+      { value: "Block Cooperative Office Udwantnagar", label: "Block Cooperative Office - Udwantnagar" },
+      { value: "Block Cooperative Office Barhara", label: "Block Cooperative Office - Barhara" },
+      { value: "Block Cooperative Office Sahar", label: "Block Cooperative Office - Sahar" },
+      { value: "Block Cooperative Office Jagdishpur", label: "Block Cooperative Office - Jagdishpur" },
+      { value: "Block Cooperative Office Piro", label: "Block Cooperative Office - Piro" },
+      { value: "Block Cooperative Office Charpokhari", label: "Block Cooperative Office - Charpokhari" },
+      { value: "Block Cooperative Office Agiaon", label: "Block Cooperative Office - Agiaon" },
+      { value: "Block Supply Office Ara Sadar", label: "Block Supply Office (PDS / Ration) - Ara Sadar" },
+      { value: "Block Supply Office Udwantnagar", label: "Block Supply Office (PDS / Ration) - Udwantnagar" },
+      { value: "Block Supply Office Barhara", label: "Block Supply Office (PDS / Ration) - Barhara" },
+      { value: "Block Supply Office Sahar", label: "Block Supply Office (PDS / Ration) - Sahar" },
+      { value: "Block Supply Office Jagdishpur", label: "Block Supply Office (PDS / Ration) - Jagdishpur" },
+      { value: "Block Supply Office Piro", label: "Block Supply Office (PDS / Ration) - Piro" },
+      { value: "Block Supply Office Charpokhari", label: "Block Supply Office (PDS / Ration) - Charpokhari" },
+      { value: "Block Supply Office Agiaon", label: "Block Supply Office (PDS / Ration) - Agiaon" },
+      { value: "Block Panchayati Raj Office Ara Sadar", label: "Block Panchayati Raj Office - Ara Sadar" },
+      { value: "Block Panchayati Raj Office Udwantnagar", label: "Block Panchayati Raj Office - Udwantnagar" },
+      { value: "Block Panchayati Raj Office Barhara", label: "Block Panchayati Raj Office - Barhara" },
+      { value: "Block Panchayati Raj Office Sahar", label: "Block Panchayati Raj Office - Sahar" },
+      { value: "Block Panchayati Raj Office Jagdishpur", label: "Block Panchayati Raj Office - Jagdishpur" },
+      { value: "Block Panchayati Raj Office Piro", label: "Block Panchayati Raj Office - Piro" },
+      { value: "Block Panchayati Raj Office Charpokhari", label: "Block Panchayati Raj Office - Charpokhari" },
+      { value: "Block Panchayati Raj Office Agiaon", label: "Block Panchayati Raj Office - Agiaon" },
+      { value: "Block Rural Development Office Ara Sadar", label: "Block Rural Development Office (MNREGA, PMAY, etc.) - Ara Sadar" },
+      { value: "Block Rural Development Office Udwantnagar", label: "Block Rural Development Office (MNREGA, PMAY, etc.) - Udwantnagar" },
+      { value: "Block Rural Development Office Barhara", label: "Block Rural Development Office (MNREGA, PMAY, etc.) - Barhara" },
+      { value: "Block Rural Development Office Sahar", label: "Block Rural Development Office (MNREGA, PMAY, etc.) - Sahar" },
+      { value: "Block Rural Development Office Jagdishpur", label: "Block Rural Development Office (MNREGA, PMAY, etc.) - Jagdishpur" },
+      { value: "Block Rural Development Office Piro", label: "Block Rural Development Office (MNREGA, PMAY, etc.) - Piro" },
+      { value: "Block Rural Development Office Charpokhari", label: "Block Rural Development Office (MNREGA, PMAY, etc.) - Charpokhari" },
+      { value: "Block Rural Development Office Agiaon", label: "Block Rural Development Office (MNREGA, PMAY, etc.) - Agiaon" },
+      { value: "Block Employment Office Ara Sadar", label: "Block Employment Office - Ara Sadar" },
+      { value: "Block Employment Office Udwantnagar", label: "Block Employment Office - Udwantnagar" },
+      { value: "Block Employment Office Barhara", label: "Block Employment Office - Barhara" },
+      { value: "Block Employment Office Sahar", label: "Block Employment Office - Sahar" },
+      { value: "Block Employment Office Jagdishpur", label: "Block Employment Office - Jagdishpur" },
+      { value: "Block Employment Office Piro", label: "Block Employment Office - Piro" },
+      { value: "Block Employment Office Charpokhari", label: "Block Employment Office - Charpokhari" },
+      { value: "Block Employment Office Agiaon", label: "Block Employment Office - Agiaon" },
+      { value: "Police Station Ara Sadar", label: "Police Station (Thana) - Ara Sadar" },
+      { value: "Police Station Udwantnagar", label: "Police Station (Thana) - Udwantnagar" },
+      { value: "Police Station Barhara", label: "Police Station (Thana) - Barhara" },
+      { value: "Police Station Sahar", label: "Police Station (Thana) - Sahar" },
+      { value: "Police Station Jagdishpur", label: "Police Station (Thana) - Jagdishpur" },
+      { value: "Police Station Piro", label: "Police Station (Thana) - Piro" },
+      { value: "Police Station Charpokhari", label: "Police Station (Thana) - Charpokhari" },
+      { value: "Police Station Agiaon", label: "Police Station (Thana) - Agiaon" },
     ],
   };
 
@@ -628,26 +765,7 @@ const AssigningWork = ({ data, onClose }) => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <motion.button
-                  onClick={handleSaveAssignment}
-                  disabled={isSaving || !selectedType?.value || !selectedOption?.value || applicationData.status === "Closed"}
-                  className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg shadow-sm transition font-['Montserrat'] ${
-                    isSaving || !selectedType?.value || !selectedOption?.value || applicationData.status === "Closed"
-                      ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                      : "bg-green-600 text-white hover:bg-green-700"
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  aria-label="Save assignment"
-                >
-                  {isSaving ? (
-                    <>
-                      <FaSpinner className="animate-spin-slow" /> Saving...
-                    </>
-                  ) : (
-                    "Assign"
-                  )}
-                </motion.button>
+                
               </div>
               <textarea
                 placeholder="Add assignment notes (optional)"
@@ -701,6 +819,29 @@ const AssigningWork = ({ data, onClose }) => {
                   </span>
                 </div>
               </label>
+              
+            </div>
+            <div className="flex justify-end">
+              <motion.button
+                  onClick={handleSaveAssignment}
+                  disabled={isSaving || !selectedType?.value || !selectedOption?.value || applicationData.status === "Closed"}
+                  className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg shadow-sm transition font-['Montserrat'] ${
+                    isSaving || !selectedType?.value || !selectedOption?.value || applicationData.status === "Closed"
+                      ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                      : "bg-green-600 text-white hover:bg-green-700"
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Save assignment"
+                >
+                  {isSaving ? (
+                    <>
+                      <FaSpinner className="animate-spin-slow" /> Saving...
+                    </>
+                  ) : (
+                    "Assign"
+                  )}
+                </motion.button>
             </div>
             <div>
               <motion.button
