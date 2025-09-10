@@ -171,6 +171,23 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
     }
   };
 
+//   const getStatusStyle = (status) => {
+//   switch (status) {
+//     case "Not Assigned Yet":
+//       return "bg-gray-200 text-gray-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
+//     case "In Process":
+//       return "bg-blue-100 text-blue-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
+//     case "Compliance":
+//       return "bg-green-100 text-green-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
+//     case "Dismissed":
+//       return "bg-red-100 text-red-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
+//     case "Closed":
+//       return "bg-orange-100 text-orange-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
+//     default:
+//       return "bg-gray-200 text-gray-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
+//   }
+// };
+
   return (
     <div className="md:pl-16 lg:pl-16">
       {/* Desktop Table */}

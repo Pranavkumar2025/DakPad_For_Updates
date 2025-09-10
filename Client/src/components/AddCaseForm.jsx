@@ -15,9 +15,8 @@ const DropdownButton = ({ label, items }) => {
       >
         <span>{label}</span>
         <svg
-          className={`w-4 h-4 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            }`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -295,7 +294,6 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                 name="applicationDate"
                 value={formData.applicationDate}
                 onChange={handleInputChange}
-                min={new Date().toISOString().split("T")[0]}
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all duration-200"
               />
               {errors.applicationDate && (
@@ -438,20 +436,18 @@ const AddCaseForm = ({ isOpen, onClose }) => {
               Attach Application PDF
             </label>
             <div
-              className={`w-full mt-1 p-4 bg-gray-50 rounded-lg border-2 border-dashed transition-all duration-200 ${
-                isDragging
+              className={`w-full mt-1 p-4 bg-gray-50 rounded-lg border-2 border-dashed transition-all duration-200 ${isDragging
                   ? "border-[#ff5010] bg-orange-50"
                   : "border-gray-300 hover:border-[#ff5010]"
-              }`}
+                }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
               <div className="flex flex-col items-center gap-2">
                 <svg
-                  className={`w-10 h-10 ${
-                    isDragging ? "text-[#ff5010]" : "text-gray-400"
-                  } transition-colors duration-200`}
+                  className={`w-10 h-10 ${isDragging ? "text-[#ff5010]" : "text-gray-400"
+                    } transition-colors duration-200`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
