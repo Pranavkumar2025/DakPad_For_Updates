@@ -1,10 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { FaUsers, FaBars, FaTimes } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
-const Navbar = ({ userName, userPosition, logoLink = "/" }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+const Navbar = ({ userName, userPosition, logoLink = "/", isMenuOpen, toggleMenu }) => {
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -13,11 +11,7 @@ const Navbar = ({ userName, userPosition, logoLink = "/" }) => {
 
   const handleLogout = () => {
     console.log("User logged out");
-    setIsMenuOpen(false);
-  };
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    toggleMenu();
   };
 
   return (
