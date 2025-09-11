@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaFilePdf, FaSpinner, FaTimesCircle } from "react-icons/fa";
+import { FaFilePdf, FaSpinner, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -7,6 +7,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
   const [applications, setApplications] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
+  const [openCardId, setOpenCardId] = useState(null); // Track open accordion for mobile
 
   // Calculate pending days based on issue date and status
   const calculatePendingDays = (issueDate, status) => {
@@ -171,22 +172,10 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
     }
   };
 
-//   const getStatusStyle = (status) => {
-//   switch (status) {
-//     case "Not Assigned Yet":
-//       return "bg-gray-200 text-gray-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
-//     case "In Process":
-//       return "bg-blue-100 text-blue-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
-//     case "Compliance":
-//       return "bg-green-100 text-green-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
-//     case "Dismissed":
-//       return "bg-red-100 text-red-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
-//     case "Closed":
-//       return "bg-orange-100 text-orange-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
-//     default:
-//       return "bg-gray-200 text-gray-800 whitespace-nowrap font-medium rounded-md px-2 py-1";
-//   }
-// };
+  // Toggle accordion for mobile card
+  const toggleCardDetails = (applicationId) => {
+    setOpenCardId(openCardId === applicationId ? null : applicationId);
+  };
 
   return (
     <div className="md:pl-16 lg:pl-16">
@@ -288,86 +277,140 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
       </div>
 
       {/* Mobile Cards */}
-      <div className="block md:hidden space-y-4 py-4 px-4">
+      <div className="block md:hidden space-y-4 py-4 px-4 pb-[100px]">
         {applications.length === 0 ? (
           <div className="text-center text-gray-500 text-sm font-['Montserrat']">
             No applications found.
           </div>
         ) : (
           applications.map((caseDetail) => (
-            <div
+            <motion.div
               key={caseDetail.applicationId}
-              className="bg-white border border-gray-200 rounded-xl shadow-md p-5 hover:shadow-lg transition mx-auto max-w-md"
+              className="bg-white border border-gray-200 rounded-xl shadow-md p-4 w-full max-w-[340px] mx-auto relative"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
               onClick={() => onRowClick(caseDetail)}
             >
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-sm font-semibold text-gray-800 font-['Montserrat']">
+              {/* Card Header */}
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-[13px] sm:text-sm font-semibold text-gray-800 font-['Montserrat'] truncate max-w-[60%]">
                   {caseDetail.applicantName}
                 </h3>
                 <span
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
                   aria-label={`Status: ${caseDetail.status}`}
                 >
-                  {caseDetail.status === "In Process" && <FaSpinner className="animate-spin-slow" />}
+                  {caseDetail.status === "In Process" && <FaSpinner className="animate-spin-slow text-sm" />}
                   {caseDetail.status}
                 </span>
               </div>
-              <div className="space-y-2 text-xs text-gray-700 font-['Montserrat']">
-                <div className="flex justify-between">
-                  <span>
-                    <strong>Sr. No:</strong> {caseDetail.sNo}
-                  </span>
-                  <span>
-                    <strong>Date:</strong> {caseDetail.dateOfApplication}
-                  </span>
-                </div>
-                <div>
-                  <strong>Subject:</strong> {caseDetail.subject}
-                </div>
-                <div>
-                  <strong>GP, Block:</strong> {caseDetail.gpBlock}
-                </div>
-                <div>
-                  <strong>Officer:</strong> {caseDetail.concernedOfficer}
-                </div>
-                <div>
-                  <strong>Issue Date:</strong> {caseDetail.issueDate}
-                </div>
-                <div>
-                  <strong>Pending Days:</strong>{" "}
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${getPendingDaysColor(caseDetail.pendingDays)}`}
-                    aria-label={`Pending days: ${caseDetail.pendingDays}`}
-                  >
-                    {caseDetail.pendingDays}
-                  </span>
-                </div>
+
+              {/* Subject (Always Visible) */}
+              <div className="text-[10px] sm:text-xs text-gray-700 font-['Montserrat'] mb-2 truncate">
+                <strong>Subject:</strong> {caseDetail.subject}
               </div>
-              <div className="flex gap-2 mt-3">
-                <button
+
+              {/* Accordion Toggle for Details */}
+              <button
+                className="flex items-center justify-between w-full p-2 bg-gray-100 rounded-md border border-gray-200 hover:bg-gray-200 transition-colors focus:ring-2 focus:ring-[#ff5010]"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleCardDetails(caseDetail.applicationId);
+                }}
+                aria-label={openCardId === caseDetail.applicationId ? "Collapse details" : "Expand details"}
+                aria-expanded={openCardId === caseDetail.applicationId}
+              >
+                <span className="text-[11px] sm:text-sm font-semibold text-gray-700">Details</span>
+                {openCardId === caseDetail.applicationId ? (
+                  <FaChevronUp className="text-gray-500 text-[10px] sm:text-sm" />
+                ) : (
+                  <FaChevronDown className="text-gray-500 text-[10px] sm:text-sm" />
+                )}
+              </button>
+
+              {/* Collapsible Details */}
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={openCardId === caseDetail.applicationId ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{ overflow: "hidden" }}
+              >
+                <div className="space-y-1.5 text-[10px] sm:text-xs text-gray-700 font-['Montserrat'] mt-2">
+                  <div className="flex justify-between">
+                    <span>
+                      <strong>Sr. No:</strong> {caseDetail.sNo}
+                    </span>
+                    <span>
+                      <strong>Date:</strong> {caseDetail.dateOfApplication}
+                    </span>
+                  </div>
+                  <div className="truncate">
+                    <strong>GP, Block:</strong> {caseDetail.gpBlock}
+                  </div>
+                  <div className="truncate">
+                    <strong>Officer:</strong> {caseDetail.concernedOfficer}
+                  </div>
+                  <div>
+                    <strong>Issue Date:</strong> {caseDetail.issueDate}
+                  </div>
+                  <div>
+                    <strong>Pending Days:</strong>{" "}
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold ${getPendingDaysColor(caseDetail.pendingDays)}`}
+                      aria-label={`Pending days: ${caseDetail.pendingDays}`}
+                    >
+                      {caseDetail.pendingDays}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Per-Card Bottom Bar (Visible when Accordion is Open) */}
+              <div
+                className={`fixed bottom-0 left-0 right-0 w-full max-w-[340px] mx-auto bg-white shadow-md p-2 flex justify-between gap-2 border-t border-gray-200 ${
+                  openCardId === caseDetail.applicationId ? "block" : "hidden"
+                } md:hidden z-10`}
+              >
+                <motion.button
                   onClick={(e) => {
                     e.stopPropagation();
                     onRowClick(caseDetail);
                   }}
-                  className="inline-flex items-center gap-1 px-4 py-1.5 text-xs rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition"
+                  initial="rest"
+                  whileHover="hover"
+                  animate="rest"
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-3 py-1.5 rounded-xl shadow-lg hover:scale-[1.02] font-semibold text-[10px] sm:text-xs"
                   aria-label="View PDF"
                 >
-                  <FaFilePdf /> PDF
-                </button>
+                  <motion.div
+                    variants={{ rest: { x: 0 }, hover: { x: 10 } }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <FaFilePdf className="text-white text-[14px] sm:text-base" />
+                  </motion.div>
+                  <motion.span
+                    variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }}
+                    transition={{ duration: 0.3 }}
+                    className="text-[10px] sm:text-xs"
+                  >
+                    PDF
+                  </motion.span>
+                </motion.button>
                 {caseDetail.isFromLocalStorage && caseDetail.status !== "Closed" && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleOpenModal(caseDetail.applicationId);
                     }}
-                    className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600 transition"
+                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 rounded-xl font-medium text-[10px] sm:text-xs shadow-md"
                     aria-label="Close application"
                   >
-                    <X className="w-4 h-4" />
+                    Close
                   </button>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))
         )}
       </div>

@@ -1,13 +1,25 @@
-
+import { useState } from "react";
 import WorkAssignedDataTable from "../components/WorkAssignedComponents/WorkAssignedDataTable";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
 const WorkAssignedDashboard = () => {
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
   return (
     <div className="flex min-h-screen bg-gray-100">
+
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar
+        isMenuOpen={isMenuOpen}
+        toggleMenu={toggleMenu}
+        userName="Pranav Kumar"
+        userPosition="Work Assign Officer"
+      />
 
       {/* Main Content */}
       <div className="flex-1 p-6">
@@ -15,6 +27,8 @@ const WorkAssignedDashboard = () => {
           userName="Pranav Kumar"
           userPosition="Work Assign Officer"
           logoLink="/work-assigned"
+          isMenuOpen={isMenuOpen}
+          toggleMenu={toggleMenu}
         />
         <div className="mt-6">
           <WorkAssignedDataTable />
@@ -25,3 +39,4 @@ const WorkAssignedDashboard = () => {
 };
 
 export default WorkAssignedDashboard;
+
