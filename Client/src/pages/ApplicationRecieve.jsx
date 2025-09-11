@@ -14,7 +14,7 @@ const ApplicationReceive = () => {
   const [applications, setApplications] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [editApplication, setEditApplication] = useState(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // Shared state for sidebar and navbar
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const recordsPerPage = 10;
 
   useEffect(() => {
