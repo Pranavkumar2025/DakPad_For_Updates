@@ -3,7 +3,15 @@ import { FaFilePdf, FaSpinner, FaChevronDown, FaChevronUp } from "react-icons/fa
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
 
-const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
+const WorkAssignedApplicationTable = ({
+  data,
+  onRowClick,
+  searchQuery,
+  selectedStatus,
+  selectedDepartment,
+  selectedBlock,
+  selectedDate,
+}) => {
   const [applications, setApplications] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
@@ -27,6 +35,27 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
     if (latestEntry.includes("dismissed")) return "Dismissed";
     if (latestEntry.includes("closed")) return "Closed";
     return "In Process";
+  };
+
+  // Filter applications based on filter states
+  const filterApplications = (rawApplications) => {
+    return rawApplications.filter((app) => {
+      const matchesSearch =
+        searchQuery === "" ||
+        app.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        app.subject.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = selectedStatus === "" || app.status === selectedStatus;
+      const matchesDepartment = selectedDepartment === "" || app.concernedOfficer === selectedDepartment;
+      const matchesBlock = selectedBlock === "" || app.gpBlock === selectedBlock;
+      let matchesDate = true;
+      if (selectedDate.startDate && selectedDate.endDate) {
+        const appDate = new Date(app.dateOfApplication);
+        const startDate = new Date(selectedDate.startDate);
+        const endDate = new Date(selectedDate.endDate);
+        matchesDate = appDate >= startDate && appDate <= endDate;
+      }
+      return matchesSearch && matchesStatus && matchesDepartment && matchesBlock && matchesDate;
+    });
   };
 
   // Update applications from localStorage and JSON data
@@ -86,10 +115,12 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
       }),
     ].map((item, index) => ({ ...item, sNo: index + 1 }));
 
-    setApplications(combinedData);
+    // Apply filters to combined data
+    const filteredApplications = filterApplications(combinedData);
+    setApplications(filteredApplications);
   };
 
-  // Initial load and listen for localStorage changes
+  // Re-run updateApplications when data or filter states change
   useEffect(() => {
     updateApplications();
     const handleStorageChange = (event) => {
@@ -106,7 +137,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
       window.removeEventListener("storage", handleStorageChange);
       clearInterval(intervalId);
     };
-  }, [data]);
+  }, [data, searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate]);
 
   // Handle opening the confirmation modal
   const handleOpenModal = (applicationId) => {

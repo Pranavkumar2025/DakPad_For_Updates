@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
-import casesData from "../../JsonData/DataTable.json"
-// import FilterHeader from "./DataTable/FilterHeader";
+import casesData from "../../JsonData/DataTable.json";
 import WorkAssignedFilterHeader from "./WorkAssignedFilterHeader";
-// import ApplicationTable from "./DataTable/ApplicationTable";
 import WorkAssignedApplicationTable from "./WorkAssignedApplicationTable";
-// import CaseDialog from "./DataTable/CaseDialog";
 import AssigningWork from "./AssigningWork";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -12,43 +9,31 @@ import { saveAs } from "file-saver";
 const WorkAssignedDataTable = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedSource, setSelectedSource] = useState("");
   const [selectedBlock, setSelectedBlock] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState({ startDate: null, endDate: null });
   const [searchQuery, setSearchQuery] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
-//   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const filteredCases = useMemo(() => {
     return casesData.filter((c) => {
       const matchStatus = !selectedStatus || c.status === selectedStatus;
       const matchDepartment = !selectedDepartment || c.concernedOfficer.includes(selectedDepartment);
-      // Remove source filter if not present in JSON, or add logic if source is added later
-      // const matchSource = !selectedSource || c.addAt === selectedSource;
       const matchBlock = !selectedBlock || c.gpBlock === selectedBlock;
-      const matchDate = !selectedDate || c.dateOfApplication === selectedDate;
       const matchSearch =
         c.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.description.toLowerCase().includes(searchQuery.toLowerCase());
+      let matchDate = true;
+      if (selectedDate.startDate && selectedDate.endDate) {
+        const appDate = new Date(c.dateOfApplication);
+        const startDate = new Date(selectedDate.startDate);
+        const endDate = new Date(selectedDate.endDate);
+        matchDate = appDate >= startDate && appDate <= endDate;
+      }
 
-      return (
-        matchStatus &&
-        matchDepartment &&
-        // matchSource &&
-        matchBlock &&
-        matchDate &&
-        matchSearch
-      );
+      return matchStatus && matchDepartment && matchBlock && matchDate && matchSearch;
     });
-  }, [
-    selectedStatus,
-    selectedDepartment,
-    // selectedSource,
-    selectedBlock,
-    selectedDate,
-    searchQuery,
-  ]);
+  }, [selectedStatus, selectedDepartment, selectedBlock, selectedDate, searchQuery]);
 
   const handleDownloadExcel = () => {
     const ws = XLSX.utils.json_to_sheet(filteredCases);
@@ -68,7 +53,7 @@ const WorkAssignedDataTable = () => {
   }, []);
 
   return (
-    <div className=" p-4">
+    <div className="p-2 sm:p-4">
       <WorkAssignedFilterHeader
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -77,13 +62,10 @@ const WorkAssignedDataTable = () => {
         setSelectedStatus={setSelectedStatus}
         selectedDepartment={selectedDepartment}
         setSelectedDepartment={setSelectedDepartment}
-        selectedSource={selectedSource}
-        setSelectedSource={setSelectedSource}
         selectedBlock={selectedBlock}
         setSelectedBlock={setSelectedBlock}
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        // onAddClick={() => setShowAddDialog(true)}
         onExcelClick={handleDownloadExcel}
       />
 
@@ -93,12 +75,16 @@ const WorkAssignedDataTable = () => {
           setSelectedCase(row);
           setOpenDialog(true);
         }}
+        searchQuery={searchQuery}
+        selectedStatus={selectedStatus}
+        selectedDepartment={selectedDepartment}
+        selectedBlock={selectedBlock}
+        selectedDate={selectedDate}
       />
 
       {openDialog && selectedCase && (
         <AssigningWork data={selectedCase} onClose={() => setOpenDialog(false)} />
       )}
-
     </div>
   );
 };
