@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
 import casesData from "../../JsonData/DataTable.json";
-import SuperAdminApplicationTable from "./SuperAdminApplicationTable";
 import SuperAdminFilterHeader from "./SuperAdminFilterHeader";
+import SuperAdminApplicationTable from "./SuperAdminApplicationTable";
 import ViewDetails from "./ViewDetails";
-
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 const SuperAdminDataTable = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedSource, setSelectedSource] = useState("");
   const [selectedBlock, setSelectedBlock] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState({ startDate: null, endDate: null });
   const [searchQuery, setSearchQuery] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
@@ -21,31 +19,20 @@ const SuperAdminDataTable = () => {
     return casesData.filter((c) => {
       const matchStatus = !selectedStatus || c.status === selectedStatus;
       const matchDepartment = !selectedDepartment || c.concernedOfficer.includes(selectedDepartment);
-      // Remove source filter if not present in JSON, or add logic if source is added later
-      // const matchSource = !selectedSource || c.addAt === selectedSource;
       const matchBlock = !selectedBlock || c.gpBlock === selectedBlock;
-      const matchDate = !selectedDate || c.dateOfApplication === selectedDate;
       const matchSearch =
         c.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.description.toLowerCase().includes(searchQuery.toLowerCase());
-
-      return (
-        matchStatus &&
-        matchDepartment &&
-        // matchSource &&
-        matchBlock &&
-        matchDate &&
-        matchSearch
-      );
+      let matchDate = true;
+      if (selectedDate.startDate && selectedDate.endDate) {
+        const appDate = new Date(c.dateOfApplication);
+        const startDate = new Date(selectedDate.startDate);
+        const endDate = new Date(selectedDate.endDate);
+        matchDate = appDate >= startDate && appDate <= endDate;
+      }
+      return matchStatus && matchDepartment && matchBlock && matchSearch && matchDate;
     });
-  }, [
-    selectedStatus,
-    selectedDepartment,
-    // selectedSource,
-    selectedBlock,
-    selectedDate,
-    searchQuery,
-  ]);
+  }, [selectedStatus, selectedDepartment, selectedBlock, selectedDate, searchQuery]);
 
   const handleDownloadExcel = () => {
     const ws = XLSX.utils.json_to_sheet(filteredCases);
@@ -65,7 +52,7 @@ const SuperAdminDataTable = () => {
   }, []);
 
   return (
-    <div className="overflow-x-auto p-4">
+    <div className="p-2 sm:p-4 overflow-x-hidden">
       <SuperAdminFilterHeader
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -74,8 +61,6 @@ const SuperAdminDataTable = () => {
         setSelectedStatus={setSelectedStatus}
         selectedDepartment={selectedDepartment}
         setSelectedDepartment={setSelectedDepartment}
-        selectedSource={selectedSource}
-        setSelectedSource={setSelectedSource}
         selectedBlock={selectedBlock}
         setSelectedBlock={setSelectedBlock}
         selectedDate={selectedDate}
@@ -89,12 +74,18 @@ const SuperAdminDataTable = () => {
           setSelectedCase(row);
           setOpenDialog(true);
         }}
+        searchQuery={searchQuery}
+        selectedStatus={selectedStatus}
+        selectedDepartment={selectedDepartment}
+        selectedBlock={selectedBlock}
+        selectedDate={selectedDate}
       />
 
       {openDialog && selectedCase && (
-        <ViewDetails data={selectedCase} onClose={() => setOpenDialog(false)} />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50">
+          <ViewDetails data={selectedCase} onClose={() => setOpenDialog(false)} />
+        </div>
       )}
-
     </div>
   );
 };

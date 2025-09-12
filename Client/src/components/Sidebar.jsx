@@ -1,7 +1,14 @@
-import { LayoutDashboard, Settings, User } from "lucide-react";
+import React from "react";
+import { LayoutDashboard, Settings, User, BarChart2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const Sidebar = ({ isMenuOpen, toggleMenu, userName = "Siddharth Singh", userPosition = "Application Receiver" }) => {
+const Sidebar = ({
+  isMenuOpen,
+  toggleMenu,
+  userName = "Siddharth Singh",
+  userPosition = "Application Receiver",
+  isSuperAdmin = false, // Prop to enable Performance item for SuperAdminDashboard
+}) => {
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -9,8 +16,11 @@ const Sidebar = ({ isMenuOpen, toggleMenu, userName = "Siddharth Singh", userPos
   });
 
   const menuItems = [
-    { icon: <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Dashboard", link: "#" },
+    { icon: <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6" />, label: "User Dashboard", link: "/" },
     { icon: <User className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Users", link: "/user" },
+    ...(isSuperAdmin
+      ? [{ icon: <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Performance", link: "/performance" }]
+      : []),
     { icon: <Settings className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Settings", link: "#" },
   ];
 
@@ -22,7 +32,7 @@ const Sidebar = ({ isMenuOpen, toggleMenu, userName = "Siddharth Singh", userPos
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex fixed top-0 left-0 h-screen w-16 bg-gray-900 text-white flex-col items-center py-6 shadow-lg">
+      <aside className="hidden md:flex fixed top-0 left-0 h-screen w-16 bg-gray-900 text-white flex-col items-center py-6 shadow-lg z-10">
         <div className="mb-12">
           <img
             src="/logo.svg"
@@ -39,7 +49,7 @@ const Sidebar = ({ isMenuOpen, toggleMenu, userName = "Siddharth Singh", userPos
               aria-label={item.label}
             >
               {item.icon}
-              <span className="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
+              <span className="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">
                 {item.label}
               </span>
             </a>
@@ -139,6 +149,13 @@ const Sidebar = ({ isMenuOpen, toggleMenu, userName = "Siddharth Singh", userPos
           />
         )}
       </AnimatePresence>
+
+      <style jsx global>{`
+        * {
+          box-sizing: border-box;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+      `}</style>
     </>
   );
 };
