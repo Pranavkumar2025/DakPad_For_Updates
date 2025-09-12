@@ -7,7 +7,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
   const [applications, setApplications] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
-  const [openCardId, setOpenCardId] = useState(null); // Track open accordion for mobile
+  const [openCardId, setOpenCardId] = useState(null);
 
   // Calculate pending days based on issue date and status
   const calculatePendingDays = (issueDate, status) => {
@@ -277,7 +277,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
       </div>
 
       {/* Mobile Cards */}
-      <div className="block md:hidden space-y-4 py-4 px-4 pb-[100px]">
+      <div className="block md:hidden space-y-3 py-3 px-2 pb-[100px] overflow-x-hidden">
         {applications.length === 0 ? (
           <div className="text-center text-gray-500 text-sm font-['Montserrat']">
             No applications found.
@@ -286,7 +286,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
           applications.map((caseDetail) => (
             <motion.div
               key={caseDetail.applicationId}
-              className="bg-white border border-gray-200 rounded-xl shadow-md p-4 w-full max-w-[340px] mx-auto relative"
+              className="bg-white border border-gray-200 rounded-xl shadow-md p-3 w-full max-w-[320px] mx-auto relative"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
@@ -294,20 +294,20 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
             >
               {/* Card Header */}
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-[13px] sm:text-sm font-semibold text-gray-800 font-['Montserrat'] truncate max-w-[60%]">
+                <h3 className="text-[10px] sm:text-sm font-semibold text-gray-800 font-['Montserrat'] truncate max-w-[50%]">
                   {caseDetail.applicantName}
                 </h3>
                 <span
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
                   aria-label={`Status: ${caseDetail.status}`}
                 >
-                  {caseDetail.status === "In Process" && <FaSpinner className="animate-spin-slow text-sm" />}
+                  {caseDetail.status === "In Process" && <FaSpinner className="animate-spin-slow text-[10px] sm:text-sm" />}
                   {caseDetail.status}
                 </span>
               </div>
 
               {/* Subject (Always Visible) */}
-              <div className="text-[10px] sm:text-xs text-gray-700 font-['Montserrat'] mb-2 truncate">
+              <div className="text-[9px] sm:text-xs text-gray-700 font-['Montserrat'] mb-2 truncate">
                 <strong>Subject:</strong> {caseDetail.subject}
               </div>
 
@@ -321,11 +321,11 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                 aria-label={openCardId === caseDetail.applicationId ? "Collapse details" : "Expand details"}
                 aria-expanded={openCardId === caseDetail.applicationId}
               >
-                <span className="text-[11px] sm:text-sm font-semibold text-gray-700">Details</span>
+                <span className="text-[10px] sm:text-sm font-semibold text-gray-700">Details</span>
                 {openCardId === caseDetail.applicationId ? (
-                  <FaChevronUp className="text-gray-500 text-[10px] sm:text-sm" />
+                  <FaChevronUp className="text-gray-500 text-[9px] sm:text-sm" />
                 ) : (
-                  <FaChevronDown className="text-gray-500 text-[10px] sm:text-sm" />
+                  <FaChevronDown className="text-gray-500 text-[9px] sm:text-sm" />
                 )}
               </button>
 
@@ -336,12 +336,12 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                 transition={{ duration: 0.3 }}
                 style={{ overflow: "hidden" }}
               >
-                <div className="space-y-1.5 text-[10px] sm:text-xs text-gray-700 font-['Montserrat'] mt-2">
-                  <div className="flex justify-between">
-                    <span>
+                <div className="space-y-1 text-[9px] sm:text-xs text-gray-700 font-['Montserrat'] mt-2">
+                  <div className="flex justify-between gap-2">
+                    <span className="truncate">
                       <strong>Sr. No:</strong> {caseDetail.sNo}
                     </span>
-                    <span>
+                    <span className="truncate">
                       <strong>Date:</strong> {caseDetail.dateOfApplication}
                     </span>
                   </div>
@@ -351,13 +351,13 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                   <div className="truncate">
                     <strong>Officer:</strong> {caseDetail.concernedOfficer}
                   </div>
-                  <div>
+                  <div className="truncate">
                     <strong>Issue Date:</strong> {caseDetail.issueDate}
                   </div>
                   <div>
                     <strong>Pending Days:</strong>{" "}
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold ${getPendingDaysColor(caseDetail.pendingDays)}`}
+                      className={`px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold ${getPendingDaysColor(caseDetail.pendingDays)}`}
                       aria-label={`Pending days: ${caseDetail.pendingDays}`}
                     >
                       {caseDetail.pendingDays}
@@ -368,7 +368,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
 
               {/* Per-Card Bottom Bar (Visible when Accordion is Open) */}
               <div
-                className={`fixed bottom-0 left-0 right-0 w-full max-w-[340px] mx-auto bg-white shadow-md p-2 flex justify-between gap-2 border-t border-gray-200 ${
+                className={`fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-between gap-1 border-t border-gray-200 ${
                   openCardId === caseDetail.applicationId ? "block" : "hidden"
                 } md:hidden z-10`}
               >
@@ -380,19 +380,19 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                   initial="rest"
                   whileHover="hover"
                   animate="rest"
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-3 py-1.5 rounded-xl shadow-lg hover:scale-[1.02] font-semibold text-[10px] sm:text-xs"
+                  className="flex-1 flex items-center justify-center gap-1 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-2 py-1 rounded-xl shadow-lg hover:scale-[1.02] font-semibold text-[9px] sm:text-xs"
                   aria-label="View PDF"
                 >
                   <motion.div
-                    variants={{ rest: { x: 0 }, hover: { x: 10 } }}
+                    variants={{ rest: { x: 0 }, hover: { x: 5 } }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
-                    <FaFilePdf className="text-white text-[14px] sm:text-base" />
+                    <FaFilePdf className="text-white text-[12px] sm:text-base" />
                   </motion.div>
                   <motion.span
                     variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }}
                     transition={{ duration: 0.3 }}
-                    className="text-[10px] sm:text-xs"
+                    className="text-[9px] sm:text-xs"
                   >
                     PDF
                   </motion.span>
@@ -403,7 +403,7 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                       e.stopPropagation();
                       handleOpenModal(caseDetail.applicationId);
                     }}
-                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 rounded-xl font-medium text-[10px] sm:text-xs shadow-md"
+                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded-xl font-medium text-[9px] sm:text-xs shadow-md"
                     aria-label="Close application"
                   >
                     Close
@@ -418,9 +418,9 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
       {/* Confirmation Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 font-['Montserrat']">
+          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-[320px] w-full mx-2">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 font-['Montserrat']">
                 Confirm Closure
               </h3>
               <button
@@ -428,23 +428,23 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
                 className="text-gray-600 hover:text-gray-800 transition"
                 aria-label="Close modal"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
-            <p className="text-sm text-gray-600 mb-6 font-['Montserrat']">
+            <p className="text-xs sm:text-sm text-gray-600 mb-4 font-['Montserrat']">
               Are you sure you want to close this application? This will update its status to "Closed".
             </p>
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-2">
               <button
                 onClick={handleCancel}
-                className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition font-['Montserrat']"
+                className="px-3 py-1 text-xs sm:text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition font-['Montserrat']"
                 aria-label="Cancel closure"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCloseApplication}
-                className="px-4 py-2 text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition font-['Montserrat']"
+                className="px-3 py-1 text-xs sm:text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition font-['Montserrat']"
                 aria-label="Confirm closure"
               >
                 Close Application
@@ -457,6 +457,9 @@ const WorkAssignedApplicationTable = ({ data, onRowClick }) => {
       {/* Custom CSS */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+        * {
+          box-sizing: border-box;
+        }
         .animate-spin-slow {
           animation: spin 2s linear infinite;
         }

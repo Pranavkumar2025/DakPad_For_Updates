@@ -68,7 +68,7 @@ const WorkAssignedDataTable = () => {
   }, []);
 
   return (
-    <div className="overflow-x-auto p-4">
+    <div className=" p-4">
       <WorkAssignedFilterHeader
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}

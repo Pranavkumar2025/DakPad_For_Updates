@@ -24,22 +24,22 @@ const WorkAssignedFilterHeader = ({
     <>
       {/* Mobile Layout */}
       <motion.div
-        className="md:hidden flex flex-col p-4 sm:p-5 gap-3 mb-4 font-['Montserrat'] bg-white rounded-xl shadow-md w-full max-w-[340px] mx-auto"
+        className="md:hidden flex flex-col p-3 gap-2 mb-3 font-['Montserrat'] bg-white rounded-xl shadow-md w-full max-w-[320px] mx-auto overflow-x-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         {/* Header and Search */}
-        <div className="flex flex-col gap-3">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-700">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-base sm:text-lg font-bold text-gray-700 truncate">
             Work Assign Application Dashboard
           </h2>
           <div className="relative w-full">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs sm:text-sm" />
+            <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-[10px] sm:text-sm" />
             <input
               type="text"
               placeholder="Search by name or description"
-              className="border border-gray-300 bg-gray-50 pl-9 pr-3 sm:pr-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-md focus:ring-2 focus:ring-[#ff5010] w-full"
+              className="border border-gray-300 bg-gray-50 pl-8 pr-2 py-1 text-[9px] sm:text-sm rounded-md focus:ring-2 focus:ring-[#ff5010] w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search applications"
@@ -48,8 +48,8 @@ const WorkAssignedFilterHeader = ({
         </div>
 
         {/* Filter Text and Accordion Toggle */}
-        <div className="flex flex-col gap-3">
-          <p className="text-xs sm:text-sm text-gray-500">
+        <div className="flex flex-col gap-2">
+          <p className="text-[9px] sm:text-sm text-gray-500 truncate">
             Showing {filteredCount} application{filteredCount !== 1 && "s"} filtered by
             <strong className="text-gray-700"> {selectedStatus || "All"} status</strong>,
             <strong className="text-gray-700"> {selectedDepartment || "All"} department</strong>,
@@ -62,11 +62,11 @@ const WorkAssignedFilterHeader = ({
             aria-label={isFiltersOpen ? "Collapse filters" : "Expand filters"}
             aria-expanded={isFiltersOpen}
           >
-            <span className="text-[11px] sm:text-sm font-semibold text-gray-700">Filters</span>
+            <span className="text-[10px] sm:text-sm font-semibold text-gray-700">Filters</span>
             {isFiltersOpen ? (
-              <FaChevronUp className="text-gray-500 text-[10px] sm:text-sm" />
+              <FaChevronUp className="text-gray-500 text-[9px] sm:text-sm" />
             ) : (
-              <FaChevronDown className="text-gray-500 text-[10px] sm:text-sm" />
+              <FaChevronDown className="text-gray-500 text-[9px] sm:text-sm" />
             )}
           </button>
           <motion.div
@@ -75,7 +75,7 @@ const WorkAssignedFilterHeader = ({
             transition={{ duration: 0.3 }}
             style={{ overflow: "hidden" }}
           >
-            <div className="flex flex-wrap gap-2 sm:gap-3 mt-1">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1">
               {/* Status */}
               <DropdownButton
                 label={selectedStatus || "Select Status"}
@@ -129,7 +129,7 @@ const WorkAssignedFilterHeader = ({
         </div>
 
         {/* Mobile Action Buttons (Fixed Bottom Bar) */}
-        <div className="fixed bottom-0 left-0 right-0 w-full max-w-[340px] mx-auto bg-white shadow-md p-2 flex justify-between gap-2 border-t border-gray-200 z-20 md:hidden">
+        <div className="fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-between gap-1 border-t border-gray-200 z-20 md:hidden">
           <button
             onClick={() => {
               setSearchQuery("");
@@ -138,7 +138,7 @@ const WorkAssignedFilterHeader = ({
               setSelectedBlock("");
               setSelectedDate("");
             }}
-            className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 rounded-xl font-medium text-[10px] sm:text-xs shadow-md"
+            className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded-xl font-medium text-[9px] sm:text-xs shadow-md"
             aria-label="Reset filters"
           >
             Reset Filters
@@ -148,19 +148,19 @@ const WorkAssignedFilterHeader = ({
             initial="rest"
             whileHover="hover"
             animate="rest"
-            className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-3 py-1.5 rounded-xl shadow-lg hover:scale-[1.02] font-semibold text-[10px] sm:text-xs"
+            className="flex-1 flex items-center justify-center gap-1 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-2 py-1 rounded-xl shadow-lg hover:scale-[1.02] font-semibold text-[9px] sm:text-xs"
             aria-label="Download Excel"
           >
             <motion.div
-              variants={{ rest: { x: 0 }, hover: { x: 10 } }}
+              variants={{ rest: { x: 0 }, hover: { x: 5 } }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              <RiFileExcel2Fill className="text-white text-[14px] sm:text-base" />
+              <RiFileExcel2Fill className="text-white text-[12px] sm:text-base" />
             </motion.div>
             <motion.span
               variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }}
               transition={{ duration: 0.3 }}
-              className="text-[10px] sm:text-xs"
+              className="text-[9px] sm:text-xs"
             >
               Download Excel
             </motion.span>
