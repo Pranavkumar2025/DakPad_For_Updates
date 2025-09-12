@@ -63,7 +63,7 @@ const WorkAssignedDashboard = () => {
       />
 
       {/* Main Content */}
-      <div className="flex-1 p-2 sm:p-4 md:p-6 w-full max-w-[320px] mx-auto md:max-w-7xl overflow-x-hidden">
+      <div className="flex-1 p-2 sm:p-4 md:p-6 w-full mx-auto overflow-x-hidden">
         <Navbar
           userName="Pranav Kumar"
           userPosition="Work Assign Officer"
