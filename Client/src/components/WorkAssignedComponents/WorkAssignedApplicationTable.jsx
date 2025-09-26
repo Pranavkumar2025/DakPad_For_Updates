@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaFilePdf, FaSpinner, FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { X } from "lucide-react";
+import { FaFilePdf, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 const WorkAssignedApplicationTable = ({
@@ -13,8 +12,6 @@ const WorkAssignedApplicationTable = ({
   selectedDate,
 }) => {
   const [applications, setApplications] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedApplicationId, setSelectedApplicationId] = useState(null);
   const [openCardId, setOpenCardId] = useState(null);
 
   // Calculate pending days based on issue date and status
@@ -115,7 +112,6 @@ const WorkAssignedApplicationTable = ({
       }),
     ].map((item, index) => ({ ...item, sNo: index + 1 }));
 
-    // Apply filters to combined data
     const filteredApplications = filterApplications(combinedData);
     setApplications(filteredApplications);
   };
@@ -138,44 +134,6 @@ const WorkAssignedApplicationTable = ({
       clearInterval(intervalId);
     };
   }, [data, searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate]);
-
-  // Handle opening the confirmation modal
-  const handleOpenModal = (applicationId) => {
-    setSelectedApplicationId(applicationId);
-    setIsModalOpen(true);
-  };
-
-  // Handle closing the application (update status to Closed)
-  const handleCloseApplication = () => {
-    if (selectedApplicationId) {
-      const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
-      const updatedApplications = storedApplications.map((app) => {
-        if (app.ApplicantId === selectedApplicationId) {
-          const newTimeline = [
-            ...app.timeline,
-            {
-              section: "Closed",
-              comment: `Application closed on ${new Date().toISOString().split("T")[0]}`,
-              date: new Date().toISOString().split("T")[0],
-              pdfLink: null,
-            },
-          ];
-          return { ...app, timeline: newTimeline };
-        }
-        return app;
-      });
-      localStorage.setItem("applications", JSON.stringify(updatedApplications));
-      updateApplications();
-      setIsModalOpen(false);
-      setSelectedApplicationId(null);
-    }
-  };
-
-  // Close the modal without action
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    setSelectedApplicationId(null);
-  };
 
   // Color for pending days
   const getPendingDaysColor = (days) => {
@@ -225,7 +183,6 @@ const WorkAssignedApplicationTable = ({
                 "Pending Days",
                 "Status",
                 "Attachment",
-                "Action",
               ].map((header, idx) => (
                 <th key={idx} className="px-6 py-4 text-left whitespace-nowrap">
                   {header}
@@ -236,7 +193,7 @@ const WorkAssignedApplicationTable = ({
           <tbody className="divide-y divide-gray-200">
             {applications.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-6 py-4 text-center text-gray-500 text-sm font-['Montserrat']">
+                <td colSpan={9} className="px-6 py-4 text-center text-gray-500 text-sm font-['Montserrat']">
                   No applications found.
                 </td>
               </tr>
@@ -266,7 +223,6 @@ const WorkAssignedApplicationTable = ({
                       className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
                       aria-label={`Status: ${caseDetail.status}`}
                     >
-                      {caseDetail.status === "In Process" && <FaSpinner className="animate-spin-slow" />}
                       {caseDetail.status}
                     </span>
                   </td>
@@ -281,24 +237,6 @@ const WorkAssignedApplicationTable = ({
                     >
                       <FaFilePdf /> PDF
                     </button>
-                  </td>
-                  <td className="px-6 py-4">
-                    {caseDetail.isFromLocalStorage && caseDetail.status !== "Closed" ? (
-                      <motion.button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenModal(caseDetail.applicationId);
-                        }}
-                        className="inline-flex items-center justify-center px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-200 rounded-lg hover:bg-red-100 hover:text-red-600 transition font-['Montserrat'] shadow-lg"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label="Close application"
-                      >
-                        Close
-                      </motion.button>
-                    ) : (
-                      <span className="text-gray-400 text-xs">N/A</span>
-                    )}
                   </td>
                 </tr>
               ))
@@ -332,7 +270,6 @@ const WorkAssignedApplicationTable = ({
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
                   aria-label={`Status: ${caseDetail.status}`}
                 >
-                  {caseDetail.status === "In Process" && <FaSpinner className="animate-spin-slow text-[10px] sm:text-sm" />}
                   {caseDetail.status}
                 </span>
               </div>
@@ -428,79 +365,17 @@ const WorkAssignedApplicationTable = ({
                     PDF
                   </motion.span>
                 </motion.button>
-                {caseDetail.isFromLocalStorage && caseDetail.status !== "Closed" && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenModal(caseDetail.applicationId);
-                    }}
-                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded-xl font-medium text-[9px] sm:text-xs shadow-md"
-                    aria-label="Close application"
-                  >
-                    Close
-                  </button>
-                )}
               </div>
             </motion.div>
           ))
         )}
       </div>
 
-      {/* Confirmation Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-[320px] w-full mx-2">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-800 font-['Montserrat']">
-                Confirm Closure
-              </h3>
-              <button
-                onClick={handleCancel}
-                className="text-gray-600 hover:text-gray-800 transition"
-                aria-label="Close modal"
-              >
-                <X className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </div>
-            <p className="text-xs sm:text-sm text-gray-600 mb-4 font-['Montserrat']">
-              Are you sure you want to close this application? This will update its status to "Closed".
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={handleCancel}
-                className="px-3 py-1 text-xs sm:text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition font-['Montserrat']"
-                aria-label="Cancel closure"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCloseApplication}
-                className="px-3 py-1 text-xs sm:text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition font-['Montserrat']"
-                aria-label="Confirm closure"
-              >
-                Close Application
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Custom CSS */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
         * {
           box-sizing: border-box;
-        }
-        .animate-spin-slow {
-          animation: spin 2s linear infinite;
-        }
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
         }
         .backdrop-blur-sm {
           backdrop-filter: blur(4px);

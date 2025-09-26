@@ -8,6 +8,8 @@ import PerformanceDashboard from "./pages/PerformanceDashboard";
 import WorkAssignedDashboard from "./pages/WorkAssignedDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ApplicationReceive from "./pages/ApplicationRecieve";
+import "./i18n";
+
 
 const App = () => {
   return (

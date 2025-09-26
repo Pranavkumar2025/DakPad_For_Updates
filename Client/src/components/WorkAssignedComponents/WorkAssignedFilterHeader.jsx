@@ -1,9 +1,24 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { RiFileExcel2Fill } from "react-icons/ri";
-import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaSearch, FaChevronDown, FaChevronUp, FaPlus } from "react-icons/fa";
 import DropdownButton from "../DropdownButton";
 import DateRangePicker from "../DateRangePicker";
+import AddCaseForm from "../AddCaseForm";
+
+// Utility function to format date display
+const formatDisplayDate = (selectedDate) => {
+  if (selectedDate?.startDate && selectedDate?.endDate) {
+    return `${selectedDate.startDate} to ${selectedDate.endDate}`;
+  }
+  if (selectedDate?.startDate) {
+    return `${selectedDate.startDate} to Select End Date`;
+  }
+  if (selectedDate?.endDate) {
+    return `Select Start Date to ${selectedDate.endDate}`;
+  }
+  return "All";
+};
 
 const WorkAssignedFilterHeader = ({
   searchQuery,
@@ -18,16 +33,41 @@ const WorkAssignedFilterHeader = ({
   selectedDate,
   setSelectedDate,
   onExcelClick,
+  applications,
+  setApplications,
 }) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
 
-  const displayDate = selectedDate?.startDate && selectedDate?.endDate
-    ? `${selectedDate.startDate} to ${selectedDate.endDate}`
-    : selectedDate?.startDate
-    ? `${selectedDate.startDate} to Select End Date`
-    : selectedDate?.endDate
-    ? `Select Start Date to ${selectedDate.endDate}`
-    : "All";
+  // Filter dropdown configurations
+  const statusItems = [
+    { label: "All", onClick: () => setSelectedStatus("") },
+    { label: "In Process", onClick: () => setSelectedStatus("In Process") },
+    { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
+    { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
+    { label: "Not Assigned Yet", onClick: () => setSelectedStatus("Not Assigned Yet") },
+  ];
+
+  const departmentItems = [
+    { label: "All", onClick: () => setSelectedDepartment("") },
+    { label: "BDO, Barhara", onClick: () => setSelectedDepartment("BDO, Barhara") },
+    { label: "Director Accounts, DRDA", onClick: () => setSelectedDepartment("Director Accounts, DRDA") },
+    { label: "BDO Shahpur", onClick: () => setSelectedDepartment("BDO Shahpur") },
+    { label: "BDO Ara Sadar", onClick: () => setSelectedDepartment("BDO Ara Sadar") },
+    { label: "BDO Tarari", onClick: () => setSelectedDepartment("BDO Tarari") },
+    { label: "RDO Mohsin Khan", onClick: () => setSelectedDepartment("RDO Mohsin Khan") },
+  ];
+
+  const blockItems = [
+    { label: "All", onClick: () => setSelectedBlock("") },
+    { label: "Barhara", onClick: () => setSelectedBlock("Barhara") },
+    { label: "Shahpur", onClick: () => setSelectedBlock("Shahpur") },
+    { label: "Ara Sadar", onClick: () => setSelectedBlock("Ara Sadar") },
+    { label: "Bagar, Tarari", onClick: () => setSelectedBlock("Bagar, Tarari") },
+    { label: "Sandesh", onClick: () => setSelectedBlock("Sandesh") },
+    { label: "Behea", onClick: () => setSelectedBlock("Behea") },
+    { label: "Sahar", onClick: () => setSelectedBlock("Sahar") },
+  ];
 
   return (
     <>
@@ -63,7 +103,7 @@ const WorkAssignedFilterHeader = ({
             <strong className="text-gray-700"> {selectedStatus || "All"} status</strong>,
             <strong className="text-gray-700"> {selectedDepartment || "All"} department</strong>,
             <strong className="text-gray-700"> {selectedBlock || "All"} block</strong>,
-            <strong className="text-gray-700"> {displayDate} date</strong>.
+            <strong className="text-gray-700"> {formatDisplayDate(selectedDate)} date</strong>.
           </p>
           <button
             className="flex items-center justify-between w-full p-2 bg-gray-100 rounded-md border border-gray-200 hover:bg-gray-200 transition-colors focus:ring-2 focus:ring-[#ff5010]"
@@ -72,11 +112,7 @@ const WorkAssignedFilterHeader = ({
             aria-expanded={isFiltersOpen}
           >
             <span className="text-[10px] sm:text-sm font-semibold text-gray-700">Filters</span>
-            {isFiltersOpen ? (
-              <FaChevronUp className="text-gray-500 text-[10px] sm:text-sm" />
-            ) : (
-              <FaChevronDown className="text-gray-500 text-[10px] sm:text-sm" />
-            )}
+            {isFiltersOpen ? <FaChevronUp className="text-gray-500 text-[10px] sm:text-sm" /> : <FaChevronDown className="text-gray-500 text-[10px] sm:text-sm" />}
           </button>
           <motion.div
             initial={{ height: 0, opacity: 0 }}
@@ -85,58 +121,15 @@ const WorkAssignedFilterHeader = ({
             style={{ overflow: "hidden" }}
           >
             <div className="grid grid-cols-1 gap-2 mt-2">
-              {/* Status */}
-              <DropdownButton
-                label={selectedStatus || "Select Status"}
-                items={[
-                  { label: "All", onClick: () => setSelectedStatus("") },
-                  { label: "In Process", onClick: () => setSelectedStatus("In Process") },
-                  { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
-                  { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
-                  { label: "Closed", onClick: () => setSelectedStatus("Closed") },
-                  { label: "Not Assigned Yet", onClick: () => setSelectedStatus("Not Assigned Yet") },
-                ]}
-              />
-              {/* Department */}
-              <DropdownButton
-                label={selectedDepartment || "Select Department"}
-                items={[
-                  { label: "All", onClick: () => setSelectedDepartment("") },
-                  { label: "BDO, Barhara", onClick: () => setSelectedDepartment("BDO, Barhara") },
-                  {
-                    label: "Director Accounts, DRDA",
-                    onClick: () => setSelectedDepartment("Director Accounts, DRDA"),
-                  },
-                  { label: "BDO Shahpur", onClick: () => setSelectedDepartment("BDO Shahpur") },
-                  { label: "BDO Ara Sadar", onClick: () => setSelectedDepartment("BDO Ara Sadar") },
-                  { label: "BDO Tarari", onClick: () => setSelectedDepartment("BDO Tarari") },
-                  { label: "RDO Mohsin Khan", onClick: () => setSelectedDepartment("RDO Mohsin Khan") },
-                ]}
-              />
-              {/* Block */}
-              <DropdownButton
-                label={selectedBlock || "Select Block"}
-                items={[
-                  { label: "All", onClick: () => setSelectedBlock("") },
-                  { label: "Barhara", onClick: () => setSelectedBlock("Barhara") },
-                  { label: "Shahpur", onClick: () => setSelectedBlock("Shahpur") },
-                  { label: "Ara Sadar", onClick: () => setSelectedBlock("Ara Sadar") },
-                  { label: "Bagar, Tarari", onClick: () => setSelectedBlock("Bagar, Tarari") },
-                  { label: "Sandesh", onClick: () => setSelectedBlock("Sandesh") },
-                  { label: "Behea", onClick: () => setSelectedBlock("Behea") },
-                  { label: "Sahar", onClick: () => setSelectedBlock("Sahar") },
-                ]}
-              />
-              {/* Date Range */}
-              <DateRangePicker
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-              />
+              <DropdownButton label={selectedStatus || "Select Status"} items={statusItems} />
+              <DropdownButton label={selectedDepartment || "Select Department"} items={departmentItems} />
+              <DropdownButton label={selectedBlock || "Select Block"} items={blockItems} />
+              <DateRangePicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
             </div>
           </motion.div>
         </div>
 
-        {/* Mobile Action Buttons (Fixed Bottom Bar) */}
+        {/* Mobile Action Buttons */}
         <div className="fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-between gap-1 border-t border-gray-200 z-20 md:hidden">
           <button
             onClick={() => {
@@ -152,6 +145,21 @@ const WorkAssignedFilterHeader = ({
             Reset Filters
           </button>
           <motion.button
+            onClick={() => setShowAddForm(true)}
+            initial="rest"
+            whileHover="hover"
+            animate="rest"
+            className="flex-1 flex items-center justify-center gap-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-2 py-1 rounded-xl shadow-lg hover:bg-teal-700 hover:scale-[1.02] font-semibold text-[10px] sm:text-xs"
+            aria-label="Add new application"
+          >
+            <motion.div variants={{ rest: { x: 0 }, hover: { x: 5 } }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+              <FaPlus className="text-white text-[12px] sm:text-base" />
+            </motion.div>
+            <motion.span variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }} transition={{ duration: 0.3 }} className="text-[10px] sm:text-xs">
+              Add Application
+            </motion.span>
+          </motion.button>
+          <motion.button
             onClick={onExcelClick}
             initial="rest"
             whileHover="hover"
@@ -159,17 +167,10 @@ const WorkAssignedFilterHeader = ({
             className="flex-1 flex items-center justify-center gap-1 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-2 py-1 rounded-xl shadow-lg hover:scale-[1.02] font-semibold text-[10px] sm:text-xs"
             aria-label="Download Excel"
           >
-            <motion.div
-              variants={{ rest: { x: 0 }, hover: { x: 5 } }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
+            <motion.div variants={{ rest: { x: 0 }, hover: { x: 5 } }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
               <RiFileExcel2Fill className="text-white text-[12px] sm:text-base" />
             </motion.div>
-            <motion.span
-              variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }}
-              transition={{ duration: 0.3 }}
-              className="text-[10px] sm:text-xs"
-            >
+            <motion.span variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }} transition={{ duration: 0.3 }} className="text-[10px] sm:text-xs">
               Download Excel
             </motion.span>
           </motion.button>
@@ -180,9 +181,7 @@ const WorkAssignedFilterHeader = ({
       <div className="hidden md:flex md:flex-col md:ml-16 md:p-6 md:gap-3 md:mb-4 font-['Montserrat']">
         {/* Header and Search */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <h2 className="text-3xl font-bold text-gray-700 mb-3">
-            Work Assign Application Dashboard
-          </h2>
+          <h2 className="text-3xl font-bold text-gray-700 mb-3">Work Assign Application Dashboard</h2>
           <input
             type="text"
             placeholder="Search by name or description"
@@ -193,6 +192,7 @@ const WorkAssignedFilterHeader = ({
           />
         </div>
 
+        {/* Filters and Action Buttons */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
             <p className="text-sm text-gray-500 mb-2">
@@ -200,57 +200,13 @@ const WorkAssignedFilterHeader = ({
               <strong className="text-gray-700"> {selectedStatus || "All"} status</strong>,
               <strong className="text-gray-700"> {selectedDepartment || "All"} department</strong>,
               <strong className="text-gray-700"> {selectedBlock || "All"} block</strong>,
-              <strong className="text-gray-700"> {displayDate} date</strong>.
+              <strong className="text-gray-700"> {formatDisplayDate(selectedDate)} date</strong>.
             </p>
-
             <div className="flex flex-wrap gap-3 mt-1">
-              {/* Status */}
-              <DropdownButton
-                label={selectedStatus || "Select Status"}
-                items={[
-                  { label: "All", onClick: () => setSelectedStatus("") },
-                  { label: "In Process", onClick: () => setSelectedStatus("In Process") },
-                  { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
-                  { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
-                  { label: "Closed", onClick: () => setSelectedStatus("Closed") },
-                  { label: "Not Assigned Yet", onClick: () => setSelectedStatus("Not Assigned Yet") },
-                ]}
-              />
-              {/* Department */}
-              <DropdownButton
-                label={selectedDepartment || "Select Department"}
-                items={[
-                  { label: "All", onClick: () => setSelectedDepartment("") },
-                  { label: "BDO, Barhara", onClick: () => setSelectedDepartment("BDO, Barhara") },
-                  {
-                    label: "Director Accounts, DRDA",
-                    onClick: () => setSelectedDepartment("Director Accounts, DRDA"),
-                  },
-                  { label: "BDO Shahpur", onClick: () => setSelectedDepartment("BDO Shahpur") },
-                  { label: "BDO Ara Sadar", onClick: () => setSelectedDepartment("BDO Ara Sadar") },
-                  { label: "BDO Tarari", onClick: () => setSelectedDepartment("BDO Tarari") },
-                  { label: "RDO Mohsin Khan", onClick: () => setSelectedDepartment("RDO Mohsin Khan") },
-                ]}
-              />
-              {/* Block */}
-              <DropdownButton
-                label={selectedBlock || "Select Block"}
-                items={[
-                  { label: "All", onClick: () => setSelectedBlock("") },
-                  { label: "Barhara", onClick: () => setSelectedBlock("Barhara") },
-                  { label: "Shahpur", onClick: () => setSelectedBlock("Shahpur") },
-                  { label: "Ara Sadar", onClick: () => setSelectedBlock("Ara Sadar") },
-                  { label: "Bagar, Tarari", onClick: () => setSelectedBlock("Bagar, Tarari") },
-                  { label: "Sandesh", onClick: () => setSelectedBlock("Sandesh") },
-                  { label: "Behea", onClick: () => setSelectedBlock("Behea") },
-                  { label: "Sahar", onClick: () => setSelectedBlock("Sahar") },
-                ]}
-              />
-              {/* Date Range */}
-              <DateRangePicker
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-              />
+              <DropdownButton label={selectedStatus || "Select Status"} items={statusItems} />
+              <DropdownButton label={selectedDepartment || "Select Department"} items={departmentItems} />
+              <DropdownButton label={selectedBlock || "Select Block"} items={blockItems} />
+              <DateRangePicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
             </div>
           </div>
 
@@ -270,6 +226,21 @@ const WorkAssignedFilterHeader = ({
               Reset Filters
             </button>
             <motion.button
+              onClick={() => setShowAddForm(true)}
+              initial="rest"
+              whileHover="hover"
+              animate="rest"
+              className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-teal-700 hover:scale-[1.02] font-semibold text-sm"
+              aria-label="Add new application"
+            >
+              <motion.div variants={{ rest: { x: 0 }, hover: { x: 40 } }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+                <FaPlus className="text-white text-xl" />
+              </motion.div>
+              <motion.span variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }} transition={{ duration: 0.3 }} className="text-sm">
+                Add Application
+              </motion.span>
+            </motion.button>
+            <motion.button
               onClick={onExcelClick}
               initial="rest"
               whileHover="hover"
@@ -277,17 +248,10 @@ const WorkAssignedFilterHeader = ({
               className="flex items-center gap-3 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-6 py-3 rounded-xl shadow-lg hover:scale-[1.02] font-semibold text-sm"
               aria-label="Download Excel"
             >
-              <motion.div
-                variants={{ rest: { x: 0 }, hover: { x: 40 } }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              >
+              <motion.div variants={{ rest: { x: 0 }, hover: { x: 40 } }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
                 <RiFileExcel2Fill className="text-white text-xl" />
               </motion.div>
-              <motion.span
-                variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }}
-                transition={{ duration: 0.3 }}
-                className="text-xs"
-              >
+              <motion.span variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }} transition={{ duration: 0.3 }} className="text-sm">
                 Download Excel
               </motion.span>
             </motion.button>
@@ -295,12 +259,33 @@ const WorkAssignedFilterHeader = ({
         </div>
       </div>
 
-      {/* Custom CSS */}
+      {/* AddCaseForm Modal */}
+      <AnimatePresence>
+        {showAddForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          >
+            <AddCaseForm
+              isOpen={showAddForm}
+              onClose={() => {
+                setShowAddForm(false);
+                const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+                setApplications(storedApplications);
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Styles */}
       <style jsx global>{`
         * {
           box-sizing: border-box;
         }
-        .backdrop-blur-md {
+        .backdrop-blur-sm {
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
         }
@@ -321,11 +306,13 @@ const WorkAssignedFilterHeader = ({
         .rdrDayToday .rdrDayNumber span:after {
           background: linear-gradient(to right, #ff5010, #fc641c) !important;
         }
-        .rdrDayHovered, .rdrDaySelected {
+        .rdrDayHovered,
+        .rdrDaySelected {
           background: linear-gradient(to right, #ff5010, #fc641c) !important;
           color: white !important;
         }
-        .rdrMonthAndYearWrapper, .rdrDateInput {
+        .rdrMonthAndYearWrapper,
+        .rdrDateInput {
           background: #f9fafb !important;
         }
       `}</style>
