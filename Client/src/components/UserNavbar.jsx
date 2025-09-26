@@ -1,35 +1,29 @@
-// src/components/UserNavbar.js
-import React from "react";
-import { FaBell } from "react-icons/fa";
+import React from 'react';
+import { FaBell } from 'react-icons/fa';
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // Import useTranslation hook
+import { useNavigate , Link} from 'react-router-dom';
+import { BarChart2 } from "lucide-react";
 
 const UserNavbar = () => {
-  const { t, i18n } = useTranslation(); // Initialize translation hook
-  const today = new Date().toLocaleDateString(i18n.language === "hi" ? "hi-IN" : "en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
+  const today = new Date().toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
   });
 
   const navigate = useNavigate();
 
   const onLogout = () => {
-    navigate("/admin-login");
-  };
-
-  // Function to change language
-  const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
+    // You can add logout logic here (like clearing tokens, etc.)
+    navigate('/admin-login');
   };
 
   return (
-    <div className="h-16 bg-white flex items-center justify-between px-6 rounded-full w-full">
+    <div className="h-16 bg-white  flex items-center justify-between px-6 rounded-full w-full">
       {/* Left Side: Logo + Portal Info */}
       <div className="flex items-center gap-4">
         <img
-          src="/logo.svg"
+          src="/logo.svg" // Replace with your actual logo image path
           alt="Logo"
           className="w-12 h-12 border border-gray-300 rounded-xl p-1 bg-gray-50"
         />
@@ -41,15 +35,16 @@ const UserNavbar = () => {
             transition={{ duration: 0.5 }}
             whileHover={{ scale: 1.05 }}
           >
+    
             <span
               className="text-2xl font-bold text-transparent uppercase bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
               style={{ fontFamily: "'Montserrat', sans-serif" }}
             >
-              {t("portalName")}
+              Jan Samadhan
             </span>
           </motion.div>
           <p className="text-xs text-gray-500 hidden md:inline-block">
-            {t("servingCitizens")}
+            Bihar RTPS Application Tracking Portal
           </p>
         </div>
       </div>
@@ -59,27 +54,10 @@ const UserNavbar = () => {
         {/* Current Date */}
         <span className="text-sm text-gray-500">{today}</span>
 
-        {/* Language Switcher */}
-        <div className="relative">
-          <select
-            value={i18n.language}
-            onChange={(e) => changeLanguage(e.target.value)}
-            className="appearance-none bg-gray-100 text-gray-700 text-sm font-medium rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-orange-300 cursor-pointer"
-            aria-label="Select Language"
-          >
-            <option value="en">English</option>
-            <option value="hi">हिन्दी</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Info Section */}
+        {/* Info Section (Optional for Public) */}
         <div className="hidden md:flex flex-col items-end text-xs leading-tight">
-          <p className="text-[#ff5010] text-xl">{t("publicUserAccess")}</p>
+          <p className="text-gray-600">Serving Citizens of Arrah Bhojpur</p>
+          <p className="text-[#ff5010] font-medium">Public User Access</p>
         </div>
 
         {/* Logout Button */}
@@ -93,7 +71,7 @@ const UserNavbar = () => {
             </svg>
           </div>
           <div className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-            {t("admin")}
+            Admin
           </div>
         </button>
       </div>

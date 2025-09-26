@@ -1,4 +1,3 @@
-// src/pages/UserDashboard.js
 import React, { useState, useEffect } from "react";
 import {
   FileText,
@@ -16,10 +15,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import UserNavbar from "../components/UserNavbar";
 import QRCode from "qrcode";
-import { useTranslation } from "react-i18next";
 
 const UserDashboard = () => {
-  const { t, i18n } = useTranslation(); // Include i18n to access current language
   const [cases, setCases] = useState([]);
   const [applicationIdInput, setApplicationIdInput] = useState("");
   const [foundApplication, setFoundApplication] = useState(null);
@@ -34,7 +31,7 @@ const UserDashboard = () => {
         applicationId: applicationData.applicationId,
         applicantName: applicationData.applicantName,
         submissionDate: applicationData.dateOfApplication,
-        type: t("applicationQrCode"),
+        type: "DakPad Application",
         verificationUrl: `https://dakpad.com/verify/${applicationData.applicationId}`,
       };
 
@@ -56,7 +53,9 @@ const UserDashboard = () => {
 
   // Load applications from localStorage
   useEffect(() => {
-    const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+    const storedApplications = JSON.parse(
+      localStorage.getItem("applications") || "[]"
+    );
     setCases(storedApplications);
   }, []);
 
@@ -77,36 +76,46 @@ const UserDashboard = () => {
     setIsLoading(true);
     setIsModalLoading(true);
     setTimeout(async () => {
-      const match = cases.find((c) => c.ApplicantId === applicationIdInput.trim());
+      const match = cases.find(
+        (c) => c.ApplicantId === applicationIdInput.trim()
+      );
       const foundApp = match
         ? {
-            applicationId: match.ApplicantId,
-            applicantName: match.applicant,
-            dateOfApplication: match.applicationDate,
-            subject: match.subject,
-            description: match.subject,
-            status: match.status === "Compliance Completed" ? "Compliance" : match.status || "Pending",
-            timeline: match.timeline || [
-              {
-                section: t("applicationDetails"),
-                comment: `${t("applicationDetails")} ${match.block || "N/A"} ${t("date")} ${match.applicationDate}`,
-                date: match.applicationDate,
-                pdfLink: match.attachment || null,
-              },
-            ],
-            lastUpdated: match.timeline?.length > 0 ? match.timeline[match.timeline.length - 1].date : match.applicationDate,
-          }
+          applicationId: match.ApplicantId,
+          applicantName: match.applicant,
+          dateOfApplication: match.applicationDate,
+          subject: match.subject,
+          description: match.subject,
+          status:
+            match.status === "Compliance Completed"
+              ? "Compliance"
+              : match.status || "Pending",
+          timeline: match.timeline || [
+            {
+              section: "Application Received",
+              comment: `Application received at ${match.block || "N/A"} on ${match.applicationDate
+                }`,
+              date: match.applicationDate,
+              pdfLink: match.attachment || null,
+            },
+          ],
+          lastUpdated:
+            match.timeline?.length > 0
+              ? match.timeline[match.timeline.length - 1].date
+              : match.applicationDate,
+        }
         : false;
 
       setFoundApplication(foundApp);
 
+      // Generate QR code if application found
       if (foundApp) {
         await generateQRCodeForApplication(foundApp);
       }
 
       setIsLoading(false);
-      setTimeout(() => setIsModalLoading(false), 300);
-    }, 500);
+      setTimeout(() => setIsModalLoading(false), 300); // Simulate modal data load
+    }, 500); // Simulate API delay
   };
 
   // Handle Enter key press
@@ -150,7 +159,8 @@ const UserDashboard = () => {
 
   // Simulate downloading timeline as PDF
   const handleDownloadTimeline = (applicationId) => {
-    alert(`${t("downloadTimeline")} ${t("applicationId")}: ${applicationId}`);
+    alert(`Downloading timeline for Application ID: ${applicationId}`);
+    // In production, implement PDF generation (e.g., using jsPDF)
   };
 
   return (
@@ -159,22 +169,58 @@ const UserDashboard = () => {
 
       {/* Hero Section */}
       <div className="relative overflow-hidden">
+        {/* Background Elements */}
         <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-transparent opacity-60"></div>
         <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-orange-100 to-transparent rounded-full transform translate-x-32 -translate-y-32 opacity-40"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-50 to-transparent rounded-full transform -translate-x-48 translate-y-48 opacity-30"></div>
 
         <div className="relative container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="mb-8 text-center">
-              <h1
-                className="text-5xl md:text-6xl p-4 font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#ac441e] to-[#5b270f]"
-                style={{
-                  fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                }}
-              >
-                {t("trackYourApplication")}
+            {/* Main Heading */}
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-8 text-center"
+            >
+              <h1 className="text-5xl md:text-6xl font-bold mb-4 font-['Montserrat'] flex justify-center gap-2">
+                <motion.span
+                  className="text-gray-800"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8 }}
+                >
+                  Track Your
+                </motion.span>
+                <motion.span
+                  className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                >
+                  {Array.from("Application").map((letter, index) => (
+                    <motion.span
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
+                      className="inline-block"
+                    >
+                      {letter}
+                    </motion.span>
+                  ))}
+                </motion.span>
               </h1>
-            </div>
+              <motion.p
+                className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-['Montserrat']"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+              >
+                Stay updated with real-time tracking of your Bihar RTPS applications. Enter your Application ID below to view detailed status and timeline.
+              </motion.p>
+            </motion.div>
 
             {/* Search Section */}
             <motion.div
@@ -190,12 +236,13 @@ const UserDashboard = () => {
               </div>
 
               <h2 className="text-2xl font-bold text-gray-800 mb-2 font-['Montserrat']">
-                {t("enterApplicationId")}
+                Enter Application ID
               </h2>
               <p className="text-gray-600 mb-8 font-['Montserrat']">
-                {t("trackYourApplication")}
+                Track your application status instantly
               </p>
 
+              {/* Enhanced Search Input */}
               <div className="relative">
                 <div className="flex items-center bg-gray-50 rounded-2xl border-2 border-gray-200 focus-within:border-orange-300 focus-within:bg-white transition-all duration-300 overflow-hidden">
                   <Search className="ml-6 text-gray-400" size={20} />
@@ -206,10 +253,7 @@ const UserDashboard = () => {
                     onKeyDown={handleKeyPress}
                     className="flex-1 px-4 py-5 bg-transparent text-gray-900 focus:outline-none text-lg font-['Montserrat'] placeholder-gray-400"
                     placeholder="e.g., BP12345"
-                    aria-label={t("enterApplicationId")}
-                    style={{
-                      fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                    }}
+                    aria-label="Application ID"
                   />
                   <motion.button
                     onClick={handleApplicationIdSearch}
@@ -217,41 +261,40 @@ const UserDashboard = () => {
                     className="mr-2 px-8 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-[#ff5010] to-[#fc641c] hover:shadow-lg disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-300 font-['Montserrat']"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    aria-label={t("trackNow")}
+                    aria-label="Search application"
                   >
                     {isLoading ? (
                       <div className="flex items-center">
                         <Loader2 className="animate-spin mr-2" size={20} />
-                        {t("searching")}
+                        Searching...
                       </div>
                     ) : (
-                      t("trackNow")
+                      "Track Now"
                     )}
                   </motion.button>
                 </div>
               </div>
 
+              {/* Error Message */}
               <AnimatePresence>
-                {foundApplication === false && applicationIdInput.trim() && !isLoading && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl"
-                  >
-                    <div className="flex items-center">
-                      <XCircle className="text-red-500 mr-2" size={20} />
-                      <p
-                        className="text-red-700 font-medium"
-                        style={{
-                          fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                        }}
-                      >
-                        {t("noApplicationFound")}
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
+                {foundApplication === false &&
+                  applicationIdInput.trim() &&
+                  !isLoading && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl"
+                    >
+                      <div className="flex items-center">
+                        <XCircle className="text-red-500 mr-2" size={20} />
+                        <p className="text-red-700 font-['Montserrat'] font-medium">
+                          No application found with this ID. Please check and
+                          try again.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
               </AnimatePresence>
             </motion.div>
 
@@ -265,43 +308,37 @@ const UserDashboard = () => {
               {[
                 {
                   icon: Clock,
-                  title: t("realTimeUpdates"),
-                  desc: t("realTimeUpdatesDesc"),
+                  title: "Real-time Updates",
+                  desc: "Get instant status updates",
                 },
                 {
                   icon: QrCode,
-                  title: t("qrCodeAccess"),
-                  desc: t("qrCodeAccessDesc"),
+                  title: "QR Code Access",
+                  desc: "Quick access via QR code",
                 },
                 {
                   icon: Download,
-                  title: t("downloadReports"),
-                  desc: t("downloadReportsDesc"),
+                  title: "Download Reports",
+                  desc: "Get detailed timeline PDFs",
                 },
                 {
                   icon: CheckCircle,
-                  title: t("secureTracking"),
-                  desc: t("secureTrackingDesc"),
+                  title: "Secure Tracking",
+                  desc: "Safe and encrypted data",
                 },
               ].map((feature, index) => (
-                <motion.div key={index} whileHover={{ y: -5 }} className="text-center p-6">
+                <motion.div
+                  key={index}
+                  whileHover={{ y: -5 }}
+                  className="text-center p-6"
+                >
                   <div className="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto mb-4 border border-gray-100">
                     <feature.icon className="text-orange-500" size={24} />
                   </div>
-                  <h3
-                    className="font-semibold text-gray-800 mb-2"
-                    style={{
-                      fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                    }}
-                  >
+                  <h3 className="font-semibold text-gray-800 mb-2 font-['Montserrat']">
                     {feature.title}
                   </h3>
-                  <p
-                    className="text-gray-600 text-sm"
-                    style={{
-                      fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                    }}
-                  >
+                  <p className="text-gray-600 text-sm font-['Montserrat']">
                     {feature.desc}
                   </p>
                 </motion.div>
@@ -336,14 +373,11 @@ const UserDashboard = () => {
                 <>
                   {/* Header */}
                   <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
-                    <h2
-                      className="text-2xl font-semibold text-gray-900"
-                      style={{
-                        fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                      }}
-                    >
-                      {t("applicationId")}:{" "}
-                      <span className="text-green-700">{foundApplication.applicationId}</span>
+                    <h2 className="text-2xl font-semibold text-gray-900 font-['Montserrat']">
+                      Application ID:{" "}
+                      <span className="text-green-700">
+                        {foundApplication.applicationId}
+                      </span>
                     </h2>
                     <motion.button
                       onClick={() => {
@@ -351,7 +385,7 @@ const UserDashboard = () => {
                         setQrCodeUrl("");
                       }}
                       className="text-gray-500 hover:text-red-600 transition-colors"
-                      aria-label={t("close")}
+                      aria-label="Close modal"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
@@ -363,7 +397,8 @@ const UserDashboard = () => {
                   <div className="space-y-8">
                     {/* Status Card */}
                     <motion.div
-                      className={`p-6 rounded-xl shadow-md ${getStatusStyle(foundApplication.status).bg} flex items-center gap-5`}
+                      className={`p-6 rounded-xl shadow-md ${getStatusStyle(foundApplication.status).bg
+                        } flex items-center gap-5`}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4 }}
@@ -372,39 +407,31 @@ const UserDashboard = () => {
                       <div>
                         <div className="flex items-center gap-3">
                           <h2
-                            className={`text-xl font-semibold ${getStatusStyle(foundApplication.status).text}`}
-                            style={{
-                              fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                            }}
+                            className={`text-xl font-semibold ${getStatusStyle(foundApplication.status).text
+                              } font-['Montserrat']`}
                           >
-                            {t("status")}: {foundApplication.status}
+                            Status: {foundApplication.status}
                           </h2>
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusStyle(foundApplication.status).badge}`}
-                            style={{
-                              fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                            }}
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusStyle(foundApplication.status).badge
+                              }`}
                           >
                             {foundApplication.status}
                           </span>
                         </div>
                         <p
-                          className={`text-sm ${getStatusStyle(foundApplication.status).text} mt-1`}
-                          style={{
-                            fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                          }}
+                          className={`text-sm ${getStatusStyle(foundApplication.status).text
+                            } mt-1 font-['Montserrat']`}
                         >
-                          {foundApplication.status === "Pending" && t("pendingMessage")}
-                          {foundApplication.status === "Compliance" && t("complianceMessage")}
-                          {foundApplication.status === "Dismissed" && t("dismissedMessage")}
+                          {foundApplication.status === "Pending" &&
+                            "Your application is under review. Check the timeline for updates."}
+                          {foundApplication.status === "Compliance" &&
+                            "Your application has been approved and is compliant."}
+                          {foundApplication.status === "Dismissed" &&
+                            "Your application has been dismissed. See details below."}
                         </p>
-                        <p
-                          className="text-xs text-gray-500 mt-1"
-                          style={{
-                            fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                          }}
-                        >
-                          {t("lastUpdated")}: {foundApplication.lastUpdated}
+                        <p className="text-xs text-gray-500 mt-1 font-['Montserrat']">
+                          Last Updated: {foundApplication.lastUpdated}
                         </p>
                       </div>
                     </motion.div>
@@ -416,66 +443,77 @@ const UserDashboard = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: 0.1 }}
                     >
-                      <h3
-                        className="text-lg font-semibold text-gray-800 mb-5"
-                        style={{
-                          fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                        }}
-                      >
-                        {t("applicationDetails")}
+                      <h3 className="text-lg font-semibold text-gray-800 mb-5 font-['Montserrat']">
+                        Application Details
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm text-gray-700">
                         {[
                           {
-                            label: t("id"),
+                            label: "ID",
                             value: foundApplication.applicationId,
-                            icon: <FileText size={18} className="text-green-600 mt-0.5" />,
+                            icon: (
+                              <FileText
+                                size={18}
+                                className="text-green-600 mt-0.5"
+                              />
+                            ),
                           },
                           {
-                            label: t("name"),
+                            label: "Name",
                             value: foundApplication.applicantName,
-                            icon: <User size={18} className="text-green-600 mt-0.5" />,
+                            icon: (
+                              <User
+                                size={18}
+                                className="text-green-600 mt-0.5"
+                              />
+                            ),
                           },
                           {
-                            label: t("date"),
+                            label: "Date",
                             value: foundApplication.dateOfApplication,
-                            icon: <Calendar size={18} className="text-green-600 mt-0.5" />,
+                            icon: (
+                              <Calendar
+                                size={18}
+                                className="text-green-600 mt-0.5"
+                              />
+                            ),
                           },
                           {
-                            label: t("subject"),
+                            label: "Subject",
                             value: foundApplication.subject,
-                            icon: <FileText size={18} className="text-green-600 mt-0.5" />,
+                            icon: (
+                              <FileText
+                                size={18}
+                                className="text-green-600 mt-0.5"
+                              />
+                            ),
                           },
                           {
-                            label: t("description"),
+                            label: "Description",
                             value: foundApplication.description,
-                            icon: <FileText size={18} className="text-green-600 mt-0.5" />,
+                            icon: (
+                              <FileText
+                                size={18}
+                                className="text-green-600 mt-0.5"
+                              />
+                            ),
                             colSpan: true,
                           },
                         ].map((item, idx) => (
                           <motion.div
                             key={idx}
-                            className={`flex items-start gap-3 ${item.colSpan ? "sm:col-span-2" : ""}`}
+                            className={`flex items-start gap-3 ${item.colSpan ? "sm:col-span-2" : ""
+                              }`}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.4, delay: idx * 0.06 }}
                           >
                             {item.icon}
                             <div>
-                              <span
-                                className="text-xs font-medium text-gray-500"
-                                style={{
-                                  fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                                }}
-                              >
+                              <span className="text-xs font-medium text-gray-500 font-['Montserrat']">
                                 {item.label}
                               </span>
-                              <p
-                                className="text-base font-medium text-gray-900"
-                                style={{
-                                  fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                                }}
-                              >
+                              <p className="text-base font-medium text-gray-900 font-['Montserrat']">
                                 {item.value}
                               </p>
                             </div>
@@ -492,31 +530,22 @@ const UserDashboard = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.15 }}
                       >
-                        <h3
-                          className="text-lg font-semibold text-gray-800 mb-5 flex items-center gap-2"
-                          style={{
-                            fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                          }}
-                        >
+                        <h3 className="text-lg font-semibold text-gray-800 mb-5 font-['Montserrat'] flex items-center gap-2">
                           <QrCode size={20} className="text-green-600" />
-                          {t("applicationQrCode")}
+                          Application QR Code
                         </h3>
                         <div className="flex flex-col sm:flex-row items-center gap-6">
                           <div className="flex-shrink-0">
                             <img
                               src={qrCodeUrl}
-                              alt={t("applicationQrCode")}
+                              alt="Application QR Code"
                               className="border rounded-lg shadow-sm w-32 h-32"
                             />
                           </div>
                           <div className="flex-1 text-center sm:text-left">
-                            <p
-                              className="text-sm text-gray-600 mb-3"
-                              style={{
-                                fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                              }}
-                            >
-                              {t("qrCodeInstruction")}
+                            <p className="text-sm text-gray-600 mb-3 font-['Montserrat']">
+                              Scan this QR code for quick access to your
+                              application details
                             </p>
                             <button
                               onClick={() => {
@@ -525,13 +554,10 @@ const UserDashboard = () => {
                                 link.href = qrCodeUrl;
                                 link.click();
                               }}
-                              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                              style={{
-                                fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                              }}
+                              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium font-['Montserrat'] gap-2"
                             >
                               <Download size={16} />
-                              {t("downloadQrCode")}
+                              Download QR Code
                             </button>
                           </div>
                         </div>
@@ -539,115 +565,91 @@ const UserDashboard = () => {
                     )}
 
                     {/* Timeline Card */}
-                    {foundApplication.timeline && foundApplication.timeline.length > 0 && (
-                      <motion.div
-                        className="bg-white rounded-xl p-6 shadow-md border border-gray-100"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.2 }}
-                      >
-                        <h3
-                          className="text-lg font-semibold text-gray-800 mb-5"
-                          style={{
-                            fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                          }}
+                    {foundApplication.timeline &&
+                      foundApplication.timeline.length > 0 && (
+                        <motion.div
+                          className="bg-white rounded-xl p-6 shadow-md border border-gray-100"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.2 }}
                         >
-                          {t("progressTimeline")}
-                        </h3>
-                        <div className="relative pl-8">
-                          <div className="absolute left-3.5 top-0 bottom-0 w-1 bg-green-200" />
-                          {foundApplication.timeline.map((step, index) => {
-                            const isCompleted =
-                              index < foundApplication.timeline.length - 1 ||
-                              step.section === "Compliance Completed";
-                            const isPending =
-                              step.section === t("applicationDetails") ||
-                              step.section.includes("Assigned");
-                            const isRejected = step.section === "Dismissed";
-                            const dotClass = isCompleted
-                              ? "bg-green-600 border-2 border-white"
-                              : isPending
-                              ? "bg-orange-500"
-                              : isRejected
-                              ? "bg-red-600"
-                              : "bg-gray-300";
-                            const icon = isCompleted ? (
-                              <CheckCircle size={18} className="text-white" />
-                            ) : null;
+                          <h3 className="text-lg font-semibold text-gray-800 mb-5 font-['Montserrat']">
+                            Progress Timeline
+                          </h3>
+                          <div className="relative pl-8">
+                            <div className="absolute left-3.5 top-0 bottom-0 w-1 bg-green-200" />
+                            {foundApplication.timeline.map((step, index) => {
+                              const isCompleted =
+                                index < foundApplication.timeline.length - 1 ||
+                                step.section === "Compliance Completed";
+                              const isPending =
+                                step.section === "Application Received" ||
+                                step.section.includes("Assigned");
+                              const isRejected = step.section === "Dismissed";
+                              const dotClass = isCompleted
+                                ? "bg-green-600 border-2 border-white"
+                                : isPending
+                                  ? "bg-orange-500"
+                                  : isRejected
+                                    ? "bg-red-600"
+                                    : "bg-gray-300";
+                              const icon = isCompleted ? (
+                                <CheckCircle size={18} className="text-white" />
+                              ) : null;
 
-                            return (
-                              <motion.div
-                                key={index}
-                                className="flex items-start gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100 mb-3 relative hover:bg-gray-100 transition-colors"
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.4, delay: index * 0.06 }}
-                              >
-                                <div className="relative">
-                                  <div
-                                    className={`w-6 h-6 rounded-full ${dotClass} flex items-center justify-center shadow-md`}
-                                    style={{ zIndex: 1 }}
-                                  >
-                                    {icon}
+                              return (
+                                <motion.div
+                                  key={index}
+                                  className="flex items-start gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100 mb-3 relative hover:bg-gray-100 transition-colors"
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{
+                                    duration: 0.4,
+                                    delay: index * 0.06,
+                                  }}
+                                >
+                                  <div className="relative">
+                                    <div
+                                      className={`w-6 h-6 rounded-full ${dotClass} flex items-center justify-center shadow-md`}
+                                      style={{ zIndex: 1 }}
+                                    >
+                                      {icon}
+                                    </div>
                                   </div>
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex justify-between items-center mb-1">
-                                    <p
-                                      className="text-sm font-semibold text-gray-800"
-                                      style={{
-                                        fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                                      }}
-                                    >
-                                      {step.section}
+                                  <div className="flex-1">
+                                    <div className="flex justify-between items-center mb-1">
+                                      <p className="text-sm font-semibold text-gray-800 font-['Montserrat']">
+                                        {step.section}
+                                      </p>
+                                      <p className="text-xs text-gray-400 font-['Montserrat']">
+                                        {step.date}
+                                      </p>
+                                    </div>
+                                    <p className="text-sm text-gray-600 font-['Montserrat']">
+                                      {step.comment}
                                     </p>
-                                    <p
-                                      className="text-xs text-gray-400"
-                                      style={{
-                                        fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                                      }}
-                                    >
-                                      {step.date}
-                                    </p>
-                                  </div>
-                                  <p
-                                    className="text-sm text-gray-600"
-                                    style={{
-                                      fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                                    }}
-                                  >
-                                    {step.comment}
-                                  </p>
-                                  {step.pdfLink && (
-                                    <motion.a
-                                      href={step.pdfLink}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="relative inline-block text-sm text-green-600 hover:text-green-800 hover:underline transition-colors mt-1 group"
-                                      whileHover={{ scale: 1.05 }}
-                                      aria-label={t("viewDocument")}
-                                      style={{
-                                        fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                                      }}
-                                    >
-                                      {t("viewDocument")}
-                                      <span
-                                        className="absolute hidden group-hover:block text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md -top-8 left-1/2 transform -translate-x-1/2"
-                                        style={{
-                                          fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                                        }}
+                                    {step.pdfLink && (
+                                      <motion.a
+                                        href={step.pdfLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="relative inline-block text-sm text-green-600 hover:text-green-800 hover:underline transition-colors font-['Montserrat'] mt-1 group"
+                                        whileHover={{ scale: 1.05 }}
+                                        aria-label="View timeline document"
                                       >
-                                        {t("openPdf")}
-                                      </span>
-                                    </motion.a>
-                                  )}
-                                </div>
-                              </motion.div>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
-                    )}
+                                        View Document
+                                        <span className="absolute hidden group-hover:block text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md -top-8 left-1/2 transform -translate-x-1/2 font-['Montserrat']">
+                                          Open PDF
+                                        </span>
+                                      </motion.a>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
 
                     {/* Footer Actions */}
                     <motion.div
@@ -658,32 +660,30 @@ const UserDashboard = () => {
                     >
                       {foundApplication.timeline && (
                         <motion.button
-                          className="flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors shadow-sm"
-                          onClick={() => handleDownloadTimeline(foundApplication.applicationId)}
+                          className="flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-['Montserrat'] shadow-sm"
+                          onClick={() =>
+                            handleDownloadTimeline(
+                              foundApplication.applicationId
+                            )
+                          }
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          aria-label={t("downloadTimeline")}
-                          style={{
-                            fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                          }}
+                          aria-label="Download timeline"
                         >
-                          <Download size={18} /> {t("downloadTimeline")}
+                          <Download size={18} /> Download Timeline
                         </motion.button>
                       )}
                       <motion.button
-                        className="px-5 py-2.5 rounded-full font-semibold text-sm bg-green-600 text-white hover:bg-green-700 transition-colors shadow-sm"
+                        className="px-5 py-2.5 rounded-full font-semibold text-sm bg-green-600 text-white hover:bg-green-700 transition-colors font-['Montserrat'] shadow-sm"
                         onClick={() => {
                           setFoundApplication(null);
                           setQrCodeUrl("");
                         }}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        aria-label={t("close")}
-                        style={{
-                          fontFamily: i18n.language === "hi" ? "'Noto Sans Devanagari', sans-serif" : "'Montserrat', sans-serif",
-                        }}
+                        aria-label="Close modal"
                       >
-                        {t("close")}
+                        Close
                       </motion.button>
                     </motion.div>
                   </div>
@@ -697,7 +697,6 @@ const UserDashboard = () => {
       {/* Styles */}
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
-        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap");
         .animate-fade-in {
           animation: fadeIn 0.3s ease-out;
         }
@@ -715,7 +714,8 @@ const UserDashboard = () => {
           box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         .shadow-md {
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+            0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         .shadow-2xl {
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -726,10 +726,6 @@ const UserDashboard = () => {
         input:focus,
         button:focus {
           outline: none;
-        }
-        /* Ensure Hindi text uses Noto Sans Devanagari globally */
-        html[lang="hi"] * {
-          font-family: "Noto Sans Devanagari", sans-serif !important;
         }
       `}</style>
     </div>
