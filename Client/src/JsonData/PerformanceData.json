@@ -29,7 +29,7 @@
       },
       {
         "name": "Blocks Involved",
-        "value": "40",
+        "value": "14",
         "icon": "🏘️",
         "trend": "→ 0%",
         "trendDetails": "No change in coverage",
@@ -89,173 +89,172 @@
             "percentage": "66.7%"
           },
           {
-            "category": "Not Accepted",
+            "category": "Not Assigned",
             "value": 4,
             "color": "#F44336",
             "percentage": "22.2%"
           }
         ],
-        "note": "Data updated as of August 28, 2025, covering all 25 blocks"
+        "note": "Data updated as of August 28, 2025, covering all 14 blocks"
       }
     ],
     "blocks": [
       {
-        "name": "Patna",
-        "division": "Patna Division"
+        "name": "Agiaon"
       },
       {
-        "name": "Nalanda",
-        "division": "Patna Division"
+        "name": "Ara Sadar"
       },
       {
-        "name": "Bhojpur",
-        "division": "Patna Division"
+        "name": "Barhara"
       },
       {
-        "name": "Rohtas",
-        "division": "Patna Division"
+        "name": "Behea"
       },
       {
-        "name": "Buxar",
-        "division": "Patna Division"
+        "name": "Charpokhari"
       },
       {
-        "name": "Kaimur",
-        "division": "Patna Division"
+        "name": "Garhani"
       },
       {
-        "name": "Muzaffarpur",
-        "division": "Tirhut Division"
+        "name": "Jagdishpur"
       },
       {
-        "name": "West Champaran",
-        "division": "Tirhut Division"
+        "name": "Koilwar"
       },
       {
-        "name": "East Champaran",
-        "division": "Tirhut Division"
+        "name": "Piro"
       },
       {
-        "name": "Sitamarhi",
-        "division": "Tirhut Division"
+        "name": "Sahar"
       },
       {
-        "name": "Sheohar",
-        "division": "Tirhut Division"
+        "name": "Sandesh"
       },
       {
-        "name": "Vaishali",
-        "division": "Tirhut Division"
+        "name": "Shahpur"
       },
       {
-        "name": "Gaya",
-        "division": "Magadh Division"
+        "name": "Tarari"
       },
       {
-        "name": "Nawada",
-        "division": "Magadh Division"
-      },
-      {
-        "name": "Jehanabad",
-        "division": "Magadh Division"
-      },
-      {
-        "name": "Aurangabad",
-        "division": "Magadh Division"
-      },
-      {
-        "name": "Arwal",
-        "division": "Magadh Division"
-      },
-      {
-        "name": "Purnia",
-        "division": "Purnia Division"
-      },
-      {
-        "name": "Katihar",
-        "division": "Purnia Division"
-      },
-      {
-        "name": "Kishanganj",
-        "division": "Purnia Division"
-      },
-      {
-        "name": "Araria",
-        "division": "Purnia Division"
-      },
-      {
-        "name": "Saharsa",
-        "division": "Kosi Division"
-      },
-      {
-        "name": "Madhepura",
-        "division": "Kosi Division"
-      },
-      {
-        "name": "Supaul",
-        "division": "Kosi Division"
-      },
-      {
-        "name": "Darbhanga",
-        "division": "Darbhanga Division"
-      },
-      {
-        "name": "Madhubani",
-        "division": "Darbhanga Division"
-      },
-      {
-        "name": "Samastipur",
-        "division": "Darbhanga Division"
-      },
-      {
-        "name": "Saran",
-        "division": "Saran Division"
-      },
-      {
-        "name": "Siwan",
-        "division": "Saran Division"
-      },
-      {
-        "name": "Gopalganj",
-        "division": "Saran Division"
-      },
-      {
-        "name": "Bhagalpur",
-        "division": "Bhagalpur Division"
-      },
-      {
-        "name": "Banka",
-        "division": "Bhagalpur Division"
-      },
-      {
-        "name": "Munger",
-        "division": "Munger Division"
-      },
-      {
-        "name": "Jamui",
-        "division": "Munger Division"
-      },
-      {
-        "name": "Khagaria",
-        "division": "Munger Division"
-      },
-      {
-        "name": "Lakhisarai",
-        "division": "Munger Division"
-      },
-      {
-        "name": "Begusarai",
-        "division": "Munger Division"
-      },
-      {
-        "name": "Sheikhpura",
-        "division": "Munger Division"
-      },
-      {
-        "name": "Other",
-        "division": "Uncategorized"
+        "name": "Udwant Nagar"
       }
     ],
+    "departments": {
+      "list": [
+        "Collectorate/District Magistrate Office",
+        "Additional Collector/ADM",
+        "District Development Commissioner",
+        "Health Department",
+        "Education Department",
+        "Agriculture Department",
+        "Animal Husbandry Department",
+        "Fishery Department",
+        "Disaster Management Department",
+        "Social Welfare Department",
+        "Minority Welfare Department",
+        "Backward Class Welfare Department",
+        "Labour Department",
+        "Electricity Department",
+        "Planning and Development Department",
+        "Public Health Engineering Department",
+        "Water Resources Department",
+        "Panchayati Raj Department",
+        "Transport Department",
+        "Local Bodies/Municipality"
+      ],
+      "mappingRules": [
+        {
+          "department": "Collectorate/District Magistrate Office",
+          "keywords": [
+            "hearing",
+            "inspection committee",
+            "collector",
+            "dm",
+            "magistrate",
+            "rdo"
+          ]
+        },
+        {
+          "department": "Additional Collector/ADM",
+          "keywords": ["adm", "additional collector"]
+        },
+        {
+          "department": "District Development Commissioner",
+          "keywords": ["ddc", "development commissioner"]
+        },
+        {
+          "department": "Health Department",
+          "keywords": ["health", "medical", "dmwo"]
+        },
+        {
+          "department": "Education Department",
+          "keywords": ["education", "school"]
+        },
+        {
+          "department": "Agriculture Department",
+          "keywords": ["agriculture", "agri"]
+        },
+        {
+          "department": "Animal Husbandry Department",
+          "keywords": ["animal", "husbandry", "veterinary"]
+        },
+        {
+          "department": "Fishery Department",
+          "keywords": ["fishery", "fish"]
+        },
+        {
+          "department": "Disaster Management Department",
+          "keywords": ["disaster", "emergency"]
+        },
+        {
+          "department": "Social Welfare Department",
+          "keywords": ["social welfare", "welfare"]
+        },
+        {
+          "department": "Minority Welfare Department",
+          "keywords": ["minority"]
+        },
+        {
+          "department": "Backward Class Welfare Department",
+          "keywords": ["backward", "sc", "st"]
+        },
+        {
+          "department": "Labour Department",
+          "keywords": ["labour", "employment"]
+        },
+        {
+          "department": "Electricity Department",
+          "keywords": ["electricity", "power"]
+        },
+        {
+          "department": "Planning and Development Department",
+          "keywords": ["planning"]
+        },
+        {
+          "department": "Public Health Engineering Department",
+          "keywords": ["phe", "public health engineering", "water supply"]
+        },
+        {
+          "department": "Water Resources Department",
+          "keywords": ["water resources", "irrigation"]
+        },
+        {
+          "department": "Panchayati Raj Department",
+          "keywords": ["panchayat", "bdo", "rural development", "rdd", "drda"]
+        },
+        {
+          "department": "Transport Department",
+          "keywords": ["transport", "dto", "motor"]
+        },
+        {
+          "department": "Local Bodies/Municipality",
+          "keywords": ["municipality", "municipal", "urban"]
+        }
+      ]
+    },
     "applicationData": [
       {
         "S.No.": 1,
@@ -296,7 +295,7 @@
         "ATR Submission Letter No": "Not Submitted",
         "ATR Submission Date": "Not Submitted",
         "Pending Days": 85,
-        "Status": "Not Accepted",
+        "Status": "Not Assigned",
         "Priority": "High"
       },
       {
@@ -310,7 +309,7 @@
         "ATR Submission Letter No": "Not Submitted",
         "ATR Submission Date": "Not Submitted",
         "Pending Days": 83,
-        "Status": "Not Accepted",
+        "Status": "Not Assigned",
         "Priority": "High"
       },
       {
@@ -422,7 +421,7 @@
         "ATR Submission Letter No": "Not Submitted",
         "ATR Submission Date": "Not Submitted",
         "Pending Days": 79,
-        "Status": "Not Accepted",
+        "Status": "Not Assigned",
         "Priority": "High"
       },
       {

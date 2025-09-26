@@ -68,7 +68,7 @@ const ApplicationDashboard = () => {
   const [applicationData, setApplicationData] = useState([]);
   const [filteredApplicationData, setFilteredApplicationData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTable, setActiveTable] = useState("total"); // 'total', 'pending', 'resolved'
+  const [activeTable, setActiveTable] = useState("pending"); // 'pending', 'resolved', 'blocks'
   const [timeFilter, setTimeFilter] = useState("all"); // 'all', 'month', 'custom'
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedCustomMonth, setSelectedCustomMonth] = useState("2025-08"); // Default to August 2025
@@ -376,8 +376,13 @@ const ApplicationDashboard = () => {
           (app) => app.Status === "Compliance"
         );
         break;
+      case "blocks":
+        filtered = []; // Blocks are handled separately
+        break;
       default:
-        filtered = filteredApplicationData;
+        filtered = filteredApplicationData.filter(
+          (app) => app.Status === "Pending"
+        ); // Default to pending
     }
 
     // Apply search filter if search term exists
@@ -421,7 +426,7 @@ const ApplicationDashboard = () => {
         (app) => app.Status === "Compliance"
       ).length;
       const rejectedApps = blockApplications.filter(
-        (app) => app.Status === "Not Accepted"
+        (app) => app.Status === "Not Assigned"
       ).length;
 
       return {
@@ -505,7 +510,7 @@ const ApplicationDashboard = () => {
       case "blocks":
         return "All Blocks Involved";
       default:
-        return "All Applications";
+        return "Applications";
     }
   };
 
@@ -556,6 +561,86 @@ const ApplicationDashboard = () => {
     };
   };
   const { topPerforming, worstPerforming } = getBlockPerformanceData();
+
+  // Function to process department performance data
+  const getDepartmentPerformanceData = () => {
+    const { departments } = PerformanceJson.dashboard;
+    const departmentStats = {};
+
+    // Initialize all departments
+    departments.list.forEach((dept) => {
+      departmentStats[dept] = {
+        departmentName: dept,
+        totalApplications: 0,
+        resolvedApplications: 0,
+        pendingApplications: 0,
+        resolvedPercentage: 0,
+      };
+    });
+
+    // Helper function to map officer to department
+    const mapOfficerToDepartment = (concernedOfficer) => {
+      const officerLower = concernedOfficer.toLowerCase();
+
+      // Find matching department based on keywords
+      for (const rule of departments.mappingRules) {
+        for (const keyword of rule.keywords) {
+          if (
+            keyword === "planning" &&
+            officerLower.includes("development") &&
+            officerLower.includes("rural")
+          ) {
+            continue; // Skip planning dept for rural development
+          }
+          if (keyword === "block" && officerLower.includes("gp")) {
+            continue; // Skip block keyword if GP is present
+          }
+          if (officerLower.includes(keyword)) {
+            return rule.department;
+          }
+        }
+      }
+      return "Other";
+    };
+
+    // Process each application to calculate department statistics
+    filteredApplicationData.forEach((app) => {
+      const concernedOfficer = app["Concerned Officer"];
+      if (!concernedOfficer) return;
+
+      const department = mapOfficerToDepartment(concernedOfficer);
+
+      // Only count if department is in our list
+      if (departmentStats[department]) {
+        departmentStats[department].totalApplications++;
+        if (app.Status === "Compliance") {
+          departmentStats[department].resolvedApplications++;
+        } else if (app.Status === "Pending") {
+          departmentStats[department].pendingApplications++;
+        }
+      }
+    });
+
+    // Calculate resolved percentages and filter out departments with no data
+    const departmentArray = Object.values(departmentStats)
+      .filter((dept) => dept.totalApplications > 0)
+      .map((dept) => ({
+        ...dept,
+        resolvedPercentage: Math.round(
+          (dept.resolvedApplications / dept.totalApplications) * 100
+        ),
+      }));
+
+    // Sort by resolved percentage
+    departmentArray.sort((a, b) => b.resolvedPercentage - a.resolvedPercentage);
+
+    return {
+      topPerformingDepts: departmentArray.slice(0, 5), // Top 5 performers
+      worstPerformingDepts: departmentArray.slice(-5).reverse(), // Bottom 5 performers
+    };
+  };
+  const { topPerformingDepts, worstPerformingDepts } =
+    getDepartmentPerformanceData();
 
   // Bar chart data for Pending Days Distribution with modern colors
   const barData = {
@@ -1052,6 +1137,166 @@ const ApplicationDashboard = () => {
     },
   };
 
+  // Top Performing Departments Chart Data
+  const topPerformingDeptsChartData = {
+    labels: topPerformingDepts.map((dept) => dept.departmentName),
+    datasets: [
+      {
+        label: "Resolved Percentage",
+        data: topPerformingDepts.map((dept) =>
+          Math.max(dept.resolvedPercentage, 1)
+        ), // Minimum 1% for visibility
+        backgroundColor: "#059669",
+        borderColor: "#047857",
+        borderWidth: 1,
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  // Top Performing Departments Chart Options
+  const topPerformingDeptsChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        titleColor: "#1f2937",
+        bodyColor: "#374151",
+        borderColor: "#e5e7eb",
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 6,
+        displayColors: false,
+        callbacks: {
+          label: function (context) {
+            const deptIndex = context.dataIndex;
+            const dept = topPerformingDepts[deptIndex];
+            return [
+              `Department: ${dept.departmentName}`,
+              `Total Applications: ${dept.totalApplications}`,
+              `Resolved: ${dept.resolvedApplications}`,
+              `Pending: ${dept.pendingApplications}`,
+              `Resolution Rate: ${dept.resolvedPercentage}%`,
+            ];
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        ticks: {
+          color: "#6b7280",
+          font: { size: 10 },
+          callback: function (value) {
+            return value + "%";
+          },
+        },
+        title: {
+          display: true,
+          text: "Resolved Percentage",
+          color: "#6b7280",
+          font: { size: 11 },
+        },
+        grid: { color: "#e5e7eb" },
+      },
+      x: {
+        ticks: {
+          color: "#6b7280",
+          font: { size: 10 },
+          maxRotation: 45,
+          minRotation: 45,
+        },
+        grid: { display: false },
+      },
+    },
+  };
+
+  // Worst Performing Departments Chart Data
+  const worstPerformingDeptsChartData = {
+    labels: worstPerformingDepts.map((dept) => dept.departmentName),
+    datasets: [
+      {
+        label: "Resolved Percentage",
+        data: worstPerformingDepts.map((dept) =>
+          Math.max(dept.resolvedPercentage, 1)
+        ), // Minimum 1% for visibility
+        backgroundColor: "#dc2626",
+        borderColor: "#b91c1c",
+        borderWidth: 1,
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  // Worst Performing Departments Chart Options
+  const worstPerformingDeptsChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        titleColor: "#1f2937",
+        bodyColor: "#374151",
+        borderColor: "#e5e7eb",
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 6,
+        displayColors: false,
+        callbacks: {
+          label: function (context) {
+            const deptIndex = context.dataIndex;
+            const dept = worstPerformingDepts[deptIndex];
+            return [
+              `Department: ${dept.departmentName}`,
+              `Total Applications: ${dept.totalApplications}`,
+              `Resolved: ${dept.resolvedApplications}`,
+              `Pending: ${dept.pendingApplications}`,
+              `Resolution Rate: ${dept.resolvedPercentage}%`,
+            ];
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        ticks: {
+          color: "#6b7280",
+          font: { size: 10 },
+          callback: function (value) {
+            return value + "%";
+          },
+        },
+        title: {
+          display: true,
+          text: "Resolved Percentage",
+          color: "#6b7280",
+          font: { size: 11 },
+        },
+        grid: { color: "#e5e7eb" },
+      },
+      x: {
+        ticks: {
+          color: "#6b7280",
+          font: { size: 10 },
+          maxRotation: 45,
+          minRotation: 45,
+        },
+        grid: { display: false },
+      },
+    },
+  };
+
   // Helper function to get icon for metrics
   const getMetricIcon = (metricName, index) => {
     const icons = [
@@ -1088,7 +1333,7 @@ const ApplicationDashboard = () => {
   return (
     <ErrorBoundary>
       <div className="grid grid-cols-1 overflow-x-hidden">
-        <div className="md:px-4 pt-8 pb-8  bg-gradient-to-br from-[#f3e8ff] via-[#e0f2f1] to-[#fce4ec] min-h-screen">
+        <div className="md:px-4 pt-8 pb-8  bg-gradient-to-br from-gray-50 via-white to-orange-50 min-h-screen">
           <Navbar />
           <div className="mt-2 mx-auto max-w-7xl">
             {/* Header with Filter */}
@@ -1230,8 +1475,6 @@ const ApplicationDashboard = () => {
                 {metrics.map((metric, index) => {
                   // Determine if this card should be highlighted
                   const isActive =
-                    (activeTable === "total" &&
-                      metric.name.toLowerCase().includes("total")) ||
                     (activeTable === "pending" &&
                       metric.name.toLowerCase().includes("pending")) ||
                     (activeTable === "resolved" &&
@@ -1370,6 +1613,47 @@ const ApplicationDashboard = () => {
                 </p>
               </div>
 
+              {/* Department Performance Charts */}
+              <div className="flex flex-col md:flex-row gap-4 mb-4">
+                {/* Top Performing Departments Chart */}
+                <div className="md:w-1/2 bg-white/70 backdrop-blur-md border-gray-100/90 border rounded-3xl p-4 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="text-green-500" size={20} />
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      Top Performing Departments
+                    </h3>
+                  </div>
+                  <div className="w-full h-80">
+                    <Bar
+                      data={topPerformingDeptsChartData}
+                      options={topPerformingDeptsChartOptions}
+                    />
+                  </div>
+                  <p className="text-xs italic text-gray-500 mt-2">
+                    Hover over bars to see detailed statistics
+                  </p>
+                </div>
+
+                {/* Worst Performing Departments Chart */}
+                <div className="md:w-1/2 bg-white/70 backdrop-blur-md border-gray-100/90 border rounded-3xl p-4 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <AlertCircle className="text-red-500" size={20} />
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      Worst Performing Departments
+                    </h3>
+                  </div>
+                  <div className="w-full h-80">
+                    <Bar
+                      data={worstPerformingDeptsChartData}
+                      options={worstPerformingDeptsChartOptions}
+                    />
+                  </div>
+                  <p className="text-xs italic text-gray-500 mt-2">
+                    Hover over bars to see detailed statistics
+                  </p>
+                </div>
+              </div>
+
               {/* Conditional Applications Table */}
               <div
                 ref={tableRef}
@@ -1455,16 +1739,6 @@ const ApplicationDashboard = () => {
 
                 {/* Table Navigation Buttons */}
                 <div className="flex gap-2 mb-4">
-                  <button
-                    onClick={() => setActiveTable("total")}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                      activeTable === "total"
-                        ? "bg-purple-600 text-white shadow-lg"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    All Applications ({filteredApplicationData.length})
-                  </button>
                   <button
                     onClick={() => setActiveTable("pending")}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
@@ -1702,8 +1976,7 @@ const ApplicationDashboard = () => {
                             colSpan="7"
                             className="p-3 text-center text-gray-500 text-sm"
                           >
-                            No {activeTable === "total" ? "" : activeTable}{" "}
-                            applications available.
+                            No {activeTable} applications available.
                           </td>
                         </tr>
                       )}
