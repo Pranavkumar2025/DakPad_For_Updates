@@ -13,10 +13,12 @@ import {
   QrCode,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import UserNavbar from "../components/UserNavbar";
 import QRCode from "qrcode";
 
 const UserDashboard = () => {
+  const { t } = useTranslation();
   const [cases, setCases] = useState([]);
   const [applicationIdInput, setApplicationIdInput] = useState("");
   const [foundApplication, setFoundApplication] = useState(null);
@@ -81,29 +83,30 @@ const UserDashboard = () => {
       );
       const foundApp = match
         ? {
-          applicationId: match.ApplicantId,
-          applicantName: match.applicant,
-          dateOfApplication: match.applicationDate,
-          subject: match.subject,
-          description: match.subject,
-          status:
-            match.status === "Compliance Completed"
-              ? "Compliance"
-              : match.status || "Pending",
-          timeline: match.timeline || [
-            {
-              section: "Application Received",
-              comment: `Application received at ${match.block || "N/A"} on ${match.applicationDate
+            applicationId: match.ApplicantId,
+            applicantName: match.applicant,
+            dateOfApplication: match.applicationDate,
+            subject: match.subject,
+            description: match.subject,
+            status:
+              match.status === "Compliance Completed"
+                ? "Compliance"
+                : match.status || "Pending",
+            timeline: match.timeline || [
+              {
+                section: "Application Received",
+                comment: `Application received at ${match.block || "N/A"} on ${
+                  match.applicationDate
                 }`,
-              date: match.applicationDate,
-              pdfLink: match.attachment || null,
-            },
-          ],
-          lastUpdated:
-            match.timeline?.length > 0
-              ? match.timeline[match.timeline.length - 1].date
-              : match.applicationDate,
-        }
+                date: match.applicationDate,
+                pdfLink: match.attachment || null,
+              },
+            ],
+            lastUpdated:
+              match.timeline?.length > 0
+                ? match.timeline[match.timeline.length - 1].date
+                : match.applicationDate,
+          }
         : false;
 
       setFoundApplication(foundApp);
@@ -191,7 +194,7 @@ const UserDashboard = () => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8 }}
                 >
-                  Track Your
+                  {t("dashboard.trackYour")}
                 </motion.span>
                 <motion.span
                   className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c]"
@@ -199,17 +202,22 @@ const UserDashboard = () => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
                 >
-                  {Array.from("Application").map((letter, index) => (
-                    <motion.span
-                      key={index}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
-                      className="inline-block"
-                    >
-                      {letter}
-                    </motion.span>
-                  ))}
+                  {Array.from(t("dashboard.application")).map(
+                    (letter, index) => (
+                      <motion.span
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.3,
+                          delay: 0.3 + index * 0.05,
+                        }}
+                        className="inline-block"
+                      >
+                        {letter}
+                      </motion.span>
+                    )
+                  )}
                 </motion.span>
               </h1>
               <motion.p
@@ -218,11 +226,11 @@ const UserDashboard = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.8 }}
               >
-                Track your application in real time. <br />Enter your Application ID
-                to see status and timeline.{" "}
+                {t("dashboard.subtitle")} <br />
+                {t("dashboard.enterApplicationId")}
               </motion.p>
             </motion.div>
-                  
+
             {/* Search Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -237,10 +245,10 @@ const UserDashboard = () => {
               </div>
 
               <h2 className="text-2xl font-bold text-gray-800 mb-2 font-['Montserrat']">
-                Enter Application ID
+                {t("dashboard.enterAppId")}
               </h2>
               <p className="text-gray-600 mb-8 font-['Montserrat']">
-                Track your application status instantly
+                {t("dashboard.trackInstantly")}
               </p>
 
               {/* Enhanced Search Input */}
@@ -253,7 +261,7 @@ const UserDashboard = () => {
                     onChange={(e) => setApplicationIdInput(e.target.value)}
                     onKeyDown={handleKeyPress}
                     className="flex-1 px-4 py-5 bg-transparent text-gray-900 focus:outline-none text-lg font-['Montserrat'] placeholder-gray-400"
-                    placeholder="e.g., BP12345"
+                    placeholder={t("dashboard.placeholder")}
                     aria-label="Application ID"
                   />
                   <motion.button
@@ -267,10 +275,10 @@ const UserDashboard = () => {
                     {isLoading ? (
                       <div className="flex items-center">
                         <Loader2 className="animate-spin mr-2" size={20} />
-                        Searching...
+                        {t("dashboard.searching")}
                       </div>
                     ) : (
-                      "Track Now"
+                      t("dashboard.trackNow")
                     )}
                   </motion.button>
                 </div>
@@ -290,8 +298,7 @@ const UserDashboard = () => {
                       <div className="flex items-center">
                         <XCircle className="text-red-500 mr-2" size={20} />
                         <p className="text-red-700 font-['Montserrat'] font-medium">
-                          No application found with this ID. Please check and
-                          try again.
+                          {t("dashboard.noApplicationFound")}
                         </p>
                       </div>
                     </motion.div>
@@ -309,23 +316,23 @@ const UserDashboard = () => {
               {[
                 {
                   icon: Clock,
-                  title: "Real-time Updates",
-                  desc: "Get instant status updates",
+                  title: t("dashboard.features.realTime.title"),
+                  desc: t("dashboard.features.realTime.desc"),
                 },
                 {
                   icon: QrCode,
-                  title: "QR Code Access",
-                  desc: "Quick access via QR code",
+                  title: t("dashboard.features.qrCode.title"),
+                  desc: t("dashboard.features.qrCode.desc"),
                 },
                 {
                   icon: Download,
-                  title: "Download Reports",
-                  desc: "Get detailed timeline PDFs",
+                  title: t("dashboard.features.download.title"),
+                  desc: t("dashboard.features.download.desc"),
                 },
                 {
                   icon: CheckCircle,
-                  title: "Secure Tracking",
-                  desc: "Safe and encrypted data",
+                  title: t("dashboard.features.secure.title"),
+                  desc: t("dashboard.features.secure.desc"),
                 },
               ].map((feature, index) => (
                 <motion.div
@@ -375,7 +382,7 @@ const UserDashboard = () => {
                   {/* Header */}
                   <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
                     <h2 className="text-2xl font-semibold text-gray-900 font-['Montserrat']">
-                      Application ID:{" "}
+                      {t("dashboard.modal.applicationId")}{" "}
                       <span className="text-green-700">
                         {foundApplication.applicationId}
                       </span>
@@ -413,7 +420,8 @@ const UserDashboard = () => {
                               getStatusStyle(foundApplication.status).text
                             } font-['Montserrat']`}
                           >
-                            Status: {foundApplication.status}
+                            {t("dashboard.modal.status")}{" "}
+                            {foundApplication.status}
                           </h2>
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -429,14 +437,15 @@ const UserDashboard = () => {
                           } mt-1 font-['Montserrat']`}
                         >
                           {foundApplication.status === "Pending" &&
-                            "Your application is under review. Check the timeline for updates."}
+                            t("dashboard.statusMessages.pending")}
                           {foundApplication.status === "Compliance" &&
-                            "Your application has been approved and is compliant."}
+                            t("dashboard.statusMessages.compliance")}
                           {foundApplication.status === "Dismissed" &&
-                            "Your application has been dismissed. See details below."}
+                            t("dashboard.statusMessages.dismissed")}
                         </p>
                         <p className="text-xs text-gray-500 mt-1 font-['Montserrat']">
-                          Last Updated: {foundApplication.lastUpdated}
+                          {t("dashboard.modal.lastUpdated")}{" "}
+                          {foundApplication.lastUpdated}
                         </p>
                       </div>
                     </motion.div>
@@ -449,12 +458,12 @@ const UserDashboard = () => {
                       transition={{ duration: 0.4, delay: 0.1 }}
                     >
                       <h3 className="text-lg font-semibold text-gray-800 mb-5 font-['Montserrat']">
-                        Application Details
+                        {t("dashboard.modal.applicationDetails")}
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm text-gray-700">
                         {[
                           {
-                            label: "ID",
+                            label: t("dashboard.modal.id"),
                             value: foundApplication.applicationId,
                             icon: (
                               <FileText
@@ -464,7 +473,7 @@ const UserDashboard = () => {
                             ),
                           },
                           {
-                            label: "Name",
+                            label: t("dashboard.modal.name"),
                             value: foundApplication.applicantName,
                             icon: (
                               <User
@@ -474,7 +483,7 @@ const UserDashboard = () => {
                             ),
                           },
                           {
-                            label: "Date",
+                            label: t("dashboard.modal.date"),
                             value: foundApplication.dateOfApplication,
                             icon: (
                               <Calendar
@@ -484,7 +493,7 @@ const UserDashboard = () => {
                             ),
                           },
                           {
-                            label: "Subject",
+                            label: t("dashboard.modal.subject"),
                             value: foundApplication.subject,
                             icon: (
                               <FileText
@@ -494,7 +503,7 @@ const UserDashboard = () => {
                             ),
                           },
                           {
-                            label: "Description",
+                            label: t("dashboard.modal.description"),
                             value: foundApplication.description,
                             icon: (
                               <FileText
@@ -538,7 +547,7 @@ const UserDashboard = () => {
                       >
                         <h3 className="text-lg font-semibold text-gray-800 mb-5 font-['Montserrat'] flex items-center gap-2">
                           <QrCode size={20} className="text-green-600" />
-                          Application QR Code
+                          {t("dashboard.modal.qrCodeTitle")}
                         </h3>
                         <div className="flex flex-col sm:flex-row items-center gap-6">
                           <div className="flex-shrink-0">
@@ -550,8 +559,7 @@ const UserDashboard = () => {
                           </div>
                           <div className="flex-1 text-center sm:text-left">
                             <p className="text-sm text-gray-600 mb-3 font-['Montserrat']">
-                              Scan this QR code for quick access to your
-                              application details
+                              {t("dashboard.modal.qrCodeDesc")}
                             </p>
                             <button
                               onClick={() => {
@@ -563,7 +571,7 @@ const UserDashboard = () => {
                               className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium font-['Montserrat'] gap-2"
                             >
                               <Download size={16} />
-                              Download QR Code
+                              {t("dashboard.modal.downloadQr")}
                             </button>
                           </div>
                         </div>
@@ -580,7 +588,7 @@ const UserDashboard = () => {
                           transition={{ duration: 0.4, delay: 0.2 }}
                         >
                           <h3 className="text-lg font-semibold text-gray-800 mb-5 font-['Montserrat']">
-                            Progress Timeline
+                            {t("dashboard.modal.progressTimeline")}
                           </h3>
                           <div className="relative pl-8">
                             <div className="absolute left-3.5 top-0 bottom-0 w-1 bg-green-200" />
@@ -643,9 +651,9 @@ const UserDashboard = () => {
                                         whileHover={{ scale: 1.05 }}
                                         aria-label="View timeline document"
                                       >
-                                        View Document
+                                        {t("dashboard.modal.viewDocument")}
                                         <span className="absolute hidden group-hover:block text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md -top-8 left-1/2 transform -translate-x-1/2 font-['Montserrat']">
-                                          Open PDF
+                                          {t("dashboard.modal.openPdf")}
                                         </span>
                                       </motion.a>
                                     )}
@@ -676,7 +684,8 @@ const UserDashboard = () => {
                           whileTap={{ scale: 0.95 }}
                           aria-label="Download timeline"
                         >
-                          <Download size={18} /> Download Timeline
+                          <Download size={18} />{" "}
+                          {t("dashboard.modal.downloadTimeline")}
                         </motion.button>
                       )}
                       <motion.button
@@ -689,7 +698,7 @@ const UserDashboard = () => {
                         whileTap={{ scale: 0.95 }}
                         aria-label="Close modal"
                       >
-                        Close
+                        {t("dashboard.modal.close")}
                       </motion.button>
                     </motion.div>
                   </div>

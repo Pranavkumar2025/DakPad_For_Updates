@@ -3,9 +3,12 @@ import { FaBell } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import { BarChart2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const UserNavbar = () => {
-  const [selectedLanguage, setSelectedLanguage] = React.useState("English");
+  const { t } = useTranslation();
+  const { currentLanguage, changeLanguage, getDisplayName } = useLanguage();
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
   const navigate = useNavigate();
@@ -13,6 +16,11 @@ const UserNavbar = () => {
   const onLogout = () => {
     // You can add logout logic here (like clearing tokens, etc.)
     navigate("/admin-login");
+  };
+
+  const handleLanguageChange = (languageCode) => {
+    setIsDropdownOpen(false);
+    changeLanguage(languageCode);
   };
 
   return (
@@ -36,11 +44,11 @@ const UserNavbar = () => {
               className="text-2xl font-bold text-transparent uppercase bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
               style={{ fontFamily: "'Montserrat', sans-serif" }}
             >
-              Jan Samadhan
+              {t("navbar.janSamadhan")}
             </span>
           </motion.div>
           <p className="text-xs text-gray-500 hidden md:inline-block">
-            Serving Citizens of Bhojpur
+            {t("navbar.serving")}
           </p>
         </div>
       </div>
@@ -60,7 +68,7 @@ const UserNavbar = () => {
                 clipRule="evenodd"
               />
             </svg>
-            <span>{selectedLanguage}</span>
+            <span>{t("navbar.language")}</span>
             <svg
               className={`w-4 h-4 transition-transform flex relative -right-2 ${
                 isDropdownOpen ? "rotate-180" : ""
@@ -79,12 +87,9 @@ const UserNavbar = () => {
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
               <button
-                onClick={() => {
-                  setSelectedLanguage("English");
-                  setIsDropdownOpen(false);
-                }}
+                onClick={() => handleLanguageChange("en")}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 first:rounded-t-lg ${
-                  selectedLanguage === "English"
+                  currentLanguage === "en"
                     ? "bg-blue-50 text-blue-700"
                     : "text-gray-700"
                 }`}
@@ -92,17 +97,14 @@ const UserNavbar = () => {
                 English
               </button>
               <button
-                onClick={() => {
-                  setSelectedLanguage("Hindi");
-                  setIsDropdownOpen(false);
-                }}
+                onClick={() => handleLanguageChange("hi")}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 last:rounded-b-lg ${
-                  selectedLanguage === "Hindi"
+                  currentLanguage === "hi"
                     ? "bg-blue-50 text-blue-700"
                     : "text-gray-700"
                 }`}
               >
-                Hindi
+                हिंदी
               </button>
             </div>
           )}
@@ -110,7 +112,7 @@ const UserNavbar = () => {
 
         {/* Info Section (Optional for Public) */}
         <div className="hidden md:flex flex-col items-end text-xs leading-tight">
-          <p className="text-[#ff5010] font-medium">Public User Access</p>
+          <p className="text-[#ff5010] font-medium">{t("navbar.publicUser")}</p>
         </div>
 
         {/* Logout Button - Always expanded, no animation */}
@@ -121,7 +123,9 @@ const UserNavbar = () => {
           <svg className="w-4 h-4 mr-2" viewBox="0 0 512 512" fill="white">
             <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"></path>
           </svg>
-          <span className="text-white text-lg font-semibold px-2">Admin</span>
+          <span className="text-white text-lg font-semibold px-2">
+            {t("navbar.admin")}
+          </span>
         </button>
       </div>
     </div>

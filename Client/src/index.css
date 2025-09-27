@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+/* Language-specific styles */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap");
+
+.lang-hi {
+  font-family: "Noto Sans Devanagari", "Montserrat", sans-serif;
+}
+
+.lang-en {
+  font-family: "Montserrat", sans-serif;
+}
+
+/* Ensure proper rendering for Hindi text */
+.lang-hi * {
+  font-feature-settings: "kern" 1, "liga" 1, "clig" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+}

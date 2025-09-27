@@ -1,0 +1,63 @@
+{
+  "navbar": {
+    "janSamadhan": "Jan Samadhan",
+    "serving": "Serving Citizens of Bhojpur",
+    "publicUser": "Public User Access",
+    "admin": "Admin",
+    "language": "English"
+  },
+  "dashboard": {
+    "trackYour": "Track Your",
+    "application": "Application",
+    "subtitle": "Track your application in real time.",
+    "enterApplicationId": "Enter your Application ID to see status and timeline.",
+    "enterAppId": "Enter Application ID",
+    "trackInstantly": "Track your application status instantly",
+    "placeholder": "e.g., BP12345",
+    "trackNow": "Track Now",
+    "searching": "Searching...",
+    "noApplicationFound": "No application found with this ID. Please check and try again.",
+    "features": {
+      "realTime": {
+        "title": "Real-time Updates",
+        "desc": "Get instant status updates"
+      },
+      "qrCode": {
+        "title": "QR Code Access",
+        "desc": "Quick access via QR code"
+      },
+      "download": {
+        "title": "Download Reports",
+        "desc": "Get detailed timeline PDFs"
+      },
+      "secure": {
+        "title": "Secure Tracking",
+        "desc": "Safe and encrypted data"
+      }
+    },
+    "modal": {
+      "applicationId": "Application ID:",
+      "status": "Status:",
+      "applicationDetails": "Application Details",
+      "id": "ID",
+      "name": "Name",
+      "date": "Date",
+      "subject": "Subject",
+      "description": "Description",
+      "qrCodeTitle": "Application QR Code",
+      "qrCodeDesc": "Scan this QR code for quick access to your application details",
+      "downloadQr": "Download QR Code",
+      "progressTimeline": "Progress Timeline",
+      "viewDocument": "View Document",
+      "openPdf": "Open PDF",
+      "downloadTimeline": "Download Timeline",
+      "close": "Close",
+      "lastUpdated": "Last Updated:"
+    },
+    "statusMessages": {
+      "pending": "Your application is under review. Check the timeline for updates.",
+      "compliance": "Your application has been approved and is compliant.",
+      "dismissed": "Your application has been dismissed. See details below."
+    }
+  }
+}
