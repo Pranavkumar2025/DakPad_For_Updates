@@ -16,8 +16,12 @@ const WorkAssignedApplicationTable = ({
 
   // Calculate pending days based on issue date and status
   const calculatePendingDays = (issueDate, status) => {
-    if (status === "Compliance" || status === "Closed") return 0;
+    if (["Compliance", "Disposed", "Dismissed"].includes(status) || !issueDate) return 0;
     const issue = new Date(issueDate);
+    if (isNaN(issue.getTime())) {
+      console.warn(`Invalid issueDate for application: ${issueDate}`);
+      return 0;
+    }
     const today = new Date();
     const diffTime = Math.abs(today - issue);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -26,83 +30,107 @@ const WorkAssignedApplicationTable = ({
   // Determine dynamic status based on timeline and concernedOfficer
   const determineStatus = (timeline, concernedOfficer) => {
     if (!concernedOfficer || concernedOfficer === "N/A" || concernedOfficer === "") return "Not Assigned Yet";
-    if (!timeline || timeline.length === 0) return "In Process";
-    const latestEntry = timeline[timeline.length - 1].section.toLowerCase();
+    if (!timeline || !Array.isArray(timeline) || timeline.length === 0) return "In Process";
+    const latestEntry = timeline[timeline.length - 1]?.section?.toLowerCase() || "";
+    if (latestEntry.includes("disposed")) return "Disposed";
     if (latestEntry.includes("compliance")) return "Compliance";
     if (latestEntry.includes("dismissed")) return "Dismissed";
-    if (latestEntry.includes("closed")) return "Closed";
     return "In Process";
   };
 
-  // Filter applications based on filter states
+  // Filter applications based on props
   const filterApplications = (rawApplications) => {
+    console.log("Filter props:", { searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate });
+    console.log("Raw applications:", rawApplications);
     return rawApplications.filter((app) => {
       const matchesSearch =
         searchQuery === "" ||
-        app.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.subject.toLowerCase().includes(searchQuery.toLowerCase());
+        (app.applicantName && app.applicantName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (app.subject && app.subject.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesStatus = selectedStatus === "" || app.status === selectedStatus;
       const matchesDepartment = selectedDepartment === "" || app.concernedOfficer === selectedDepartment;
       const matchesBlock = selectedBlock === "" || app.gpBlock === selectedBlock;
       let matchesDate = true;
-      if (selectedDate.startDate && selectedDate.endDate) {
+      if (selectedDate?.startDate && selectedDate?.endDate) {
         const appDate = new Date(app.dateOfApplication);
         const startDate = new Date(selectedDate.startDate);
         const endDate = new Date(selectedDate.endDate);
         matchesDate = appDate >= startDate && appDate <= endDate;
       }
-      return matchesSearch && matchesStatus && matchesDepartment && matchesBlock && matchesDate;
+      const isMatch = matchesSearch && matchesStatus && matchesDepartment && matchesBlock && matchesDate;
+      if (!isMatch) {
+        console.log(`Application ${app.applicationId} filtered out:`, {
+          matchesSearch,
+          matchesStatus,
+          matchesDepartment,
+          matchesBlock,
+          matchesDate,
+          app,
+        });
+      }
+      return isMatch;
     });
   };
 
   // Update applications from localStorage and JSON data
   const updateApplications = () => {
     const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+    console.log("Stored applications from localStorage:", storedApplications);
+
     const mappedStoredApplications = storedApplications
       .map((app, index) => {
-        const timeline = app.timeline || [
-          {
-            section: "Application Received",
-            comment: `Application received at ${app.block || "N/A"} on ${app.applicationDate}`,
-            date: app.applicationDate,
-            pdfLink: app.attachment || null,
-          },
-        ];
+        const timeline = Array.isArray(app.timeline)
+          ? app.timeline
+          : [
+              {
+                section: "Application Received",
+                comment: `Application received at ${app.block || "N/A"} on ${app.applicationDate || "N/A"}`,
+                date: app.applicationDate || new Date().toLocaleDateString("en-GB"),
+                pdfLink: app.attachment || null,
+                department: app.department || "N/A",
+                officer: app.concernedOfficer || "N/A",
+              },
+            ];
         const status = determineStatus(timeline, app.concernedOfficer);
         return {
-          applicationId: app.ApplicantId,
+          applicationId: app.ApplicantId || `temp-${index}`,
           sNo: index + 1,
-          dateOfApplication: app.applicationDate,
-          applicantName: app.applicant,
-          subject: app.subject,
+          dateOfApplication: app.applicationDate || "N/A",
+          applicantName: app.applicant || "Unknown",
+          subject: app.subject || "N/A",
           gpBlock: app.block || "N/A",
-          issueDate: app.applicationDate,
+          issueDate: app.applicationDate || "N/A",
           pendingDays: calculatePendingDays(app.applicationDate, status),
           status: status,
-          attachment: app.attachment,
+          attachment: app.attachment || null,
           concernedOfficer: app.concernedOfficer || "N/A",
           isFromLocalStorage: true,
           timeline: timeline,
         };
       })
-      .sort((a, b) => new Date(b.dateOfApplication) - new Date(a.dateOfApplication));
+      .sort((a, b) => new Date(b.dateOfApplication || 0) - new Date(a.dateOfApplication || 0));
 
     const storedAppIds = new Set(mappedStoredApplications.map((app) => app.applicationId));
     const filteredData = data.filter((item) => !storedAppIds.has(item.applicationId));
     const combinedData = [
       ...mappedStoredApplications,
       ...filteredData.map((item, index) => {
-        const timeline = item.timeline || [
-          {
-            section: "Application Received",
-            comment: `Application received at ${item.gpBlock || "N/A"} on ${item.dateOfApplication}`,
-            date: item.dateOfApplication,
-            pdfLink: item.attachment || null,
-          },
-        ];
+        const timeline = Array.isArray(item.timeline)
+          ? item.timeline
+          : [
+              {
+                section: "Application Received",
+                comment: `Application received at ${item.gpBlock || "N/A"} on ${item.dateOfApplication || "N/A"}`,
+                date: item.dateOfApplication || new Date().toLocaleDateString("en-GB"),
+                pdfLink: item.attachment || null,
+                department: item.department || "N/A",
+                officer: item.concernedOfficer || "N/A",
+              },
+            ];
         const status = determineStatus(timeline, item.concernedOfficer);
         return {
           ...item,
+          applicationId: item.applicationId || `temp-${index}`,
           sNo: mappedStoredApplications.length + index + 1,
           isFromLocalStorage: false,
           pendingDays: calculatePendingDays(item.issueDate, status),
@@ -113,6 +141,7 @@ const WorkAssignedApplicationTable = ({
     ].map((item, index) => ({ ...item, sNo: index + 1 }));
 
     const filteredApplications = filterApplications(combinedData);
+    console.log("Filtered applications:", filteredApplications);
     setApplications(filteredApplications);
   };
 
@@ -121,17 +150,20 @@ const WorkAssignedApplicationTable = ({
     updateApplications();
     const handleStorageChange = (event) => {
       if (event.key === "applications") {
+        console.log("localStorage 'applications' changed:", JSON.parse(event.newValue || "[]"));
         updateApplications();
       }
     };
     window.addEventListener("storage", handleStorageChange);
-    const intervalId = setInterval(() => {
+
+    // Optional: Poll localStorage for changes in the same tab
+    const pollingInterval = setInterval(() => {
       updateApplications();
-    }, 1000);
+    }, 1000); // Poll every 1 second
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
-      clearInterval(intervalId);
+      clearInterval(pollingInterval);
     };
   }, [data, searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate]);
 
@@ -147,17 +179,17 @@ const WorkAssignedApplicationTable = ({
   const getStatusStyle = (status) => {
     switch (status) {
       case "Not Assigned Yet":
-        return "bg-gray-500 text-white whitespace-nowrap";
+        return "bg-gray-500 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
       case "In Process":
-        return "bg-blue-500 text-white whitespace-nowrap";
+        return "bg-blue-500 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
       case "Compliance":
-        return "bg-green-500 text-white whitespace-nowrap";
+        return "bg-green-600 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
       case "Dismissed":
-        return "bg-red-500 text-white whitespace-nowrap";
-      case "Closed":
-        return "bg-purple-500 text-white whitespace-nowrap";
+        return "bg-red-600 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
+      case "Disposed":
+        return "bg-purple-500 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
       default:
-        return "bg-gray-500 text-white whitespace-nowrap";
+        return "bg-gray-500 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
     }
   };
 
@@ -169,7 +201,7 @@ const WorkAssignedApplicationTable = ({
   return (
     <div className="md:pl-16 lg:pl-16">
       {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 shadow-xl bg-white mx-auto max-w-8xl p-6 my-6">
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 shadow-xl bg-white mx-auto max-w-8xl p-6 my-6 font-['Montserrat']">
         <table className="w-full table-auto">
           <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
             <tr className="text-xs uppercase tracking-wider text-gray-700 font-semibold font-['Montserrat']">
@@ -199,10 +231,13 @@ const WorkAssignedApplicationTable = ({
               </tr>
             ) : (
               applications.map((caseDetail) => (
-                <tr
+                <motion.tr
                   key={caseDetail.applicationId}
                   className="text-sm hover:bg-blue-50 transition cursor-pointer even:bg-gray-50 font-['Montserrat']"
                   onClick={() => onRowClick(caseDetail)}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
                 >
                   <td className="px-6 py-4">{caseDetail.sNo}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{caseDetail.dateOfApplication}</td>
@@ -212,33 +247,35 @@ const WorkAssignedApplicationTable = ({
                   <td className="px-6 py-4">{caseDetail.issueDate}</td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${getPendingDaysColor(caseDetail.pendingDays)}`}
+                      className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPendingDaysColor(caseDetail.pendingDays)}`}
                       aria-label={`Pending days: ${caseDetail.pendingDays}`}
                     >
-                      {caseDetail.pendingDays}
+                      {caseDetail.pendingDays.toString()}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
+                      className={`inline-flex items-center gap-1 ${getStatusStyle(caseDetail.status)}`}
                       aria-label={`Status: ${caseDetail.status}`}
                     >
                       {caseDetail.status}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <button
+                    <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
                         onRowClick(caseDetail);
                       }}
-                      className="inline-flex items-center gap-1 px-4 py-1.5 text-sm rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition"
+                      className="inline-flex items-center gap-1 px-4 py-1.5 text-sm rounded-lg border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition shadow-sm"
                       aria-label="View PDF"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
                       <FaFilePdf /> PDF
-                    </button>
+                    </motion.button>
                   </td>
-                </tr>
+                </motion.tr>
               ))
             )}
           </tbody>
@@ -246,7 +283,7 @@ const WorkAssignedApplicationTable = ({
       </div>
 
       {/* Mobile Cards */}
-      <div className="block md:hidden space-y-3 py-3 px-2 pb-[100px] overflow-x-hidden">
+      <div className="block md:hidden space-y-3 py-3 px-2 pb-[100px] overflow-x-hidden font-['Montserrat']">
         {applications.length === 0 ? (
           <div className="text-center text-gray-500 text-sm font-['Montserrat']">
             No applications found.
@@ -267,7 +304,7 @@ const WorkAssignedApplicationTable = ({
                   {caseDetail.applicantName}
                 </h3>
                 <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
+                  className={`inline-flex items-center gap-1 ${getStatusStyle(caseDetail.status)}`}
                   aria-label={`Status: ${caseDetail.status}`}
                 >
                   {caseDetail.status}
@@ -280,14 +317,16 @@ const WorkAssignedApplicationTable = ({
               </div>
 
               {/* Accordion Toggle for Details */}
-              <button
-                className="flex items-center justify-between w-full p-2 bg-gray-100 rounded-md border border-gray-200 hover:bg-gray-200 transition-colors focus:ring-2 focus:ring-[#ff5010]"
+              <motion.button
+                className="flex items-center justify-between w-full p-2 bg-gray-100 rounded-md border border-gray-200 hover:bg-gray-200 transition-colors focus:ring-2 focus:ring-green-500"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleCardDetails(caseDetail.applicationId);
                 }}
                 aria-label={openCardId === caseDetail.applicationId ? "Collapse details" : "Expand details"}
                 aria-expanded={openCardId === caseDetail.applicationId}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <span className="text-[10px] sm:text-sm font-semibold text-gray-700">Details</span>
                 {openCardId === caseDetail.applicationId ? (
@@ -295,7 +334,7 @@ const WorkAssignedApplicationTable = ({
                 ) : (
                   <FaChevronDown className="text-gray-500 text-[9px] sm:text-sm" />
                 )}
-              </button>
+              </motion.button>
 
               {/* Collapsible Details */}
               <motion.div
@@ -325,10 +364,10 @@ const WorkAssignedApplicationTable = ({
                   <div>
                     <strong>Pending Days:</strong>{" "}
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold ${getPendingDaysColor(caseDetail.pendingDays)}`}
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold shadow-sm ${getPendingDaysColor(caseDetail.pendingDays)}`}
                       aria-label={`Pending days: ${caseDetail.pendingDays}`}
                     >
-                      {caseDetail.pendingDays}
+                      {caseDetail.pendingDays.toString()}
                     </span>
                   </div>
                 </div>
@@ -348,8 +387,10 @@ const WorkAssignedApplicationTable = ({
                   initial="rest"
                   whileHover="hover"
                   animate="rest"
-                  className="flex-1 flex items-center justify-center gap-1 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-2 py-1 rounded-xl shadow-lg hover:scale-[1.02] font-semibold text-[9px] sm:text-xs"
+                  className="flex-1 flex items-center justify-center gap-1 bg-green-600 text-white px-2 py-1 rounded-xl shadow-sm hover:bg-green-700 transition font-semibold text-[9px] sm:text-xs"
                   aria-label="View PDF"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <motion.div
                     variants={{ rest: { x: 0 }, hover: { x: 5 } }}
@@ -371,11 +412,17 @@ const WorkAssignedApplicationTable = ({
         )}
       </div>
 
-      {/* Custom CSS */}
-      <style jsx global>{`
+      {/* Inline Styles */}
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
         * {
           box-sizing: border-box;
+        }
+        .shadow-sm {
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .shadow-xl {
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         .backdrop-blur-sm {
           backdrop-filter: blur(4px);

@@ -25,10 +25,10 @@ const SuperAdminFilterHeader = ({
   const displayDate = selectedDate?.startDate && selectedDate?.endDate
     ? `${selectedDate.startDate} to ${selectedDate.endDate}`
     : selectedDate?.startDate
-    ? `${selectedDate.startDate} to Select End Date`
-    : selectedDate?.endDate
-    ? `Select Start Date to ${selectedDate.endDate}`
-    : "All";
+      ? `${selectedDate.startDate} to Select End Date`
+      : selectedDate?.endDate
+        ? `Select Start Date to ${selectedDate.endDate}`
+        : "All";
 
   return (
     <>
@@ -92,32 +92,53 @@ const SuperAdminFilterHeader = ({
                   { label: "In Process", onClick: () => setSelectedStatus("In Process") },
                   { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
                   { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
-                  { label: "Closed", onClick: () => setSelectedStatus("Closed") },
+                  { label: "Disposed", onClick: () => setSelectedStatus("Disposed") },
                 ]}
               />
               <DropdownButton
                 label={selectedDepartment || "Select Department"}
                 items={[
                   { label: "All", onClick: () => setSelectedDepartment("") },
-                  { label: "BDO, Barhara", onClick: () => setSelectedDepartment("BDO, Barhara") },
-                  { label: "Director Accounts, DRDA", onClick: () => setSelectedDepartment("Director Accounts, DRDA") },
-                  { label: "BDO Shahpur", onClick: () => setSelectedDepartment("BDO Shahpur") },
-                  { label: "BDO Ara Sadar", onClick: () => setSelectedDepartment("BDO Ara Sadar") },
-                  { label: "BDO Tarari", onClick: () => setSelectedDepartment("BDO Tarari") },
-                  { label: "RDO Mohsin Khan", onClick: () => setSelectedDepartment("RDO Mohsin Khan") },
+                  { label: "Collectorate/District Magistrate Office", onClick: () => setSelectedDepartment("Collectorate/District Magistrate Office") },
+                  { label: "Additional Collector/ADM", onClick: () => setSelectedDepartment("Additional Collector/ADM") },
+                  { label: "District Development Commissioner", onClick: () => setSelectedDepartment("District Development Commissioner") },
+                  { label: "Health Department", onClick: () => setSelectedDepartment("Health Department") },
+                  { label: "Education Department", onClick: () => setSelectedDepartment("Education Department") },
+                  { label: "Agriculture Department", onClick: () => setSelectedDepartment("Agriculture Department") },
+                  { label: "Animal Husbandry Department", onClick: () => setSelectedDepartment("Animal Husbandry Department") },
+                  { label: "Fishery Department", onClick: () => setSelectedDepartment("Fishery Department") },
+                  { label: "Disaster Management Department", onClick: () => setSelectedDepartment("Disaster Management Department") },
+                  { label: "Social Welfare Department", onClick: () => setSelectedDepartment("Social Welfare Department") },
+                  { label: "Minority Welfare Department", onClick: () => setSelectedDepartment("Minority Welfare Department") },
+                  { label: "Backward Class Welfare Department", onClick: () => setSelectedDepartment("Backward Class Welfare Department") },
+                  { label: "Labour Department", onClick: () => setSelectedDepartment("Labour Department") },
+                  { label: "Electricity Department", onClick: () => setSelectedDepartment("Electricity Department") },
+                  { label: "Planning and Development Department", onClick: () => setSelectedDepartment("Planning and Development Department") },
+                  { label: "Public Health Engineering Department", onClick: () => setSelectedDepartment("Public Health Engineering Department") },
+                  { label: "Water Resources Department", onClick: () => setSelectedDepartment("Water Resources Department") },
+                  { label: "Panchayati Raj Department", onClick: () => setSelectedDepartment("Panchayati Raj Department") },
+                  { label: "Transport Department", onClick: () => setSelectedDepartment("Transport Department") },
+                  { label: "Local Bodies/Municipality", onClick: () => setSelectedDepartment("Local Bodies/Municipality") },
                 ]}
               />
               <DropdownButton
                 label={selectedBlock || "Select Block"}
                 items={[
                   { label: "All", onClick: () => setSelectedBlock("") },
-                  { label: "Barhara", onClick: () => setSelectedBlock("Barhara") },
-                  { label: "Shahpur", onClick: () => setSelectedBlock("Shahpur") },
+                  { label: "Agiaon", onClick: () => setSelectedBlock("Agiaon") },
                   { label: "Ara Sadar", onClick: () => setSelectedBlock("Ara Sadar") },
-                  { label: "Bagar, Tarari", onClick: () => setSelectedBlock("Bagar, Tarari") },
-                  { label: "Sandesh", onClick: () => setSelectedBlock("Sandesh") },
+                  { label: "Barhara", onClick: () => setSelectedBlock("Barhara") },
                   { label: "Behea", onClick: () => setSelectedBlock("Behea") },
+                  { label: "Charpokhari", onClick: () => setSelectedBlock("Charpokhari") },
+                  { label: "Garhani", onClick: () => setSelectedBlock("Garhani") },
+                  { label: "Jagdishpur", onClick: () => setSelectedBlock("Jagdishpur") },
+                  { label: "Koilwar", onClick: () => setSelectedBlock("Koilwar") },
+                  { label: "Piro", onClick: () => setSelectedBlock("Piro") },
                   { label: "Sahar", onClick: () => setSelectedBlock("Sahar") },
+                  { label: "Sandesh", onClick: () => setSelectedBlock("Sandesh") },
+                  { label: "Shahpur", onClick: () => setSelectedBlock("Shahpur") },
+                  { label: "Tarari", onClick: () => setSelectedBlock("Tarari") },
+                  { label: "Udwant Nagar", onClick: () => setSelectedBlock("Udwant Nagar") },
                 ]}
               />
               <DateRangePicker
@@ -212,7 +233,7 @@ const SuperAdminFilterHeader = ({
                   { label: "In Process", onClick: () => setSelectedStatus("In Process") },
                   { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
                   { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
-                  { label: "Closed", onClick: () => setSelectedStatus("Closed") },
+                  { label: "Disposed", onClick: () => setSelectedStatus("Disposed") },
                 ]}
               />
               <DropdownButton

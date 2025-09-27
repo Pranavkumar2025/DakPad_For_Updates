@@ -15,8 +15,7 @@ const DropdownButton = ({ label, items }) => {
       >
         <span>{label}</span>
         <svg
-          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-            }`}
+          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -35,7 +34,11 @@ const DropdownButton = ({ label, items }) => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg"
+            className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+            style={{
+              scrollbarWidth: "thin",
+              scrollbarColor: "#ff5010 #f3f4f6",
+            }}
           >
             {items.map((item, index) => (
               <button
@@ -66,7 +69,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     email: "",
     source: "",
     subject: "",
-    block: "", // Added block field
+    block: "",
     attachment: null,
   });
   const [randomId, setRandomId] = useState("");
@@ -128,7 +131,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
       newErrors.email = "Enter a valid email";
     if (!formData.source) newErrors.source = "Please select a source";
     if (!formData.subject.trim()) newErrors.subject = "Subject is required";
-    if (!formData.block) newErrors.block = "Please select a block"; // Added block validation
+    if (!formData.block) newErrors.block = "Please select a block";
     if (!formData.attachment) newErrors.attachment = "Please upload a file";
 
     setErrors(newErrors);
@@ -146,7 +149,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
         emailId: formData.email,
         sourceAt: formData.source,
         subject: formData.subject,
-        block: formData.block, // Added block to application data
+        block: formData.block,
         attachment: formData.attachment ? formData.attachment.name : "No file",
       };
 
@@ -156,7 +159,6 @@ const AddCaseForm = ({ isOpen, onClose }) => {
       const updatedApplications = [...existingApplications, newApplication];
       localStorage.setItem("applications", JSON.stringify(updatedApplications));
 
-      // Generate QR code for the application
       await generateQRCode(randomId, formData.name, formData.applicationDate);
 
       setShowModal(true);
@@ -168,7 +170,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
         email: "",
         source: "",
         subject: "",
-        block: "", // Reset block
+        block: "",
         attachment: null,
       });
       setRandomId(generateRandomId());
@@ -371,14 +373,9 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                       setFormData((prev) => ({ ...prev, block: "" })),
                   },
                   {
-                    label: "Barhara",
+                    label: "Agiaon",
                     onClick: () =>
-                      setFormData((prev) => ({ ...prev, block: "Barhara" })),
-                  },
-                  {
-                    label: "Shahpur",
-                    onClick: () =>
-                      setFormData((prev) => ({ ...prev, block: "Shahpur" })),
+                      setFormData((prev) => ({ ...prev, block: "Agiaon" })),
                   },
                   {
                     label: "Ara Sadar",
@@ -386,17 +383,9 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                       setFormData((prev) => ({ ...prev, block: "Ara Sadar" })),
                   },
                   {
-                    label: "Bagar, Tarari",
+                    label: "Barhara",
                     onClick: () =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        block: "Bagar, Tarari",
-                      })),
-                  },
-                  {
-                    label: "Sandesh",
-                    onClick: () =>
-                      setFormData((prev) => ({ ...prev, block: "Sandesh" })),
+                      setFormData((prev) => ({ ...prev, block: "Barhara" })),
                   },
                   {
                     label: "Behea",
@@ -404,9 +393,54 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                       setFormData((prev) => ({ ...prev, block: "Behea" })),
                   },
                   {
+                    label: "Charpokhari",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Charpokhari" })),
+                  },
+                  {
+                    label: "Garhani",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Garhani" })),
+                  },
+                  {
+                    label: "Jagdishpur",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Jagdishpur" })),
+                  },
+                  {
+                    label: "Koilwar",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Koilwar" })),
+                  },
+                  {
+                    label: "Piro",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Piro" })),
+                  },
+                  {
                     label: "Sahar",
                     onClick: () =>
                       setFormData((prev) => ({ ...prev, block: "Sahar" })),
+                  },
+                  {
+                    label: "Sandesh",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Sandesh" })),
+                  },
+                  {
+                    label: "Shahpur",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Shahpur" })),
+                  },
+                  {
+                    label: "Tarari",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Tarari" })),
+                  },
+                  {
+                    label: "Udwant Nagar",
+                    onClick: () =>
+                      setFormData((prev) => ({ ...prev, block: "Udwant Nagar" })),
                   },
                 ]}
               />
@@ -630,6 +664,18 @@ const AddCaseForm = ({ isOpen, onClose }) => {
           </div>
         </div>
       )}
+      <style jsx global>{`
+        .overflow-y-auto::-webkit-scrollbar {
+          width: 6px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #ff5010, #fc641c);
+          border-radius: 3px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-track {
+          background-color: #f3f4f6;
+        }
+      `}</style>
     </div>
   );
 };

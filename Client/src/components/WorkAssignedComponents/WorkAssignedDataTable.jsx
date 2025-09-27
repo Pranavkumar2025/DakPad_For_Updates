@@ -14,6 +14,7 @@ const WorkAssignedDataTable = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
+  const [applications, setApplications] = useState(casesData); // Added to sync with FilterHeader
 
   const filteredCases = useMemo(() => {
     return casesData.filter((c) => {
@@ -21,8 +22,9 @@ const WorkAssignedDataTable = () => {
       const matchDepartment = !selectedDepartment || c.concernedOfficer.includes(selectedDepartment);
       const matchBlock = !selectedBlock || c.gpBlock === selectedBlock;
       const matchSearch =
+        searchQuery === "" ||
         c.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.description.toLowerCase().includes(searchQuery.toLowerCase());
+        c.subject.toLowerCase().includes(searchQuery.toLowerCase()); // Changed from description to subject
       let matchDate = true;
       if (selectedDate.startDate && selectedDate.endDate) {
         const appDate = new Date(c.dateOfApplication);
@@ -67,6 +69,8 @@ const WorkAssignedDataTable = () => {
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
         onExcelClick={handleDownloadExcel}
+        applications={applications}
+        setApplications={setApplications}
       />
 
       <WorkAssignedApplicationTable

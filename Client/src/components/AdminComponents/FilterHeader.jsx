@@ -85,7 +85,7 @@ const FilterHeader = ({
                   { label: "In Process", onClick: () => setSelectedStatus("In Process") },
                   { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
                   { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
-                  { label: "Closed", onClick: () => setSelectedStatus("Closed") },
+                  { label: "Disposed", onClick: () => setSelectedStatus("Disposed") },
                 ]}
               />
               
@@ -167,7 +167,7 @@ const FilterHeader = ({
                   { label: "In Process", onClick: () => setSelectedStatus("In Process") },
                   { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
                   { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
-                  { label: "Closed", onClick: () => setSelectedStatus("Closed") },
+                  { label: "Disposed", onClick: () => setSelectedStatus("Disposed") },
                 ]}
               />
               <DateRangePicker

@@ -16,7 +16,7 @@ const SuperAdminApplicationTable = ({
   const [openCardId, setOpenCardId] = useState(null);
 
   const calculatePendingDays = (issueDate, status) => {
-    if (status === "Compliance" || status === "Closed") return 0;
+    if (status === "Compliance" || status === "Disposed") return 0;
     const issue = new Date(issueDate);
     const today = new Date();
     const diffTime = Math.abs(today - issue);
@@ -27,7 +27,7 @@ const SuperAdminApplicationTable = ({
     if (!concernedOfficer || concernedOfficer === "N/A" || concernedOfficer === "") return "Not Assigned Yet";
     if (!timeline || timeline.length === 0) return "In Process";
     const latestEntry = timeline[timeline.length - 1].section.toLowerCase();
-    if (latestEntry.includes("closed")) return "Closed";
+    if (latestEntry.includes("disposed")) return "Disposed";
     if (latestEntry.includes("compliance")) return "Compliance";
     if (latestEntry.includes("dismissed")) return "Dismissed";
     return "In Process";
@@ -130,8 +130,6 @@ const SuperAdminApplicationTable = ({
     };
   }, [data, searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate]);
 
- 
-
   const getPendingDaysColor = (days) => {
     if (days === 0) return "bg-green-500 text-white";
     if (days <= 10) return "bg-green-500 text-white";
@@ -149,7 +147,7 @@ const SuperAdminApplicationTable = ({
         return "bg-green-500 text-white whitespace-nowrap";
       case "Dismissed":
         return "bg-red-500 text-white whitespace-nowrap";
-      case "Closed":
+      case "Disposed":
         return "bg-purple-500 text-white whitespace-nowrap";
       default:
         return "bg-gray-500 text-white whitespace-nowrap";
@@ -217,7 +215,7 @@ const SuperAdminApplicationTable = ({
                       className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
                       aria-label={`Status: ${caseDetail.status}`}
                     >
-                      {caseDetail.status === "In Process" && <FaSpinner className="animate-spin-slow" />}
+                      {caseDetail.status === "In Process"}
                       {caseDetail.status}
                     </span>
                   </td>
@@ -233,7 +231,6 @@ const SuperAdminApplicationTable = ({
                       <FaFilePdf /> PDF
                     </button>
                   </td>
-                  
                 </tr>
               ))
             )}
@@ -265,7 +262,7 @@ const SuperAdminApplicationTable = ({
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
                   aria-label={`Status: ${caseDetail.status}`}
                 >
-                  {caseDetail.status === "In Process" && <FaSpinner className="animate-spin-slow text-[10px] sm:text-sm" />}
+                  {caseDetail.status === "In Process" }
                   {caseDetail.status}
                 </span>
               </div>
@@ -357,7 +354,6 @@ const SuperAdminApplicationTable = ({
                     PDF
                   </motion.span>
                 </motion.button>
-                
               </div>
             </motion.div>
           ))
