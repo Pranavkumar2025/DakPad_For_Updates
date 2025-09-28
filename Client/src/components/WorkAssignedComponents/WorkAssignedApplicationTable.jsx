@@ -16,7 +16,8 @@ const WorkAssignedApplicationTable = ({
 
   // Calculate pending days based on issue date and status
   const calculatePendingDays = (issueDate, status) => {
-    if (["Compliance", "Disposed", "Dismissed"].includes(status) || !issueDate) return 0;
+    if (["Compliance", "Disposed", "Dismissed"].includes(status) || !issueDate)
+      return 0;
     const issue = new Date(issueDate);
     if (isNaN(issue.getTime())) {
       console.warn(`Invalid issueDate for application: ${issueDate}`);
@@ -29,9 +30,16 @@ const WorkAssignedApplicationTable = ({
 
   // Determine dynamic status based on timeline and concernedOfficer
   const determineStatus = (timeline, concernedOfficer) => {
-    if (!concernedOfficer || concernedOfficer === "N/A" || concernedOfficer === "") return "Not Assigned Yet";
-    if (!timeline || !Array.isArray(timeline) || timeline.length === 0) return "In Process";
-    const latestEntry = timeline[timeline.length - 1]?.section?.toLowerCase() || "";
+    if (
+      !concernedOfficer ||
+      concernedOfficer === "N/A" ||
+      concernedOfficer === ""
+    )
+      return "Not Assigned Yet";
+    if (!timeline || !Array.isArray(timeline) || timeline.length === 0)
+      return "In Process";
+    const latestEntry =
+      timeline[timeline.length - 1]?.section?.toLowerCase() || "";
     if (latestEntry.includes("disposed")) return "Disposed";
     if (latestEntry.includes("compliance")) return "Compliance";
     if (latestEntry.includes("dismissed")) return "Dismissed";
@@ -40,16 +48,30 @@ const WorkAssignedApplicationTable = ({
 
   // Filter applications based on props
   const filterApplications = (rawApplications) => {
-    console.log("Filter props:", { searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate });
+    console.log("Filter props:", {
+      searchQuery,
+      selectedStatus,
+      selectedDepartment,
+      selectedBlock,
+      selectedDate,
+    });
     console.log("Raw applications:", rawApplications);
     return rawApplications.filter((app) => {
       const matchesSearch =
         searchQuery === "" ||
-        (app.applicantName && app.applicantName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (app.subject && app.subject.toLowerCase().includes(searchQuery.toLowerCase()));
-      const matchesStatus = selectedStatus === "" || app.status === selectedStatus;
-      const matchesDepartment = selectedDepartment === "" || app.concernedOfficer === selectedDepartment;
-      const matchesBlock = selectedBlock === "" || app.gpBlock === selectedBlock;
+        (app.applicantName &&
+          app.applicantName
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())) ||
+        (app.subject &&
+          app.subject.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesStatus =
+        selectedStatus === "" || app.status === selectedStatus;
+      const matchesDepartment =
+        selectedDepartment === "" ||
+        app.concernedOfficer === selectedDepartment;
+      const matchesBlock =
+        selectedBlock === "" || app.gpBlock === selectedBlock;
       let matchesDate = true;
       if (selectedDate?.startDate && selectedDate?.endDate) {
         const appDate = new Date(app.dateOfApplication);
@@ -57,7 +79,12 @@ const WorkAssignedApplicationTable = ({
         const endDate = new Date(selectedDate.endDate);
         matchesDate = appDate >= startDate && appDate <= endDate;
       }
-      const isMatch = matchesSearch && matchesStatus && matchesDepartment && matchesBlock && matchesDate;
+      const isMatch =
+        matchesSearch &&
+        matchesStatus &&
+        matchesDepartment &&
+        matchesBlock &&
+        matchesDate;
       if (!isMatch) {
         console.log(`Application ${app.applicationId} filtered out:`, {
           matchesSearch,
@@ -74,7 +101,9 @@ const WorkAssignedApplicationTable = ({
 
   // Update applications from localStorage and JSON data
   const updateApplications = () => {
-    const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+    const storedApplications = JSON.parse(
+      localStorage.getItem("applications") || "[]"
+    );
     console.log("Stored applications from localStorage:", storedApplications);
 
     const mappedStoredApplications = storedApplications
@@ -84,8 +113,11 @@ const WorkAssignedApplicationTable = ({
           : [
               {
                 section: "Application Received",
-                comment: `Application received at ${app.block || "N/A"} on ${app.applicationDate || "N/A"}`,
-                date: app.applicationDate || new Date().toLocaleDateString("en-GB"),
+                comment: `Application received at ${app.block || "N/A"} on ${
+                  app.applicationDate || "N/A"
+                }`,
+                date:
+                  app.applicationDate || new Date().toLocaleDateString("en-GB"),
                 pdfLink: app.attachment || null,
                 department: app.department || "N/A",
                 officer: app.concernedOfficer || "N/A",
@@ -108,10 +140,18 @@ const WorkAssignedApplicationTable = ({
           timeline: timeline,
         };
       })
-      .sort((a, b) => new Date(b.dateOfApplication || 0) - new Date(a.dateOfApplication || 0));
+      .sort(
+        (a, b) =>
+          new Date(b.dateOfApplication || 0) -
+          new Date(a.dateOfApplication || 0)
+      );
 
-    const storedAppIds = new Set(mappedStoredApplications.map((app) => app.applicationId));
-    const filteredData = data.filter((item) => !storedAppIds.has(item.applicationId));
+    const storedAppIds = new Set(
+      mappedStoredApplications.map((app) => app.applicationId)
+    );
+    const filteredData = data.filter(
+      (item) => !storedAppIds.has(item.applicationId)
+    );
     const combinedData = [
       ...mappedStoredApplications,
       ...filteredData.map((item, index) => {
@@ -120,8 +160,12 @@ const WorkAssignedApplicationTable = ({
           : [
               {
                 section: "Application Received",
-                comment: `Application received at ${item.gpBlock || "N/A"} on ${item.dateOfApplication || "N/A"}`,
-                date: item.dateOfApplication || new Date().toLocaleDateString("en-GB"),
+                comment: `Application received at ${item.gpBlock || "N/A"} on ${
+                  item.dateOfApplication || "N/A"
+                }`,
+                date:
+                  item.dateOfApplication ||
+                  new Date().toLocaleDateString("en-GB"),
                 pdfLink: item.attachment || null,
                 department: item.department || "N/A",
                 officer: item.concernedOfficer || "N/A",
@@ -150,7 +194,10 @@ const WorkAssignedApplicationTable = ({
     updateApplications();
     const handleStorageChange = (event) => {
       if (event.key === "applications") {
-        console.log("localStorage 'applications' changed:", JSON.parse(event.newValue || "[]"));
+        console.log(
+          "localStorage 'applications' changed:",
+          JSON.parse(event.newValue || "[]")
+        );
         updateApplications();
       }
     };
@@ -165,7 +212,14 @@ const WorkAssignedApplicationTable = ({
       window.removeEventListener("storage", handleStorageChange);
       clearInterval(pollingInterval);
     };
-  }, [data, searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate]);
+  }, [
+    data,
+    searchQuery,
+    selectedStatus,
+    selectedDepartment,
+    selectedBlock,
+    selectedDate,
+  ]);
 
   // Color for pending days
   const getPendingDaysColor = (days) => {
@@ -225,7 +279,10 @@ const WorkAssignedApplicationTable = ({
           <tbody className="divide-y divide-gray-200">
             {applications.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-6 py-4 text-center text-gray-500 text-sm font-['Montserrat']">
+                <td
+                  colSpan={9}
+                  className="px-6 py-4 text-center text-gray-500 text-sm font-['Montserrat']"
+                >
                   No applications found.
                 </td>
               </tr>
@@ -240,14 +297,20 @@ const WorkAssignedApplicationTable = ({
                   transition={{ duration: 0.3 }}
                 >
                   <td className="px-6 py-4">{caseDetail.sNo}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{caseDetail.dateOfApplication}</td>
-                  <td className="px-6 py-4 font-medium text-gray-800">{caseDetail.applicantName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {caseDetail.dateOfApplication}
+                  </td>
+                  <td className="px-6 py-4 font-medium text-gray-800">
+                    {caseDetail.applicantName}
+                  </td>
                   <td className="px-6 py-4">{caseDetail.subject}</td>
                   <td className="px-6 py-4">{caseDetail.gpBlock}</td>
                   <td className="px-6 py-4">{caseDetail.issueDate}</td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPendingDaysColor(caseDetail.pendingDays)}`}
+                      className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPendingDaysColor(
+                        caseDetail.pendingDays
+                      )}`}
                       aria-label={`Pending days: ${caseDetail.pendingDays}`}
                     >
                       {caseDetail.pendingDays.toString()}
@@ -255,7 +318,9 @@ const WorkAssignedApplicationTable = ({
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center gap-1 ${getStatusStyle(caseDetail.status)}`}
+                      className={`inline-flex items-center gap-1 ${getStatusStyle(
+                        caseDetail.status
+                      )}`}
                       aria-label={`Status: ${caseDetail.status}`}
                     >
                       {caseDetail.status}
@@ -304,7 +369,9 @@ const WorkAssignedApplicationTable = ({
                   {caseDetail.applicantName}
                 </h3>
                 <span
-                  className={`inline-flex items-center gap-1 ${getStatusStyle(caseDetail.status)}`}
+                  className={`inline-flex items-center gap-1 ${getStatusStyle(
+                    caseDetail.status
+                  )}`}
                   aria-label={`Status: ${caseDetail.status}`}
                 >
                   {caseDetail.status}
@@ -323,12 +390,18 @@ const WorkAssignedApplicationTable = ({
                   e.stopPropagation();
                   toggleCardDetails(caseDetail.applicationId);
                 }}
-                aria-label={openCardId === caseDetail.applicationId ? "Collapse details" : "Expand details"}
+                aria-label={
+                  openCardId === caseDetail.applicationId
+                    ? "Collapse details"
+                    : "Expand details"
+                }
                 aria-expanded={openCardId === caseDetail.applicationId}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span className="text-[10px] sm:text-sm font-semibold text-gray-700">Details</span>
+                <span className="text-[10px] sm:text-sm font-semibold text-gray-700">
+                  Details
+                </span>
                 {openCardId === caseDetail.applicationId ? (
                   <FaChevronUp className="text-gray-500 text-[9px] sm:text-sm" />
                 ) : (
@@ -339,7 +412,11 @@ const WorkAssignedApplicationTable = ({
               {/* Collapsible Details */}
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
-                animate={openCardId === caseDetail.applicationId ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
+                animate={
+                  openCardId === caseDetail.applicationId
+                    ? { height: "auto", opacity: 1 }
+                    : { height: 0, opacity: 0 }
+                }
                 transition={{ duration: 0.3 }}
                 style={{ overflow: "hidden" }}
               >
@@ -364,7 +441,9 @@ const WorkAssignedApplicationTable = ({
                   <div>
                     <strong>Pending Days:</strong>{" "}
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold shadow-sm ${getPendingDaysColor(caseDetail.pendingDays)}`}
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold shadow-sm ${getPendingDaysColor(
+                        caseDetail.pendingDays
+                      )}`}
                       aria-label={`Pending days: ${caseDetail.pendingDays}`}
                     >
                       {caseDetail.pendingDays.toString()}
@@ -385,7 +464,6 @@ const WorkAssignedApplicationTable = ({
                     onRowClick(caseDetail);
                   }}
                   initial="rest"
-                  whileHover="hover"
                   animate="rest"
                   className="flex-1 flex items-center justify-center gap-1 bg-green-600 text-white px-2 py-1 rounded-xl shadow-sm hover:bg-green-700 transition font-semibold text-[9px] sm:text-xs"
                   aria-label="View PDF"
