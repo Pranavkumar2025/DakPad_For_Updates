@@ -14,11 +14,13 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "../contexts/LanguageContext";
 import UserNavbar from "../components/UserNavbar";
 import QRCode from "qrcode";
 
 const UserDashboard = () => {
   const { t } = useTranslation();
+  const { currentLanguage, isHindi } = useLanguage();
   const [cases, setCases] = useState([]);
   const [applicationIdInput, setApplicationIdInput] = useState("");
   const [foundApplication, setFoundApplication] = useState(null);
@@ -202,22 +204,26 @@ const UserDashboard = () => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
                 >
-                  {Array.from(t("dashboard.application")).map(
-                    (letter, index) => (
-                      <motion.span
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          duration: 0.3,
-                          delay: 0.3 + index * 0.05,
-                        }}
-                        className="inline-block"
-                      >
-                        {letter}
-                      </motion.span>
-                    )
-                  )}
+                  {isHindi
+                    ? // For Hindi, display text without letter-by-letter animation to preserve Devanagari character composition
+                      t("dashboard.application")
+                    : // For English, keep the letter-by-letter animation
+                      Array.from(t("dashboard.application")).map(
+                        (letter, index) => (
+                          <motion.span
+                            key={index}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                              duration: 0.3,
+                              delay: 0.3 + index * 0.05,
+                            }}
+                            className="inline-block"
+                          >
+                            {letter}
+                          </motion.span>
+                        )
+                      )}
                 </motion.span>
               </h1>
               <motion.p
