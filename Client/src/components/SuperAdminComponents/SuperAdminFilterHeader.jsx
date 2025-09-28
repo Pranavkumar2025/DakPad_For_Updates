@@ -91,7 +91,7 @@ const SuperAdminFilterHeader = ({
                   { label: "Not Assigned Yet", onClick: () => setSelectedStatus("Not Assigned Yet") },
                   { label: "In Process", onClick: () => setSelectedStatus("In Process") },
                   { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
-                  { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
+                  // { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
                   { label: "Disposed", onClick: () => setSelectedStatus("Disposed") },
                 ]}
               />
@@ -232,7 +232,7 @@ const SuperAdminFilterHeader = ({
                   { label: "Not Assigned Yet", onClick: () => setSelectedStatus("Not Assigned Yet") },
                   { label: "In Process", onClick: () => setSelectedStatus("In Process") },
                   { label: "Compliance", onClick: () => setSelectedStatus("Compliance") },
-                  { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
+                  // { label: "Dismissed", onClick: () => setSelectedStatus("Dismissed") },
                   { label: "Disposed", onClick: () => setSelectedStatus("Disposed") },
                 ]}
               />
