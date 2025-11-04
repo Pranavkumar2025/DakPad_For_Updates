@@ -140,29 +140,37 @@ const AddCaseForm = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      const newApplication = {
-        ApplicantId: randomId,
-        applicant: formData.name,
-        applicationDate: formData.applicationDate,
-        phoneNumber: formData.phone,
-        emailId: formData.email,
-        sourceAt: formData.source,
-        subject: formData.subject,
-        block: formData.block,
-        attachment: formData.attachment ? formData.attachment.name : "No file",
-      };
+    if (!validate()) return;
 
-      const existingApplications = JSON.parse(
-        localStorage.getItem("applications") || "[]"
-      );
-      const updatedApplications = [...existingApplications, newApplication];
-      localStorage.setItem("applications", JSON.stringify(updatedApplications));
+    const form = new FormData();
+    form.append("applicantId", randomId);
+    form.append("name", formData.name);
+    form.append("applicationDate", formData.applicationDate);
+    form.append("phone", formData.phone);
+    form.append("email", formData.email);
+    form.append("source", formData.source);
+    form.append("subject", formData.subject);
+    form.append("block", formData.block);
+    if (formData.attachment) form.append("attachment", formData.attachment);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/applications", {
+        method: "POST",
+        body: form,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.errors) setErrors(data.errors);
+        else alert(data.message || "Error");
+        return;
+      }
 
       await generateQRCode(randomId, formData.name, formData.applicationDate);
-
       setShowModal(true);
 
+      // Reset
       setFormData({
         name: "",
         applicationDate: "",
@@ -174,8 +182,13 @@ const AddCaseForm = ({ isOpen, onClose }) => {
         attachment: null,
       });
       setRandomId(generateRandomId());
+    } catch (err) {
+      console.error(err);
+      alert("Network error");
     }
   };
+
+
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
@@ -471,8 +484,8 @@ const AddCaseForm = ({ isOpen, onClose }) => {
             </label>
             <div
               className={`w-full mt-1 p-4 bg-gray-50 rounded-lg border-2 border-dashed transition-all duration-200 ${isDragging
-                  ? "border-[#ff5010] bg-orange-50"
-                  : "border-gray-300 hover:border-[#ff5010]"
+                ? "border-[#ff5010] bg-orange-50"
+                : "border-gray-300 hover:border-[#ff5010]"
                 }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}

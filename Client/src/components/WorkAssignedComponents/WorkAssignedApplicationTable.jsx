@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FaFilePdf, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
+const API_URL = "http://localhost:5000/api/applications";
+
 const WorkAssignedApplicationTable = ({
-  data,
+  data = [], // optional static fallback (still allowed)
   onRowClick,
   searchQuery,
   selectedStatus,
@@ -12,245 +15,177 @@ const WorkAssignedApplicationTable = ({
   selectedDate,
 }) => {
   const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [openCardId, setOpenCardId] = useState(null);
 
-  // Calculate pending days based on issue date and status
+  // --------------------------------------------------------------
+  // 1. Fetch ONLY from DB
+  // --------------------------------------------------------------
+const fetchFromDB = useCallback(async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error("Failed to load applications");
+    const dbApps = await res.json();
+
+    return dbApps.map((app, idx) => ({
+      applicationId: app.applicantId,
+      sNo: idx + 1,
+      dateOfApplication: app.applicationDate.split("T")[0],
+      applicantName: app.applicant,
+      subject: app.subject,
+      gpBlock: app.block,
+      issueDate: app.applicationDate.split("T")[0],
+      attachment: app.attachment ? `http://localhost:5000${app.attachment}` : null,
+
+      // ← REAL DATA FROM DB
+      concernedOfficer: app.concernedOfficer || "N/A",
+      timeline: Array.isArray(app.timeline) ? app.timeline : [],
+
+      status: null,
+      pendingDays: 0,
+    }));
+  } catch (err) {
+    setError(err.message);
+    return [];
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
+  // --------------------------------------------------------------
+  // 2. Combine DB + optional static `data` prop
+  // --------------------------------------------------------------
+  const combineAndProcess = useCallback(
+    async (dbApps = []) => {
+      const dbIds = new Set(dbApps.map((a) => a.applicationId));
+
+      const staticApps = data
+        .filter((item) => !dbIds.has(item.applicationId))
+        .map((item, idx) => ({
+          ...item,
+          sNo: dbApps.length + idx + 1,
+        }));
+
+      const allApps = [...dbApps, ...staticApps];
+
+      const processed = allApps.map((app) => {
+        const status = determineStatus(app.timeline, app.concernedOfficer);
+        const pendingDays = calculatePendingDays(app.issueDate, status);
+        return { ...app, status, pendingDays };
+      });
+
+      const filtered = filterApplications(processed);
+      setApplications(filtered);
+    },
+    [data, searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate]
+  );
+
+  // --------------------------------------------------------------
+  // 3. Load on mount + filter change
+  // --------------------------------------------------------------
+  useEffect(() => {
+    fetchFromDB().then(combineAndProcess);
+  }, [fetchFromDB, combineAndProcess]);
+
+  // --------------------------------------------------------------
+  // Helpers
+  // --------------------------------------------------------------
   const calculatePendingDays = (issueDate, status) => {
     if (["Compliance", "Disposed", "Dismissed"].includes(status) || !issueDate)
       return 0;
     const issue = new Date(issueDate);
-    if (isNaN(issue.getTime())) {
-      console.warn(`Invalid issueDate for application: ${issueDate}`);
-      return 0;
-    }
-    const today = new Date();
-    const diffTime = Math.abs(today - issue);
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (isNaN(issue)) return 0;
+    return Math.ceil((Date.now() - issue.getTime()) / (1000 * 60 * 60 * 24));
   };
 
-  // Determine dynamic status based on timeline and concernedOfficer
   const determineStatus = (timeline, concernedOfficer) => {
-    if (
-      !concernedOfficer ||
-      concernedOfficer === "N/A" ||
-      concernedOfficer === ""
-    )
-      return "Not Assigned Yet";
-    if (!timeline || !Array.isArray(timeline) || timeline.length === 0)
-      return "In Process";
-    const latestEntry =
-      timeline[timeline.length - 1]?.section?.toLowerCase() || "";
-    if (latestEntry.includes("disposed")) return "Disposed";
-    if (latestEntry.includes("compliance")) return "Compliance";
-    if (latestEntry.includes("dismissed")) return "Dismissed";
+    if (!concernedOfficer || concernedOfficer === "N/A") return "Not Assigned Yet";
+    if (!timeline || timeline.length === 0) return "In Process";
+
+    const latest = timeline[timeline.length - 1]?.section?.toLowerCase() || "";
+    if (latest.includes("disposed")) return "Disposed";
+    if (latest.includes("compliance")) return "Compliance";
+    if (latest.includes("dismissed")) return "Dismissed";
     return "In Process";
   };
 
-  // Filter applications based on props
-  const filterApplications = (rawApplications) => {
-    console.log("Filter props:", {
-      searchQuery,
-      selectedStatus,
-      selectedDepartment,
-      selectedBlock,
-      selectedDate,
-    });
-    console.log("Raw applications:", rawApplications);
-    return rawApplications.filter((app) => {
+  const filterApplications = (apps) => {
+    return apps.filter((app) => {
       const matchesSearch =
-        searchQuery === "" ||
-        (app.applicantName &&
-          app.applicantName
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())) ||
-        (app.subject &&
-          app.subject.toLowerCase().includes(searchQuery.toLowerCase()));
-      const matchesStatus =
-        selectedStatus === "" || app.status === selectedStatus;
-      const matchesDepartment =
-        selectedDepartment === "" ||
-        app.concernedOfficer === selectedDepartment;
-      const matchesBlock =
-        selectedBlock === "" || app.gpBlock === selectedBlock;
+        !searchQuery ||
+        [app.applicantName, app.subject].some((f) =>
+          f?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+      const matchesStatus = !selectedStatus || app.status === selectedStatus;
+      const matchesDept =
+        !selectedDepartment || app.concernedOfficer === selectedDepartment;
+      const matchesBlock = !selectedBlock || app.gpBlock === selectedBlock;
+
       let matchesDate = true;
       if (selectedDate?.startDate && selectedDate?.endDate) {
         const appDate = new Date(app.dateOfApplication);
-        const startDate = new Date(selectedDate.startDate);
-        const endDate = new Date(selectedDate.endDate);
-        matchesDate = appDate >= startDate && appDate <= endDate;
+        const start = new Date(selectedDate.startDate);
+        const end = new Date(selectedDate.endDate);
+        matchesDate = appDate >= start && appDate <= end;
       }
-      const isMatch =
-        matchesSearch &&
-        matchesStatus &&
-        matchesDepartment &&
-        matchesBlock &&
-        matchesDate;
-      if (!isMatch) {
-        console.log(`Application ${app.applicationId} filtered out:`, {
-          matchesSearch,
-          matchesStatus,
-          matchesDepartment,
-          matchesBlock,
-          matchesDate,
-          app,
-        });
-      }
-      return isMatch;
+
+      return matchesSearch && matchesStatus && matchesDept && matchesBlock && matchesDate;
     });
   };
 
-  // Update applications from localStorage and JSON data
-  const updateApplications = () => {
-    const storedApplications = JSON.parse(
-      localStorage.getItem("applications") || "[]"
-    );
-    console.log("Stored applications from localStorage:", storedApplications);
-
-    const mappedStoredApplications = storedApplications
-      .map((app, index) => {
-        const timeline = Array.isArray(app.timeline)
-          ? app.timeline
-          : [
-              {
-                section: "Application Received",
-                comment: `Application received at ${app.block || "N/A"} on ${
-                  app.applicationDate || "N/A"
-                }`,
-                date:
-                  app.applicationDate || new Date().toLocaleDateString("en-GB"),
-                pdfLink: app.attachment || null,
-                department: app.department || "N/A",
-                officer: app.concernedOfficer || "N/A",
-              },
-            ];
-        const status = determineStatus(timeline, app.concernedOfficer);
-        return {
-          applicationId: app.ApplicantId || `temp-${index}`,
-          sNo: index + 1,
-          dateOfApplication: app.applicationDate || "N/A",
-          applicantName: app.applicant || "Unknown",
-          subject: app.subject || "N/A",
-          gpBlock: app.block || "N/A",
-          issueDate: app.applicationDate || "N/A",
-          pendingDays: calculatePendingDays(app.applicationDate, status),
-          status: status,
-          attachment: app.attachment || null,
-          concernedOfficer: app.concernedOfficer || "N/A",
-          isFromLocalStorage: true,
-          timeline: timeline,
-        };
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.dateOfApplication || 0) -
-          new Date(a.dateOfApplication || 0)
-      );
-
-    const storedAppIds = new Set(
-      mappedStoredApplications.map((app) => app.applicationId)
-    );
-    const filteredData = data.filter(
-      (item) => !storedAppIds.has(item.applicationId)
-    );
-    const combinedData = [
-      ...mappedStoredApplications,
-      ...filteredData.map((item, index) => {
-        const timeline = Array.isArray(item.timeline)
-          ? item.timeline
-          : [
-              {
-                section: "Application Received",
-                comment: `Application received at ${item.gpBlock || "N/A"} on ${
-                  item.dateOfApplication || "N/A"
-                }`,
-                date:
-                  item.dateOfApplication ||
-                  new Date().toLocaleDateString("en-GB"),
-                pdfLink: item.attachment || null,
-                department: item.department || "N/A",
-                officer: item.concernedOfficer || "N/A",
-              },
-            ];
-        const status = determineStatus(timeline, item.concernedOfficer);
-        return {
-          ...item,
-          applicationId: item.applicationId || `temp-${index}`,
-          sNo: mappedStoredApplications.length + index + 1,
-          isFromLocalStorage: false,
-          pendingDays: calculatePendingDays(item.issueDate, status),
-          status: status,
-          timeline: timeline,
-        };
-      }),
-    ].map((item, index) => ({ ...item, sNo: index + 1 }));
-
-    const filteredApplications = filterApplications(combinedData);
-    console.log("Filtered applications:", filteredApplications);
-    setApplications(filteredApplications);
-  };
-
-  // Re-run updateApplications when data or filter states change
-  useEffect(() => {
-    updateApplications();
-    const handleStorageChange = (event) => {
-      if (event.key === "applications") {
-        console.log(
-          "localStorage 'applications' changed:",
-          JSON.parse(event.newValue || "[]")
-        );
-        updateApplications();
-      }
-    };
-    window.addEventListener("storage", handleStorageChange);
-
-    // Optional: Poll localStorage for changes in the same tab
-    const pollingInterval = setInterval(() => {
-      updateApplications();
-    }, 1000); // Poll every 1 second
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      clearInterval(pollingInterval);
-    };
-  }, [
-    data,
-    searchQuery,
-    selectedStatus,
-    selectedDepartment,
-    selectedBlock,
-    selectedDate,
-  ]);
-
-  // Color for pending days
+  // --------------------------------------------------------------
+  // Styling
+  // --------------------------------------------------------------
   const getPendingDaysColor = (days) => {
-    if (days === 0) return "bg-green-500 text-white";
-    if (days <= 10) return "bg-green-500 text-white";
+    if (days === 0 || days <= 10) return "bg-green-500 text-white";
     if (days <= 15) return "bg-orange-500 text-white";
     return "bg-red-500 text-white";
   };
 
-  // Style for status
   const getStatusStyle = (status) => {
-    switch (status) {
-      case "Not Assigned Yet":
-        return "bg-gray-500 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
-      case "In Process":
-        return "bg-blue-500 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
-      case "Compliance":
-        return "bg-green-600 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
-      case "Dismissed":
-        return "bg-red-600 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
-      case "Disposed":
-        return "bg-purple-500 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
-      default:
-        return "bg-gray-500 text-white rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
-    }
+    const base = "rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap";
+    const map = {
+      "Not Assigned Yet": "bg-gray-500 text-white",
+      "In Process": "bg-blue-500 text-white",
+      "Compliance": "bg-green-600 text-white",
+      "Dismissed": "bg-red-600 text-white",
+      "Disposed": "bg-purple-500 text-white",
+    };
+    return `${base} ${map[status] || map["Not Assigned Yet"]}`;
   };
 
-  // Toggle accordion for mobile card
-  const toggleCardDetails = (applicationId) => {
-    setOpenCardId(openCardId === applicationId ? null : applicationId);
+  const toggleCardDetails = (id) => {
+    setOpenCardId((prev) => (prev === id ? null : id));
   };
+
+  // --------------------------------------------------------------
+  // Render
+  // --------------------------------------------------------------
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-[#2810ff]" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-600">
+        Error: {error}
+        <button
+          onClick={() => fetchFromDB().then(combineAndProcess)}
+          className="ml-4 underline hover:text-red-800"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="md:pl-16 lg:pl-16">
@@ -258,7 +193,7 @@ const WorkAssignedApplicationTable = ({
       <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 shadow-xl bg-white mx-auto max-w-8xl p-6 my-6 font-['Montserrat']">
         <table className="w-full table-auto">
           <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
-            <tr className="text-xs uppercase tracking-wider text-gray-700 font-semibold font-['Montserrat']">
+            <tr className="text-xs uppercase tracking-wider text-gray-700 font-semibold">
               {[
                 "Sr. No",
                 "Date",
@@ -269,9 +204,9 @@ const WorkAssignedApplicationTable = ({
                 "Pending Days",
                 "Status",
                 "Attachment",
-              ].map((header, idx) => (
-                <th key={idx} className="px-6 py-4 text-left whitespace-nowrap">
-                  {header}
+              ].map((h, i) => (
+                <th key={i} className="px-6 py-4 text-left whitespace-nowrap">
+                  {h}
                 </th>
               ))}
             </tr>
@@ -279,61 +214,48 @@ const WorkAssignedApplicationTable = ({
           <tbody className="divide-y divide-gray-200">
             {applications.length === 0 ? (
               <tr>
-                <td
-                  colSpan={9}
-                  className="px-6 py-4 text-center text-gray-500 text-sm font-['Montserrat']"
-                >
+                <td colSpan={9} className="px-6 py-4 text-center text-gray-500 text-sm">
                   No applications found.
                 </td>
               </tr>
             ) : (
-              applications.map((caseDetail) => (
+              applications.map((app) => (
                 <motion.tr
-                  key={caseDetail.applicationId}
-                  className="text-sm hover:bg-blue-50 transition cursor-pointer even:bg-gray-50 font-['Montserrat']"
-                  onClick={() => onRowClick(caseDetail)}
+                  key={app.applicationId}
+                  className="text-sm hover:bg-blue-50 transition cursor-pointer even:bg-gray-50"
+                  onClick={() => onRowClick(app)}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
                 >
-                  <td className="px-6 py-4">{caseDetail.sNo}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {caseDetail.dateOfApplication}
-                  </td>
-                  <td className="px-6 py-4 font-medium text-gray-800">
-                    {caseDetail.applicantName}
-                  </td>
-                  <td className="px-6 py-4">{caseDetail.subject}</td>
-                  <td className="px-6 py-4">{caseDetail.gpBlock}</td>
-                  <td className="px-6 py-4">{caseDetail.issueDate}</td>
+                  <td className="px-6 py-4">{app.sNo}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{app.dateOfApplication}</td>
+                  <td className="px-6 py-4 font-medium text-gray-800">{app.applicantName}</td>
+                  <td className="px-6 py-4">{app.subject}</td>
+                  <td className="px-6 py-4">{app.gpBlock}</td>
+                  <td className="px-6 py-4">{app.issueDate}</td>
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getPendingDaysColor(
-                        caseDetail.pendingDays
+                        app.pendingDays
                       )}`}
-                      aria-label={`Pending days: ${caseDetail.pendingDays}`}
                     >
-                      {caseDetail.pendingDays.toString()}
+                      {app.pendingDays}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1 ${getStatusStyle(
-                        caseDetail.status
-                      )}`}
-                      aria-label={`Status: ${caseDetail.status}`}
-                    >
-                      {caseDetail.status}
-                    </span>
+                    <span className={getStatusStyle(app.status)}>{app.status}</span>
                   </td>
                   <td className="px-6 py-4">
                     <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onRowClick(caseDetail);
+                        if (app.attachment) {
+                          window.open(app.attachment, "_blank", "noopener,noreferrer");
+                        } else {
+                          alert("No PDF attached");
+                        }
                       }}
                       className="inline-flex items-center gap-1 px-4 py-1.5 text-sm rounded-lg border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition shadow-sm"
-                      aria-label="View PDF"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -350,139 +272,108 @@ const WorkAssignedApplicationTable = ({
       {/* Mobile Cards */}
       <div className="block md:hidden space-y-3 py-3 px-2 pb-[100px] overflow-x-hidden font-['Montserrat']">
         {applications.length === 0 ? (
-          <div className="text-center text-gray-500 text-sm font-['Montserrat']">
-            No applications found.
-          </div>
+          <div className="text-center text-gray-500 text-sm">No applications found.</div>
         ) : (
-          applications.map((caseDetail) => (
+          applications.map((app) => (
             <motion.div
-              key={caseDetail.applicationId}
+              key={app.applicationId}
               className="bg-white border border-gray-200 rounded-xl shadow-md p-3 w-full max-w-[320px] mx-auto relative"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => onRowClick(caseDetail)}
+              onClick={() => onRowClick(app)}
             >
-              {/* Card Header */}
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-[10px] sm:text-sm font-semibold text-gray-800 font-['Montserrat'] truncate max-w-[50%]">
-                  {caseDetail.applicantName}
+                <h3 className="text-[10px] sm:text-sm font-semibold text-gray-800 truncate max-w-[50%]">
+                  {app.applicantName}
                 </h3>
-                <span
-                  className={`inline-flex items-center gap-1 ${getStatusStyle(
-                    caseDetail.status
-                  )}`}
-                  aria-label={`Status: ${caseDetail.status}`}
-                >
-                  {caseDetail.status}
-                </span>
+                <span className={getStatusStyle(app.status)}>{app.status}</span>
               </div>
 
-              {/* Subject (Always Visible) */}
-              <div className="text-[9px] sm:text-xs text-gray-700 font-['Montserrat'] mb-2 truncate">
-                <strong>Subject:</strong> {caseDetail.subject}
+              <div className="text-[9px] sm:text-xs text-gray-700 mb-2 truncate">
+                <strong>Subject:</strong> {app.subject}
               </div>
 
-              {/* Accordion Toggle for Details */}
               <motion.button
-                className="flex items-center justify-between w-full p-2 bg-gray-100 rounded-md border border-gray-200 hover:bg-gray-200 transition-colors focus:ring-2 focus:ring-green-500"
+                className="flex items-center justify-between w-full p-2 bg-gray-100 rounded-md border border-gray-200 hover:bg-gray-200 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleCardDetails(caseDetail.applicationId);
+                  toggleCardDetails(app.applicationId);
                 }}
-                aria-label={
-                  openCardId === caseDetail.applicationId
-                    ? "Collapse details"
-                    : "Expand details"
-                }
-                aria-expanded={openCardId === caseDetail.applicationId}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="text-[10px] sm:text-sm font-semibold text-gray-700">
                   Details
                 </span>
-                {openCardId === caseDetail.applicationId ? (
+                {openCardId === app.applicationId ? (
                   <FaChevronUp className="text-gray-500 text-[9px] sm:text-sm" />
                 ) : (
                   <FaChevronDown className="text-gray-500 text-[9px] sm:text-sm" />
                 )}
               </motion.button>
 
-              {/* Collapsible Details */}
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={
-                  openCardId === caseDetail.applicationId
+                  openCardId === app.applicationId
                     ? { height: "auto", opacity: 1 }
                     : { height: 0, opacity: 0 }
                 }
                 transition={{ duration: 0.3 }}
                 style={{ overflow: "hidden" }}
               >
-                <div className="space-y-1 text-[9px] sm:text-xs text-gray-700 font-['Montserrat'] mt-2">
+                <div className="space-y-1 text-[9px] sm:text-xs text-gray-700 mt-2">
                   <div className="flex justify-between gap-2">
                     <span className="truncate">
-                      <strong>Sr. No:</strong> {caseDetail.sNo}
+                      <strong>Sr. No:</strong> {app.sNo}
                     </span>
                     <span className="truncate">
-                      <strong>Date:</strong> {caseDetail.dateOfApplication}
+                      <strong>Date:</strong> {app.dateOfApplication}
                     </span>
                   </div>
                   <div className="truncate">
-                    <strong>GP, Block:</strong> {caseDetail.gpBlock}
+                    <strong>GP, Block:</strong> {app.gpBlock}
                   </div>
                   <div className="truncate">
-                    <strong>Officer:</strong> {caseDetail.concernedOfficer}
+                    <strong>Officer:</strong> {app.concernedOfficer}
                   </div>
                   <div className="truncate">
-                    <strong>Issue Date:</strong> {caseDetail.issueDate}
+                    <strong>Issue Date:</strong> {app.issueDate}
                   </div>
                   <div>
                     <strong>Pending Days:</strong>{" "}
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold shadow-sm ${getPendingDaysColor(
-                        caseDetail.pendingDays
+                        app.pendingDays
                       )}`}
-                      aria-label={`Pending days: ${caseDetail.pendingDays}`}
                     >
-                      {caseDetail.pendingDays.toString()}
+                      {app.pendingDays}
                     </span>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Per-Card Bottom Bar (Visible when Accordion is Open) */}
+              {/* Fixed Bottom PDF Button (Mobile Only) */}
               <div
-                className={`fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-between gap-1 border-t border-gray-200 ${
-                  openCardId === caseDetail.applicationId ? "block" : "hidden"
+                className={`fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-center border-t border-gray-200 ${
+                  openCardId === app.applicationId ? "block" : "hidden"
                 } md:hidden z-10`}
               >
                 <motion.button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onRowClick(caseDetail);
+                    if (app.attachment) {
+                      window.open(app.attachment, "_blank", "noopener,noreferrer");
+                    } else {
+                      alert("No PDF attached");
+                    }
                   }}
-                  initial="rest"
-                  animate="rest"
-                  className="flex-1 flex items-center justify-center gap-1 bg-green-600 text-white px-2 py-1 rounded-xl shadow-sm hover:bg-green-700 transition font-semibold text-[9px] sm:text-xs"
-                  aria-label="View PDF"
+                  className="flex items-center justify-center gap-1 bg-green-600 text-white px-2 py-1 rounded-xl shadow-sm hover:bg-green-700 transition font-semibold text-[9px] sm:text-xs"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <motion.div
-                    variants={{ rest: { x: 0 }, hover: { x: 5 } }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  >
-                    <FaFilePdf className="text-white text-[12px] sm:text-base" />
-                  </motion.div>
-                  <motion.span
-                    variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }}
-                    transition={{ duration: 0.3 }}
-                    className="text-[9px] sm:text-xs"
-                  >
-                    PDF
-                  </motion.span>
+                  <FaFilePdf className="text-white text-[12px] sm:text-base" />
+                  <span>PDF</span>
                 </motion.button>
               </div>
             </motion.div>
@@ -490,22 +381,11 @@ const WorkAssignedApplicationTable = ({
         )}
       </div>
 
-      {/* Inline Styles */}
-      <style>{`
+      <style jsx>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-        * {
-          box-sizing: border-box;
-        }
-        .shadow-sm {
-          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
-        .shadow-xl {
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .backdrop-blur-sm {
-          backdrop-filter: blur(4px);
-          -webkit-backdrop-filter: blur(4px);
-        }
+        * { box-sizing: border-box; }
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
+        .shadow-xl { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
       `}</style>
     </div>
   );

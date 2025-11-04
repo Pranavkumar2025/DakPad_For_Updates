@@ -1,190 +1,259 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-// const dotenv = require("dotenv");
-const { PrismaClient } = require("@prisma/client");
+import express from "express";
+import { PrismaClient } from "@prisma/client";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import cors from "cors";
+import dotenv from "dotenv";
 
-const verifyAdmin = require("./Middleware/authMiddleware.js"); // Import the middleware
-
-// dotenv.config();
+dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
 
-// ✅ Middlewares
-app.use(cors());
+// ---------- Middleware ----------
+app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// ✅ Routes
+// ---------- Multer (PDF only, 5 MB) ----------
+const uploadDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-// Get all cases
-app.get("/api/cases", async (req, res) => {
-  try {
-    const cases = await prisma.case.findMany({
-      include: {
-        timeline: true,
-        messages: true,
-      },
-    });
-    res.json(cases);
-  } catch (error) {
-    console.error("Error fetching cases:", error);
-    res.status(500).json({ error: "Failed to fetch cases", message: error.message });
-  }
+const storage = multer.diskStorage({
+  destination: (_, __, cb) => cb(null, uploadDir),
+  filename: (_, file, cb) => {
+    const uniq = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${file.fieldname}-${uniq}${path.extname(file.originalname)}`);
+  },
+});
+const fileFilter = (_, file, cb) =>
+  file.mimetype === "application/pdf"
+    ? cb(null, true)
+    : cb(new Error("Only PDF files are allowed"), false);
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter,
 });
 
-// Create a new case
-app.post("/api/cases", async (req, res) => {
+app.use("/uploads", express.static(uploadDir));
+
+// ---------- Helper: default "Application Received" entry ----------
+const receivedEntry = (date, block, pdfPath) => ({
+  section: "Application Received",
+  comment: `Received at ${block || "N/A"} on ${new Date(date).toLocaleDateString("en-GB")}`,
+  date: new Date(date).toLocaleDateString("en-GB"),
+  pdfLink: pdfPath,
+  department: "N/A",
+  officer: "N/A",
+});
+
+// ---------- POST /api/applications ----------
+app.post("/api/applications", upload.single("attachment"), async (req, res) => {
   try {
     const {
-      applicantName,
+      applicantId,
+      name: applicant,
+      applicationDate,
       phone,
-      title,
-      description,
-      table,
-      dateOfApplication,
-      caseType,
-      department,
-      fileUrl, // optional
+      email,
+      source,
+      subject,
+      block,
     } = req.body;
 
-    // Validation (basic)
-    if (!applicantName || !phone || !title || !description || !dateOfApplication || !department) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
+    // ---- validation (same as before) ----
+    const errors = {};
+    if (!applicant?.trim()) errors.applicant = "Name required";
+    if (!applicationDate) errors.applicationDate = "Date required";
+    if (!/^\d{10}$/.test(phone)) errors.phone = "10-digit phone";
+    if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Valid email";
+    if (!source) errors.source = "Select source";
+    if (!subject?.trim()) errors.subject = "Subject required";
+    if (!block) errors.block = "Select block";
+    if (!req.file) errors.attachment = "Upload PDF";
 
-    const newCase = await prisma.case.create({
+    if (Object.keys(errors).length) return res.status(400).json({ errors });
+
+    const existing = await prisma.application.findUnique({ where: { applicantId } });
+    if (existing) return res.status(409).json({ message: "ID already exists" });
+
+    const pdfPath = `/uploads/${req.file.filename}`;
+
+    // FIRST TIMELINE ENTRY
+    const receivedEntry = {
+      section: "Application Received",
+      comment: `Received at ${block} on ${new Date(applicationDate).toLocaleDateString("en-GB")}`,
+      date: new Date(applicationDate).toLocaleDateString("en-GB"),
+      pdfLink: pdfPath,
+      department: "N/A",
+      officer: "N/A",
+    };
+
+    await prisma.application.create({
       data: {
-        applicantName,
-        phone,
-        title,
-        description,
-        addAt: table ?? null,
-        dateOfApplication: new Date(dateOfApplication),
-        caseType: caseType ?? null,
-        departmentInOut: department,
-        fileUrl: fileUrl ?? null,
-        status: "Pending",
+        applicantId,
+        applicant,
+        applicationDate: new Date(applicationDate),
+        phoneNumber: phone,
+        emailId: email,
+        sourceAt: source,
+        subject,
+        block,
+        attachment: pdfPath,
+        status: "Not Assigned Yet",
+        concernedOfficer: "N/A",
+        timeline: [receivedEntry],   // ← THIS LINE ADDS THE FIRST ENTRY
       },
     });
 
-    res.status(201).json(newCase);
-  } catch (error) {
-    console.error("Error creating case:", error);
-    res.status(500).json({ error: "Failed to submit application", message: error.message });
+    res.status(201).json({ success: true, applicantId, message: "Saved" });
+  } catch (err) {
+    console.error("POST /applications:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// Update case status
-app.put("/api/cases/:id/status",verifyAdmin, async (req, res) => {
+// ---------- GET /api/applications ----------
+app.get("/api/applications", async (req, res) => {
+  try {
+    const apps = await prisma.application.findMany({ orderBy: { createdAt: "desc" } });
+    res.json(apps);
+  } catch (err) {
+    console.error("GET /applications:", err);
+    res.status(500).json({ message: "Failed" });
+  }
+});
+
+// ---------- GET /api/applications/:id ----------
+app.get("/api/applications/:id", async (req, res) => {
+  try {
+    const app = await prisma.application.findUnique({
+      where: { applicantId: req.params.id },
+    });
+    if (!app) return res.status(404).json({ error: "Not found" });
+    res.json(app);
+  } catch (err) {
+    console.error("GET /:id:", err);
+    res.status(500).json({ message: "Failed" });
+  }
+});
+
+// ---------- PATCH /api/applications/:id/assign ----------
+app.patch("/api/applications/:id/assign", upload.single("file"), async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { concernedOfficer, status = "In Process", note, department } = req.body;
+
+  if (!concernedOfficer) return res.status(400).json({ error: "Officer required" });
 
   try {
-    const updated = await prisma.case.update({
-      where: { id },
-      data: { status },
+    const app = await prisma.application.findUnique({
+      where: { applicantId: id },
+      select: { attachment: true }, // we only need the old attachment
     });
+    if (!app) return res.status(404).json({ error: "Not found" });
+
+    const newEntry = {
+      section: `Assigned to ${concernedOfficer}`,
+      comment: note || `Assigned to ${concernedOfficer}`,
+      date: new Date().toLocaleDateString("en-GB"),
+      pdfLink: req.file ? `/uploads/${req.file.filename}` : null,
+      department: department || "N/A",
+      officer: concernedOfficer,
+    };
+
+    const updated = await prisma.application.update({
+      where: { applicantId: id },
+      data: {
+        concernedOfficer,
+        status,
+        attachment: req.file ? `/uploads/${req.file.filename}` : app.attachment,
+        timeline: { push: newEntry }, // <-- **APPENDS**
+      },
+    });
+
     res.json(updated);
-  } catch (error) {
-    console.error("Error updating status:", error);
-    res.status(500).json({ error: "Failed to update status", message: error.message });
+  } catch (err) {
+    console.error("PATCH /assign:", err);
+    res.status(500).json({ error: "Failed" });
   }
 });
 
-// Add timeline entry
-app.post("/api/cases/:id/timeline", async (req, res) => {
+// ---------- PATCH /api/applications/:id/compliance ----------
+app.patch("/api/applications/:id/compliance", upload.single("file"), async (req, res) => {
   const { id } = req.params;
-  const { section, comment } = req.body;
+  const { note } = req.body;
 
   try {
-    const newTimeline = await prisma.timeline.create({
+    const app = await prisma.application.findUnique({
+      where: { applicantId: id },
+      select: { concernedOfficer: true, attachment: true },
+    });
+    if (!app) return res.status(404).json({ error: "Not found" });
+
+    const newEntry = {
+      section: "Compliance",
+      comment: note || "Compliance achieved",
+      date: new Date().toLocaleDateString("en-GB"),
+      pdfLink: req.file ? `/uploads/${req.file.filename}` : null,
+      department: app.concernedOfficer || "N/A",
+      officer: app.concernedOfficer || "N/A",
+    };
+
+    const updated = await prisma.application.update({
+      where: { applicantId: id },
       data: {
-        section,
-        comment,
-        date: new Date().toISOString().split("T")[0],
-        caseId: id,
+        status: "Compliance",
+        attachment: req.file ? `/uploads/${req.file.filename}` : app.attachment,
+        timeline: { push: newEntry },
       },
     });
 
-    res.status(201).json(newTimeline);
-  } catch (error) {
-    console.error("Error adding timeline:", error);
-    res.status(500).json({ error: "Failed to add timeline entry", message: error.message });
+    res.json(updated);
+  } catch (err) {
+    console.error("PATCH /compliance:", err);
+    res.status(500).json({ error: "Failed" });
   }
 });
 
-// Send message
-app.post("/api/cases/:id/message", async (req, res) => {
+// ---------- PATCH /api/applications/:id/dispose ----------
+app.patch("/api/applications/:id/dispose", upload.single("file"), async (req, res) => {
   const { id } = req.params;
-  const { message, from } = req.body;
+  const { note } = req.body;
 
   try {
-    const newMessage = await prisma.message.create({
+    const app = await prisma.application.findUnique({
+      where: { applicantId: id },
+      select: { concernedOfficer: true, attachment: true },
+    });
+    if (!app) return res.status(404).json({ error: "Not found" });
+
+    const newEntry = {
+      section: "Disposed",
+      comment: note || "Application disposed",
+      date: new Date().toLocaleDateString("en-GB"),
+      pdfLink: req.file ? `/uploads/${req.file.filename}` : null,
+      department: app.concernedOfficer || "N/A",
+      officer: app.concernedOfficer || "N/A",
+    };
+
+    const updated = await prisma.application.update({
+      where: { applicantId: id },
       data: {
-        message,
-        from,
-        date: new Date().toISOString().split("T")[0],
-        caseId: id,
+        status: "Disposed",
+        attachment: req.file ? `/uploads/${req.file.filename}` : app.attachment,
+        timeline: { push: newEntry },
       },
     });
 
-    res.status(201).json(newMessage);
-  } catch (error) {
-    console.error("Error sending message:", error);
-    res.status(500).json({ error: "Failed to send message", message: error.message });
+    res.json(updated);
+  } catch (err) {
+    console.error("PATCH /dispose:", err);
+    res.status(500).json({ error: "Failed" });
   }
 });
 
-
-app.get("/api/cases/:id/messages", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const messages = await prisma.message.findMany({
-      where: { caseId: id },
-      orderBy: { date: 'asc' } // Optional: sort by date
-    });
-
-    res.status(200).json(messages);
-  } catch (error) {
-    console.error("Error fetching messages:", error);
-    res.status(500).json({ error: "Failed to fetch messages", message: error.message });
-  }
-});
-
-
-// Delete case
-app.delete("/api/cases/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    await prisma.case.delete({ where: { id } });
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Error deleting case:", error);
-    res.status(500).json({ error: "Failed to delete case", message: error.message });
-  }
-});
-
-const jwt = require("jsonwebtoken");
-const SECRET_KEY = process.env.JWT_SECRET || "your-secret";
-
-app.post("/api/admin/login", (req, res) => {
-  const { adminId, password } = req.body;
-
-  if (adminId === "0519" && password === "@Dakpad5") {
-    const token = jwt.sign({ role: "admin" }, SECRET_KEY, { expiresIn: "6h" });
-
-    res.json({ token });
-  } else {
-    res.status(401).json({ error: "Invalid Admin ID or Password" });
-  }
-});
-
-
-// ✅ Start server
+// ---------- Server ----------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server → http://localhost:${PORT}`));

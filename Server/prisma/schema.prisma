@@ -3,42 +3,46 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
-model Case {
-  id                String     @id @default(uuid())
-  applicantName     String
-  phone             String
-  title             String
-  description       String
-  addAt             String?
-  dateOfApplication DateTime   // ✅ FIXED
-  caseType          String?
-  departmentInOut   String
-  fileUrl           String?
-  status            String
+model Application {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
 
-  timeline          Timeline[]
-  messages          Message[]
+  applicantId      String   @unique
+  applicant        String
+  applicationDate  DateTime
+  phoneNumber      String
+  emailId          String
+  sourceAt         String
+  subject          String
+  block            String
+  attachment       String?               // "/uploads/xyz.pdf"
+
+  // Status & officer
+  concernedOfficer String?  @default("N/A")
+  status           String   @default("Not Assigned Yet")
+
+  // ----- TIMELINE – ARRAY OF OBJECTS -----
+  timeline         TimelineEntry[]       // <-- MongoDB embedded array
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([applicant])
+  @@index([applicationDate])
+  @@index([block])
+  @@index([status])
+  @@index([concernedOfficer])
 }
 
-
-model Timeline {
-  id      String   @id @default(uuid())
-  section String
-  comment String
-  date    String
-  case    Case     @relation(fields: [caseId], references: [id])
-  caseId  String
-}
-
-model Message {
-  id      String   @id @default(uuid())
-  message String
-  from    String
-  date    String
-  case    Case     @relation(fields: [caseId], references: [id])
-  caseId  String
+// Embedded document – stored **inside** the Application document
+type TimelineEntry {
+  section     String
+  comment     String
+  date        String    // "04/11/2025"
+  pdfLink     String?
+  department  String?
+  officer     String?
 }
