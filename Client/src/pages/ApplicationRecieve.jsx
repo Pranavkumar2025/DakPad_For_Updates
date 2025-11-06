@@ -9,7 +9,8 @@ import ApplicationTable from "../components/ApplicationRecieveComponents/Applica
 import EditCaseForm from "../components/ApplicationRecieveComponents/EditCaseForm";
 import Pagination from "../components/ApplicationRecieveComponents/Pagination";
 
-const API_URL = "http://localhost:5000/api/applications";   // <-- your Express server
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api/applications";
+  // <-- your Express server
 
 const ApplicationReceive = () => {
   const [showAddForm, setShowAddForm] = useState(false);

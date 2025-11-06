@@ -138,55 +138,57 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api/applications";
 
-    const form = new FormData();
-    form.append("applicantId", randomId);
-    form.append("name", formData.name);
-    form.append("applicationDate", formData.applicationDate);
-    form.append("phone", formData.phone);
-    form.append("email", formData.email);
-    form.append("source", formData.source);
-    form.append("subject", formData.subject);
-    form.append("block", formData.block);
-    if (formData.attachment) form.append("attachment", formData.attachment);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
 
-    try {
-      const res = await fetch("http://localhost:5000/api/applications", {
-        method: "POST",
-        body: form,
-      });
+  const form = new FormData();
+  form.append("applicantId", randomId);
+  form.append("name", formData.name);
+  form.append("applicationDate", formData.applicationDate);
+  form.append("phone", formData.phone);
+  form.append("email", formData.email);
+  form.append("source", formData.source);
+  form.append("subject", formData.subject);
+  form.append("block", formData.block);
+  if (formData.attachment) form.append("attachment", formData.attachment);
 
-      const data = await res.json();
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: form,
+    });
 
-      if (!res.ok) {
-        if (data.errors) setErrors(data.errors);
-        else alert(data.message || "Error");
-        return;
-      }
+    const data = await res.json();
 
-      await generateQRCode(randomId, formData.name, formData.applicationDate);
-      setShowModal(true);
-
-      // Reset
-      setFormData({
-        name: "",
-        applicationDate: "",
-        phone: "",
-        email: "",
-        source: "",
-        subject: "",
-        block: "",
-        attachment: null,
-      });
-      setRandomId(generateRandomId());
-    } catch (err) {
-      console.error(err);
-      alert("Network error");
+    if (!res.ok) {
+      if (data.errors) setErrors(data.errors);
+      else alert(data.message || "Error");
+      return;
     }
-  };
+
+    await generateQRCode(randomId, formData.name, formData.applicationDate);
+    setShowModal(true);
+
+    // Reset form
+    setFormData({
+      name: "",
+      applicationDate: "",
+      phone: "",
+      email: "",
+      source: "",
+      subject: "",
+      block: "",
+      attachment: null,
+    });
+    setRandomId(generateRandomId());
+  } catch (err) {
+    console.error(err);
+    alert("Network error");
+  }
+};
 
 
 

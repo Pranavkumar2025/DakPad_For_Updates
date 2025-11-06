@@ -2,6 +2,16 @@ import React, { useState, useEffect } from "react";
 import { FaFilePdf, FaSpinner, FaChevronDown, FaChevronUp, FaTimesCircle, FaCalendarAlt, FaComment } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api/applications";
+
+// NEW: Clean date formatter
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "N/A";
+  return date.toISOString().split("T")[0]; // → 2025-11-05
+};
+
 const ApplicationTable = ({
   data,
   onRowClick,
@@ -21,26 +31,18 @@ const ApplicationTable = ({
   });
 
   const calculatePendingDays = (issueDate, status) => {
-    if (["Compliance", "Disposed", "Dismissed"].includes(status) || !issueDate) {
-      console.warn(`Invalid issueDate or status for pending days calculation: ${issueDate}, ${status}`);
-      return 0;
-    }
+    if (["Compliance", "Disposed", "Dismissed"].includes(status) || !issueDate) return 0;
     const issue = new Date(issueDate);
-    if (isNaN(issue.getTime())) {
-      console.warn(`Invalid issueDate format: ${issueDate}`);
-      return 0;
-    }
+    if (isNaN(issue.getTime())) return 0;
     const today = new Date();
     const diffTime = Math.abs(today - issue);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
   const determineStatus = (timeline, concernedOfficer) => {
-    console.log("Determining status:", { timeline, concernedOfficer });
     if (!concernedOfficer || concernedOfficer === "N/A" || concernedOfficer === "") return "Not Assigned Yet";
     if (!timeline || !Array.isArray(timeline) || timeline.length === 0) return "In Process";
     const latestEntry = timeline[timeline.length - 1]?.section?.toLowerCase() || "";
-    console.log("Latest timeline entry:", latestEntry);
     if (latestEntry.includes("disposed")) return "Disposed";
     if (latestEntry.includes("compliance")) return "Compliance";
     if (latestEntry.includes("dismissed")) return "Dismissed";
@@ -68,99 +70,44 @@ const ApplicationTable = ({
   };
 
   const updateApplications = () => {
-    const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
-    const mappedStoredApplications = storedApplications
-      .map((app, index) => {
-        const defaultTimeline = [
-          {
-            section: "Application Received",
-            comment: `Application received at ${app.block || "N/A"} on ${app.applicationDate || "N/A"}`,
-            date: app.applicationDate || new Date().toLocaleDateString("en-GB"),
-            pdfLink: app.attachment || null,
-            department: "N/A",
-            officer: "N/A",
-          },
-        ];
-        const timeline = Array.isArray(app.timeline) ? app.timeline : defaultTimeline;
-        const status = determineStatus(timeline, app.concernedOfficer);
-        return {
-          applicationId: app.ApplicantId,
-          sNo: index + 1,
-          dateOfApplication: app.applicationDate || "N/A",
-          applicantName: app.applicant || "Unknown",
-          subject: app.subject || "N/A",
-          gpBlock: app.block || "N/A",
-          issueDate: app.applicationDate || "N/A",
-          pendingDays: calculatePendingDays(app.applicationDate, status),
-          status: status,
-          attachment: app.attachment || null,
-          concernedOfficer: app.concernedOfficer || "N/A",
-          isFromLocalStorage: true,
-          timeline: timeline,
-        };
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(rawData => {
+        const processed = rawData.map((app, index) => {
+          const timeline = Array.isArray(app.timeline) ? app.timeline : [];
+          const status = determineStatus(timeline, app.concernedOfficer);
+          return {
+            applicationId: app.applicantId || app._id || `temp-${index}`,
+            sNo: index + 1,
+            dateOfApplication: formatDate(app.applicationDate),
+            applicantName: app.applicant || "Unknown",
+            subject: app.subject || "N/A",
+            gpBlock: app.block || app.gpBlock || "N/A",
+            issueDate: formatDate(app.applicationDate),
+            pendingDays: calculatePendingDays(app.applicationDate, status),
+            status: status,
+            attachment: app.attachment || null,
+            concernedOfficer: app.concernedOfficer || "N/A",
+            isFromLocalStorage: false,
+            timeline: timeline,
+          };
+        });
+
+        const filtered = filterApplications(processed);
+        setApplications(filtered);
       })
-      .sort((a, b) => new Date(b.dateOfApplication || 0) - new Date(a.dateOfApplication || 0));
-
-    const storedAppIds = new Set(mappedStoredApplications.map((app) => app.applicationId?.toLowerCase()));
-    const filteredData = data.filter((item) => !storedAppIds.has(item.applicationId?.toLowerCase()));
-    const combinedData = [
-      ...mappedStoredApplications,
-      ...filteredData.map((item, index) => {
-        const defaultTimeline = [
-          {
-            section: "Application Received",
-            comment: `Application received at ${item.gpBlock || "N/A"} on ${item.dateOfApplication || "N/A"}`,
-            date: item.dateOfApplication || new Date().toLocaleDateString("en-GB"),
-            pdfLink: item.attachment || null,
-            department: "N/A",
-            officer: "N/A",
-          },
-        ];
-        const timeline = Array.isArray(item.timeline) ? item.timeline : defaultTimeline;
-        const status = determineStatus(timeline, item.concernedOfficer);
-        return {
-          ...item,
-          applicationId: item.applicationId || `temp-${index}`,
-          sNo: mappedStoredApplications.length + index + 1,
-          isFromLocalStorage: false,
-          pendingDays: calculatePendingDays(item.issueDate || item.dateOfApplication, status),
-          status: status,
-          timeline: timeline,
-          applicantName: item.applicantName || "Unknown",
-          subject: item.subject || "N/A",
-          gpBlock: item.gpBlock || "N/A",
-          issueDate: item.issueDate || item.dateOfApplication || "N/A",
-          concernedOfficer: item.concernedOfficer || "N/A",
-          attachment: item.attachment || null,
-        };
-      }),
-    ].map((item, index) => ({ ...item, sNo: index + 1 }));
-
-    const filteredApplications = filterApplications(combinedData);
-    console.log("Updated applications:", filteredApplications);
-    setApplications(filteredApplications);
+      .catch(err => console.error("Fetch error:", err));
   };
 
   useEffect(() => {
     updateApplications();
-    const handleStorageChange = (event) => {
-      if (event.key === "applications") {
-        console.log("ApplicationTable: Storage event triggered, updating applications:", JSON.parse(event.newValue || "[]"));
-        updateApplications();
-      }
-    };
-    const handleCustomStorageUpdate = () => {
-      console.log("ApplicationTable: Custom storage update event received");
-      updateApplications();
-    };
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("customStorageUpdate", handleCustomStorageUpdate);
-    const intervalId = setInterval(() => {
-      updateApplications();
-    }, 1000);
+
+    const handleUpdate = () => updateApplications();
+    window.addEventListener("applicationUpdated", handleUpdate);
+    const intervalId = setInterval(updateApplications, 5000);
+
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("customStorageUpdate", handleCustomStorageUpdate);
+      window.removeEventListener("applicationUpdated", handleUpdate);
       clearInterval(intervalId);
     };
   }, [data, searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate]);
@@ -176,38 +123,25 @@ const ApplicationTable = ({
       return;
     }
 
-    const updatedStoredApplications = JSON.parse(localStorage.getItem("applications") || "[]").map((app) => {
-      if (app.ApplicantId.toLowerCase() === selectedApplicationId.toLowerCase()) {
-        const newTimeline = [
-          ...(app.timeline || []),
-          {
-            section: "Disposed",
-            comment: disposeForm.comment,
-            date: disposeForm.disposingDate,
-            pdfLink: null,
-            department: "N/A",
-            officer: "N/A",
-          },
-        ];
-        return {
-          ...app,
-          timeline: newTimeline,
-          status: "Disposed",
-          pendingDays: 0,
-        };
-      }
-      return app;
-    });
-
-    console.log("ApplicationTable: Saving to localStorage:", updatedStoredApplications);
-    localStorage.setItem("applications", JSON.stringify(updatedStoredApplications));
-    window.dispatchEvent(new Event("customStorageUpdate"));
-    setIsDisposeModalOpen(false);
-    setDisposeForm({
-      disposingDate: new Date().toISOString().split('T')[0],
-      comment: "",
-    });
-    updateApplications();
+    fetch(`${API_URL}/${selectedApplicationId}/dispose`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        section: "Disposed",
+        comment: disposeForm.comment,
+        date: disposeForm.disposingDate,
+      }),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Dispose failed");
+        window.dispatchEvent(new Event("applicationUpdated"));
+        setIsDisposeModalOpen(false);
+        setDisposeForm({
+          disposingDate: new Date().toISOString().split('T')[0],
+          comment: "",
+        });
+      })
+      .catch(err => alert("Error: " + err.message));
   };
 
   const handleDisposeCancel = () => {
@@ -232,18 +166,12 @@ const ApplicationTable = ({
 
   const getStatusStyle = (status) => {
     switch (status) {
-      case "Not Assigned Yet":
-        return "bg-gray-500 text-white whitespace-nowrap";
-      case "In Process":
-        return "bg-blue-500 text-white whitespace-nowrap";
-      case "Compliance":
-        return "bg-green-500 text-white whitespace-nowrap";
-      case "Dismissed":
-        return "bg-red-500 text-white whitespace-nowrap";
-      case "Disposed":
-        return "bg-purple-500 text-white whitespace-nowrap";
-      default:
-        return "bg-gray-500 text-white whitespace-nowrap";
+      case "Not Assigned Yet": return "bg-gray-500 text-white whitespace-nowrap";
+      case "In Process": return "bg-blue-500 text-white whitespace-nowrap";
+      case "Compliance": return "bg-green-500 text-white whitespace-nowrap";
+      case "Dismissed": return "bg-red-500 text-white whitespace-nowrap";
+      case "Disposed": return "bg-purple-500 text-white whitespace-nowrap";
+      default: return "bg-gray-500 text-white whitespace-nowrap";
     }
   };
 
@@ -396,7 +324,6 @@ const ApplicationTable = ({
                       className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
                       aria-label={`Status: ${caseDetail.status}`}
                     >
-                      {caseDetail.status === "In Process"}
                       {caseDetail.status}
                     </span>
                   </td>
@@ -410,14 +337,14 @@ const ApplicationTable = ({
                         className="inline-flex items-center gap-1 px-4 py-1.5 text-sm rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition"
                         aria-label="View PDF"
                       >
-                        <FaFilePdf /> PDF
+                        PDF
                       </button>
                     ) : (
                       <span className="text-gray-400 text-xs">N/A</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    {caseDetail.isFromLocalStorage && caseDetail.status !== "Disposed" ? (
+                    {caseDetail.status !== "Disposed" ? (
                       <motion.button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -465,7 +392,6 @@ const ApplicationTable = ({
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-xs font-medium ${getStatusStyle(caseDetail.status)}`}
                   aria-label={`Status: ${caseDetail.status}`}
                 >
-                  {caseDetail.status === "In Process" }
                   {caseDetail.status}
                 </span>
               </div>
@@ -548,7 +474,7 @@ const ApplicationTable = ({
                       variants={{ rest: { x: 0 }, hover: { x: 5 } }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
-                      <FaFilePdf className="text-white text-[12px] sm:text-base" />
+                      PDF
                     </motion.div>
                     <motion.span
                       variants={{ rest: { opacity: 1 }, hover: { opacity: 0 } }}
@@ -561,7 +487,7 @@ const ApplicationTable = ({
                 ) : (
                   <span className="flex-1 text-center text-gray-400 text-[9px] sm:text-xs">No PDF</span>
                 )}
-                {caseDetail.isFromLocalStorage && caseDetail.status !== "Disposed" ? (
+                {caseDetail.status !== "Disposed" ? (
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -585,24 +511,10 @@ const ApplicationTable = ({
 
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-        * {
-          box-sizing: border-box;
-        }
-        .animate-spin {
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-        .backdrop-blur-sm {
-          backdrop-filter: blur(4px);
-          -webkit-backdrop-filter: blur(4px);
-        }
+        * { box-sizing: border-box; }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .backdrop-blur-sm { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
       `}</style>
     </div>
   );

@@ -3,7 +3,7 @@ import { FaFilePdf, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
-const API_URL = "http://localhost:5000/api/applications";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api/applications";
 
 const WorkAssignedApplicationTable = ({
   data = [], // optional static fallback (still allowed)

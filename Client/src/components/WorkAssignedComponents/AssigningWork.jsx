@@ -23,7 +23,7 @@ import Select from "react-select";
 import { motion, AnimatePresence } from "framer-motion";
 import Data from "./Data.json";
 
-const API_BASE = "http://localhost:5000/api/applications";
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api/applications";
 
 const AssigningWork = ({ data, onClose, onUpdate }) => {
   // ---------- UI state ----------
