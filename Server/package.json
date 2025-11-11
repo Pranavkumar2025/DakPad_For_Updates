@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-  "dev": "nodemon index.js",
-  "start": "node index.js",
-  "prisma:generate": "prisma generate"
-},
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "prisma:generate": "prisma generate"
+  },
   "dependencies": {
     "@prisma/client": "5.18.0",
     "cookie-parser": "^1.4.7",

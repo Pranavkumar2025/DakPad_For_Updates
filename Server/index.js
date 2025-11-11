@@ -18,12 +18,15 @@ const prisma = new PrismaClient();
 app.use(
   cors({
     origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://localhost:5174",
       "https://dak-pad-for-updates.vercel.app",
     ],
     credentials: true,
   })
 );
-
+app.options('*', cors());
 app.use(express.json());
 app.use(cookieParser());
 
@@ -368,4 +371,4 @@ app.post("/api/admin/logout", (req, res) => {
 
 // ---------- Server ----------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server → http://localhost:${PORT}`));
+app.listen(PORT, "0.0.0.0", () => console.log(`Server → http://localhost:${PORT}`));
