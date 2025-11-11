@@ -1,17 +1,34 @@
+// src/components/Navbar.jsx
 import React from "react";
 import { FaUsers, FaBars, FaTimes } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom"; // <-- NEW
+import api from "../utils/api"; // <-- NEW
 
 const Navbar = ({ userName, userPosition, logoLink = "/", isMenuOpen, toggleMenu }) => {
+  const navigate = useNavigate(); // <-- NEW
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
 
-  const handleLogout = () => {
-    console.log("User logged out");
-    toggleMenu();
+  // ---------- LOGOUT ----------
+  const handleLogout = async () => {
+    try {
+      await api.post("/api/admin/logout"); // clears httpOnly cookie
+    } catch (err) {
+      console.warn("Logout API failed (cookie already cleared?)", err);
+    }
+
+    // Notify all components to refresh
+    window.dispatchEvent(new Event("applicationUpdated"));
+
+    // Close mobile menu
+    if (isMenuOpen) toggleMenu();
+
+    // Redirect
+    navigate("/admin-login", { replace: true });
   };
 
   return (
@@ -57,6 +74,7 @@ const Navbar = ({ userName, userPosition, logoLink = "/", isMenuOpen, toggleMenu
           </div>
         </div>
 
+        {/* Logout Button */}
         <motion.button
           className="group flex items-center justify-start w-11 h-11 bg-[#ff5010] rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-full active:scale-95"
           onClick={handleLogout}
@@ -74,7 +92,7 @@ const Navbar = ({ userName, userPosition, logoLink = "/", isMenuOpen, toggleMenu
         </motion.button>
       </div>
 
-      {/* Mobile Hamburger Icon */}
+      {/* Mobile Hamburger */}
       <motion.button
         className={`md:hidden text-lg sm:text-xl text-[#ff5010] p-2 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff5010] ${
           isMenuOpen ? "bg-orange-100" : "bg-transparent"

@@ -1,3 +1,4 @@
+// src/components/AssigningWork.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import {
   FaFilePdf,
@@ -22,8 +23,7 @@ import {
 import Select from "react-select";
 import { motion, AnimatePresence } from "framer-motion";
 import Data from "./Data.json";
-
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api/applications";
+import api from "../../utils/api"; // <-- NEW: Use axios with cookies
 
 const AssigningWork = ({ data, onClose, onUpdate }) => {
   // ---------- UI state ----------
@@ -74,9 +74,9 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
       applicationId: dbApp.applicantId,
       sNo: originalSNo,
       dateOfApplication: dbApp.applicationDate.split("T")[0],
-      applicantName: dbApp.applicant,
-      subject: dbApp.subject,
-      gpBlock: dbApp.block,
+      applicantName: dbApp.applicant || "Unknown",
+      subject: dbApp.subject || "N/A",
+      gpBlock: dbApp.block || "N/A",
       issueDate: dbApp.applicationDate.split("T")[0],
       attachment: dbApp.attachment ? `http://localhost:5000${dbApp.attachment}` : null,
       concernedOfficer: dbApp.concernedOfficer || "N/A",
@@ -86,12 +86,11 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
     };
   };
 
-  // ---------- API calls ----------
+  // ---------- API calls (with JWT cookie) ----------
   const fetchApplication = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/${data.applicationId}`);
-      if (!res.ok) throw new Error("Failed to fetch");
-      const dbApp = await res.json();
+      const res = await api.get(`/api/applications/${data.applicationId}`); // <-- Sends cookie
+      const dbApp = res.data;
 
       const status = determineStatus(dbApp.timeline, dbApp.concernedOfficer);
       const pendingDays = calculatePendingDays(dbApp.applicationDate, status);
@@ -99,15 +98,15 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
       const uiApp = {
         ...data,
         applicationId: dbApp.applicantId,
-        applicantName: dbApp.applicant,
+        applicantName: dbApp.applicant || "Unknown",
         dateOfApplication: dbApp.applicationDate.split("T")[0],
-        description: dbApp.subject,
-        gpBlock: dbApp.block,
-        mobileNumber: dbApp.phoneNumber,
-        email: dbApp.emailId,
+        description: dbApp.subject || "N/A",
+        gpBlock: dbApp.block || "N/A",
+        mobileNumber: dbApp.phoneNumber || "N/A",
+        email: dbApp.emailId || "N/A",
         issueDate: dbApp.applicationDate.split("T")[0],
         status,
-        concernedOfficer: dbApp.concernedOfficer,
+        concernedOfficer: dbApp.concernedOfficer || "N/A",
         pendingDays,
         pdfLink: dbApp.attachment ? `http://localhost:5000${dbApp.attachment}` : null,
         timeline:
@@ -143,7 +142,7 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
         }
       }
     } catch (err) {
-      setErrorMessage(err.message);
+      setErrorMessage(err.response?.data?.error || err.message || "Failed to load");
     }
   }, [data.applicationId]);
 
@@ -159,15 +158,11 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
     if (uploadedFile?.file) form.append("file", uploadedFile.file);
 
     try {
-      const res = await fetch(`${API_BASE}/${data.applicationId}/assign`, {
-        method: "PATCH",
-        body: form,
+      const res = await api.patch(`/api/applications/${data.applicationId}/assign`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to assign");
-      }
-      const updatedDbApp = await res.json();
+
+      const updatedDbApp = res.data;
 
       // Update local modal state
       const status = determineStatus(updatedDbApp.timeline, updatedDbApp.concernedOfficer);
@@ -187,13 +182,11 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
       // INSTANT UPDATE + CLOSE
       setTimeout(() => {
         setSaveSuccess(false);
-        // SEND UPDATED ROW TO PARENT
         onUpdate?.(mapDbAppToTableRow(updatedDbApp, data.sNo));
-        
+        onClose?.();
       }, 1500);
-
     } catch (err) {
-      setErrorMessage(err.message);
+      setErrorMessage(err.response?.data?.error || err.message || "Failed to assign");
     } finally {
       setIsSaving(false);
       setUploadedFile(null);
@@ -628,7 +621,7 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
                 className="bg-white rounded-xl shadow-xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
+                exit={{ scale: 0.95 , opacity: 0 }}
               >
                 <div className="flex justify-between items-center mb-4 border-b pb-3">
                   <h3 className="text-lg font-semibold text-gray-800">Application Details</h3>

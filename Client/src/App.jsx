@@ -1,5 +1,5 @@
+// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-// import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import NotFound from "./pages/NotFound";
@@ -8,6 +8,7 @@ import PerformanceDashboard from "./pages/PerformanceDashboard";
 import WorkAssignedDashboard from "./pages/WorkAssignedDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ApplicationReceive from "./pages/ApplicationRecieve";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { LanguageProvider } from "./contexts/LanguageContext";
 
 const App = () => {
@@ -15,26 +16,46 @@ const App = () => {
     <LanguageProvider>
       <Router>
         <Routes>
-          <Route path="/Admin" element={<AdminDashboard />} />
-          <Route path="/SuperAdmin" element={<SuperAdminDashboard />} />
-
-          {/* ✅ Protected Route */}
-          {/* <Route
-            path="/admin-dashboard"
-            element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          /> */}
-
+          {/* PUBLIC ROUTES */}
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/" element={<UserDashboard />} />
           <Route path="/performance" element={<PerformanceDashboard />} />
-          <Route path="/work-assigned" element={<WorkAssignedDashboard />} />
-          <Route path="/application-receive" element={<ApplicationReceive />} />
 
-          {/* Fallback route for 404 Not Found */}
+          {/* PROTECTED ADMIN ROUTES */}
+          <Route
+            path="/Admin"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/SuperAdmin"
+            element={
+              <ProtectedRoute allowedRoles={["superadmin"]}>
+                <SuperAdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/work-assigned"
+            element={
+              <ProtectedRoute allowedRoles={["workassigned", "superadmin"]}>
+                <WorkAssignedDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/application-receive"
+            element={
+              <ProtectedRoute allowedRoles={["receive", "superadmin"]}>
+                <ApplicationReceive />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

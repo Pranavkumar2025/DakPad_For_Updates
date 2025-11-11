@@ -1,12 +1,12 @@
+// src/components/WorkAssignedApplicationTable.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { FaFilePdf, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api/applications";
+import api from "../../utils/api"; // <-- NEW: Use axios with cookies
 
 const WorkAssignedApplicationTable = ({
-  data = [], // optional static fallback (still allowed)
+  data = [], // optional static fallback
   onRowClick,
   searchQuery,
   selectedStatus,
@@ -20,43 +20,39 @@ const WorkAssignedApplicationTable = ({
   const [openCardId, setOpenCardId] = useState(null);
 
   // --------------------------------------------------------------
-  // 1. Fetch ONLY from DB
+  // 1. Fetch ONLY from DB (with cookies)
   // --------------------------------------------------------------
-const fetchFromDB = useCallback(async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error("Failed to load applications");
-    const dbApps = await res.json();
+  const fetchFromDB = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.get("/api/applications"); // <-- Sends JWT cookie
+      const dbApps = Array.isArray(res.data) ? res.data : [];
 
-    return dbApps.map((app, idx) => ({
-      applicationId: app.applicantId,
-      sNo: idx + 1,
-      dateOfApplication: app.applicationDate.split("T")[0],
-      applicantName: app.applicant,
-      subject: app.subject,
-      gpBlock: app.block,
-      issueDate: app.applicationDate.split("T")[0],
-      attachment: app.attachment ? `http://localhost:5000${app.attachment}` : null,
-
-      // ← REAL DATA FROM DB
-      concernedOfficer: app.concernedOfficer || "N/A",
-      timeline: Array.isArray(app.timeline) ? app.timeline : [],
-
-      status: null,
-      pendingDays: 0,
-    }));
-  } catch (err) {
-    setError(err.message);
-    return [];
-  } finally {
-    setLoading(false);
-  }
-}, []);
+      return dbApps.map((app, idx) => ({
+        applicationId: app.applicantId,
+        sNo: idx + 1,
+        dateOfApplication: app.applicationDate.split("T")[0],
+        applicantName: app.applicant || "Unknown",
+        subject: app.subject || "N/A",
+        gpBlock: app.block || "N/A",
+        issueDate: app.applicationDate.split("T")[0],
+        attachment: app.attachment ? `http://localhost:5000${app.attachment}` : null,
+        concernedOfficer: app.concernedOfficer || "N/A",
+        timeline: Array.isArray(app.timeline) ? app.timeline : [],
+        status: null,
+        pendingDays: 0,
+      }));
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Failed to load");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // --------------------------------------------------------------
-  // 2. Combine DB + optional static `data` prop
+  // 2. Combine DB + static `data` prop
   // --------------------------------------------------------------
   const combineAndProcess = useCallback(
     async (dbApps = []) => {

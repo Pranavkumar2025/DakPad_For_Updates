@@ -1,14 +1,18 @@
+// src/components/Sidebar.jsx
 import React from "react";
 import { LayoutDashboard, Settings, User, BarChart2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom"; // <-- NEW
+import api from "../utils/api"; // <-- NEW
 
 const Sidebar = ({
   isMenuOpen,
   toggleMenu,
   userName = "Siddharth Singh",
   userPosition = "Application Receiver",
-  isSuperAdmin = false, // Prop to enable Performance item for SuperAdminDashboard
+  isSuperAdmin = false,
 }) => {
+  const navigate = useNavigate(); // <-- NEW
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -24,9 +28,22 @@ const Sidebar = ({
     { icon: <Settings className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Settings", link: "#" },
   ];
 
-  const handleLogout = () => {
-    console.log("User logged out");
-    toggleMenu();
+  // ---------- LOGOUT ----------
+  const handleLogout = async () => {
+    try {
+      await api.post("/api/admin/logout"); // clears cookie
+    } catch (err) {
+      console.warn("Logout API failed (cookie already gone?)", err);
+    }
+
+    // Notify all components
+    window.dispatchEvent(new Event("applicationUpdated"));
+
+    // Close mobile menu
+    if (isMenuOpen) toggleMenu();
+
+    // Redirect
+    navigate("/admin-login", { replace: true });
   };
 
   return (
@@ -90,6 +107,7 @@ const Sidebar = ({
                 </svg>
               </motion.button>
             </div>
+
             <div className="px-4 py-3 flex flex-col gap-3 bg-gray-800/50">
               <span className="text-xs sm:text-sm text-gray-300 font-medium bg-gray-700/50 px-3 py-1 rounded-full text-center">
                 {today}
@@ -105,6 +123,8 @@ const Sidebar = ({
                   <span className="text-[10px] sm:text-xs text-gray-400 font-light truncate">{userPosition}</span>
                 </div>
               </div>
+
+              {/* Logout Button */}
               <motion.button
                 className="flex items-center justify-center gap-2 w-full py-2 bg-[#ff5010] rounded-lg shadow-md hover:bg-[#fc641c] transition-colors focus:outline-none focus:ring-2 focus:ring-white"
                 onClick={handleLogout}
@@ -117,6 +137,7 @@ const Sidebar = ({
                 <span className="text-xs sm:text-sm font-medium">Logout</span>
               </motion.button>
             </div>
+
             <nav className="flex flex-col gap-4 px-4 pt-4">
               {menuItems.map((item, index) => (
                 <a
@@ -151,9 +172,7 @@ const Sidebar = ({
       </AnimatePresence>
 
       <style jsx global>{`
-        * {
-          box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
       `}</style>
     </>

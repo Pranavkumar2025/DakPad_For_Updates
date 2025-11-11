@@ -1,3 +1,4 @@
+// server/index.js
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import multer from "multer";
@@ -5,6 +6,8 @@ import path from "path";
 import fs from "fs";
 import cors from "cors";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -12,8 +15,12 @@ const app = express();
 const prisma = new PrismaClient();
 
 // ---------- Middleware ----------
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ 
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 // ---------- Multer (PDF only, 5 MB) ----------
 const uploadDir = path.join(process.cwd(), "uploads");
@@ -39,6 +46,47 @@ const upload = multer({
 
 app.use("/uploads", express.static(uploadDir));
 
+// ---------- JWT Config ----------
+const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret";
+const ACCESS_EXPIRES = "15m";
+const REFRESH_EXPIRES = "7d";
+
+const setTokenCookie = (res, name, token, maxAgeSeconds) => {
+  res.cookie(name, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: maxAgeSeconds * 1000,
+  });
+};
+
+const generateTokens = (admin) => {
+  const payload = { adminId: admin.adminId, role: admin.role };
+  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: ACCESS_EXPIRES });
+  const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: REFRESH_EXPIRES });
+  return { accessToken, refreshToken };
+};
+
+// ==================== PROTECTED MIDDLEWARE (MUST BE BEFORE ROUTES) ====================
+const authenticateToken = (req, res, next) => {
+  const token = req.cookies.access_token;
+  if (!token) return res.status(401).json({ error: "Access denied" });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: "Token expired" });
+    req.user = user;
+    next();
+  });
+};
+
+// ==================== AUTH CHECK ROUTE (for ProtectedRoute) ====================
+app.get("/api/admin/auth-check", authenticateToken, (req, res) => {
+  res.json({ user: req.user });
+});
+
+// ==================== PROTECT ALL APPLICATION ROUTES ====================
+app.use("/api/applications", authenticateToken);
+
 // ---------- Helper: default "Application Received" entry ----------
 const receivedEntry = (date, block, pdfPath) => ({
   section: "Application Received",
@@ -49,7 +97,9 @@ const receivedEntry = (date, block, pdfPath) => ({
   officer: "N/A",
 });
 
-// ---------- POST /api/applications ----------
+// ==================== APPLICATION ROUTES ====================
+
+// POST /api/applications
 app.post("/api/applications", upload.single("attachment"), async (req, res) => {
   try {
     const {
@@ -63,7 +113,6 @@ app.post("/api/applications", upload.single("attachment"), async (req, res) => {
       block,
     } = req.body;
 
-    // ---- validation (same as before) ----
     const errors = {};
     if (!applicant?.trim()) errors.applicant = "Name required";
     if (!applicationDate) errors.applicationDate = "Date required";
@@ -80,16 +129,7 @@ app.post("/api/applications", upload.single("attachment"), async (req, res) => {
     if (existing) return res.status(409).json({ message: "ID already exists" });
 
     const pdfPath = `/uploads/${req.file.filename}`;
-
-    // FIRST TIMELINE ENTRY
-    const receivedEntry = {
-      section: "Application Received",
-      comment: `Received at ${block} on ${new Date(applicationDate).toLocaleDateString("en-GB")}`,
-      date: new Date(applicationDate).toLocaleDateString("en-GB"),
-      pdfLink: pdfPath,
-      department: "N/A",
-      officer: "N/A",
-    };
+    const entry = receivedEntry(applicationDate, block, pdfPath);
 
     await prisma.application.create({
       data: {
@@ -104,7 +144,7 @@ app.post("/api/applications", upload.single("attachment"), async (req, res) => {
         attachment: pdfPath,
         status: "Not Assigned Yet",
         concernedOfficer: "N/A",
-        timeline: [receivedEntry],   // ← THIS LINE ADDS THE FIRST ENTRY
+        timeline: [entry],
       },
     });
 
@@ -115,7 +155,7 @@ app.post("/api/applications", upload.single("attachment"), async (req, res) => {
   }
 });
 
-// ---------- GET /api/applications ----------
+// GET /api/application
 app.get("/api/applications", async (req, res) => {
   try {
     const apps = await prisma.application.findMany({ orderBy: { createdAt: "desc" } });
@@ -126,7 +166,7 @@ app.get("/api/applications", async (req, res) => {
   }
 });
 
-// ---------- GET /api/applications/:id ----------
+// GET /api/applications/:id
 app.get("/api/applications/:id", async (req, res) => {
   try {
     const app = await prisma.application.findUnique({
@@ -140,7 +180,7 @@ app.get("/api/applications/:id", async (req, res) => {
   }
 });
 
-// ---------- PATCH /api/applications/:id/assign ----------
+// PATCH /api/applications/:id/assign
 app.patch("/api/applications/:id/assign", upload.single("file"), async (req, res) => {
   const { id } = req.params;
   const { concernedOfficer, status = "In Process", note, department } = req.body;
@@ -150,7 +190,7 @@ app.patch("/api/applications/:id/assign", upload.single("file"), async (req, res
   try {
     const app = await prisma.application.findUnique({
       where: { applicantId: id },
-      select: { attachment: true }, // we only need the old attachment
+      select: { attachment: true },
     });
     if (!app) return res.status(404).json({ error: "Not found" });
 
@@ -169,7 +209,7 @@ app.patch("/api/applications/:id/assign", upload.single("file"), async (req, res
         concernedOfficer,
         status,
         attachment: req.file ? `/uploads/${req.file.filename}` : app.attachment,
-        timeline: { push: newEntry }, // <-- **APPENDS**
+        timeline: { push: newEntry },
       },
     });
 
@@ -180,7 +220,7 @@ app.patch("/api/applications/:id/assign", upload.single("file"), async (req, res
   }
 });
 
-// ---------- PATCH /api/applications/:id/compliance ----------
+// PATCH /api/applications/:id/compliance
 app.patch("/api/applications/:id/compliance", upload.single("file"), async (req, res) => {
   const { id } = req.params;
   const { note } = req.body;
@@ -217,7 +257,7 @@ app.patch("/api/applications/:id/compliance", upload.single("file"), async (req,
   }
 });
 
-// ---------- PATCH /api/applications/:id/dispose ----------
+// PATCH /api/applications/:id/dispose
 app.patch("/api/applications/:id/dispose", upload.single("file"), async (req, res) => {
   const { id } = req.params;
   const { note } = req.body;
@@ -252,6 +292,73 @@ app.patch("/api/applications/:id/dispose", upload.single("file"), async (req, re
     console.error("PATCH /dispose:", err);
     res.status(500).json({ error: "Failed" });
   }
+});
+
+// ==================== ADMIN LOGIN ====================
+app.post("/api/admin/login", async (req, res) => {
+  const { adminId, password } = req.body;
+
+  if (!adminId || !password) {
+    return res.status(400).json({ error: "adminId and password required" });
+  }
+
+  try {
+    const admin = await prisma.admin.findUnique({ where: { adminId } });
+    if (!admin || admin.password !== password) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const { accessToken, refreshToken } = generateTokens(admin);
+
+    setTokenCookie(res, "access_token", accessToken, 15 * 60);
+    setTokenCookie(res, "refresh_token", refreshToken, 7 * 24 * 60 * 60);
+
+    await prisma.admin.update({
+      where: { adminId },
+      data: { refreshToken },
+    });
+
+    const routeMap = {
+      admin: "/Admin",
+      superadmin: "/SuperAdmin",
+      workassigned: "/work-assigned",
+      receive: "/application-receive",
+    };
+
+    res.json({ success: true, redirect: routeMap[admin.role] || "/Admin" });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ==================== REFRESH TOKEN ====================
+app.post("/api/admin/refresh", async (req, res) => {
+  const refreshToken = req.cookies.refresh_token;
+  if (!refreshToken) return res.status(401).json({ error: "No refresh token" });
+
+  try {
+    const decoded = jwt.verify(refreshToken, JWT_SECRET);
+    const admin = await prisma.admin.findUnique({ where: { adminId: decoded.adminId } });
+
+    if (!admin || admin.refreshToken !== refreshToken) {
+      return res.status(403).json({ error: "Invalid refresh token" });
+    }
+
+    const { accessToken } = generateTokens(admin);
+    setTokenCookie(res, "access_token", accessToken, 15 * 60);
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(403).json({ error: "Invalid refresh token" });
+  }
+});
+
+// ==================== LOGOUT ====================
+app.post("/api/admin/logout", (req, res) => {
+  res.clearCookie("access_token");
+  res.clearCookie("refresh_token");
+  res.json({ success: true });
 });
 
 // ---------- Server ----------

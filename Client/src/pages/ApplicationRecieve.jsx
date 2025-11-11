@@ -1,3 +1,4 @@
+// src/pages/ApplicationReceive.jsx
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { File, PlusCircle, Loader2 } from "lucide-react";
@@ -8,9 +9,7 @@ import Sidebar from "../components/Sidebar";
 import ApplicationTable from "../components/ApplicationRecieveComponents/ApplicationTable";
 import EditCaseForm from "../components/ApplicationRecieveComponents/EditCaseForm";
 import Pagination from "../components/ApplicationRecieveComponents/Pagination";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api/applications";
-  // <-- your Express server
+import api from "../utils/api"; // <-- NEW: axios with cookies
 
 const ApplicationReceive = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -26,18 +25,38 @@ const ApplicationReceive = () => {
   const recordsPerPage = 10;
 
   // --------------------------------------------------------------
-  // 1. Fetch all applications from the server
+  // 1. Fetch & Normalize Applications (with JWT cookie)
   // --------------------------------------------------------------
   const fetchApplications = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error("Failed to load applications");
-      const data = await res.json();
-      setApplications(data);               // <-- array of objects from DB
+      const res = await api.get("/api/applications"); // <-- sends cookie
+      const data = Array.isArray(res.data) ? res.data : [];
+
+      const normalized = data.map((app) => ({
+        ...app,
+        ApplicantId: app.applicantId || "N/A",
+        applicant: app.applicant || app.name || "Unknown Applicant",
+        applicationDate: app.applicationDate
+          ? new Date(app.applicationDate).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
+          : "—",
+        block: app.block || "—",
+        sourceAt: app.sourceAt || app.source || "unknown",
+        phoneNumber: app.phoneNumber || app.phone || "—",
+        emailId: app.emailId || app.email || "—",
+        subject: app.subject || "No subject provided",
+        attachment: app.attachment || null,
+      }));
+
+      setApplications(normalized);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || err.message || "Failed to load");
+      console.error("Fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -48,11 +67,20 @@ const ApplicationReceive = () => {
   }, [fetchApplications]);
 
   // --------------------------------------------------------------
-  // 2. Refresh list after Add / Edit
+  // 2. Real‑time updates from other components
+  // --------------------------------------------------------------
+  useEffect(() => {
+    const handleUpdate = () => fetchApplications();
+    window.addEventListener("applicationUpdated", handleUpdate);
+    return () => window.removeEventListener("applicationUpdated", handleUpdate);
+  }, [fetchApplications]);
+
+  // --------------------------------------------------------------
+  // 3. Handle Add/Edit Close
   // --------------------------------------------------------------
   const handleAddClose = () => {
     setShowAddForm(false);
-    fetchApplications();                  // <-- refresh from DB
+    fetchApplications();
   };
 
   const handleEdit = (app) => {
@@ -62,20 +90,19 @@ const ApplicationReceive = () => {
 
   const handleEditClose = async (updatedData) => {
     if (updatedData) {
-      // Optimistic UI update (optional)
       setApplications((prev) =>
-        prev.map((a) => (a.applicantId === updatedData.applicantId ? updatedData : a))
+        prev.map((a) => (a.ApplicantId === updatedData.ApplicantId ? updatedData : a))
       );
     }
     setShowEditForm(false);
     setEditApplication(null);
-    fetchApplications();                  // <-- ensure DB is source of truth
+    fetchApplications();
   };
 
   const toggleMenu = () => setIsMenuOpen((v) => !v);
 
   // --------------------------------------------------------------
-  // Pagination (client-side)
+  // Pagination
   // --------------------------------------------------------------
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;

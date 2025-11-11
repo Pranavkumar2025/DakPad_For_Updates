@@ -1,11 +1,11 @@
+// src/pages/WorkAssignedDataTable.jsx
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import WorkAssignedFilterHeader from "./WorkAssignedFilterHeader";
 import WorkAssignedApplicationTable from "./WorkAssignedApplicationTable";
 import AssigningWork from "./AssigningWork";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-
-const API_URL = "http://localhost:5000/api/applications";
+import api from "../../utils/api"; // <-- NEW: Use axios with cookies
 
 const WorkAssignedDataTable = () => {
   // ---------- Filters ----------
@@ -51,11 +51,11 @@ const WorkAssignedDataTable = () => {
 
     return {
       applicationId: dbApp.applicantId,
-      sNo: originalSNo, // keep the original serial number
+      sNo: originalSNo,
       dateOfApplication: dbApp.applicationDate.split("T")[0],
-      applicantName: dbApp.applicant,
-      subject: dbApp.subject,
-      gpBlock: dbApp.block,
+      applicantName: dbApp.applicant || "Unknown",
+      subject: dbApp.subject || "N/A",
+      gpBlock: dbApp.block || "N/A",
       issueDate: dbApp.applicationDate.split("T")[0],
       attachment: dbApp.attachment ? `http://localhost:5000${dbApp.attachment}` : null,
       concernedOfficer: dbApp.concernedOfficer || "N/A",
@@ -65,19 +65,18 @@ const WorkAssignedDataTable = () => {
     };
   };
 
-  // ---------- Fetch Applications ----------
+  // ---------- Fetch Applications (with JWT cookie) ----------
   const fetchApplications = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error("Failed to load applications");
-      const dbApps = await res.json();
+      const res = await api.get("/api/applications"); // <-- Sends cookie
+      const dbApps = Array.isArray(res.data) ? res.data : [];
 
       const mapped = dbApps.map((app, idx) => mapDbAppToTableRow(app, idx + 1));
       setApplications(mapped);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || err.message || "Failed to load");
     } finally {
       setLoading(false);
     }
@@ -88,14 +87,13 @@ const WorkAssignedDataTable = () => {
     fetchApplications();
   }, [fetchApplications]);
 
-  // ---------- Instant Row Update (no full refresh) ----------
+  // ---------- Instant Row Update ----------
   const handleRowUpdate = (updatedDbApp) => {
-    // Find the row that matches the updated applicationId
     const originalRow = applications.find(
       (a) => a.applicationId === updatedDbApp.applicantId
     );
 
-    if (!originalRow) return; // safety
+    if (!originalRow) return;
 
     const updatedRow = mapDbAppToTableRow(updatedDbApp, originalRow.sNo);
 
@@ -215,7 +213,7 @@ const WorkAssignedDataTable = () => {
         setSelectedDate={setSelectedDate}
         onExcelClick={handleDownloadExcel}
         applications={applications}
-        setApplications={setApplications} // optional – keep for future use
+        setApplications={setApplications}
       />
 
       {/* Table */}
@@ -234,7 +232,7 @@ const WorkAssignedDataTable = () => {
         <AssigningWork
           data={selectedCase}
           onClose={() => setOpenDialog(false)}
-          onUpdate={handleRowUpdate}   // NEW: instant row update
+          onUpdate={handleRowUpdate}
         />
       )}
     </div>

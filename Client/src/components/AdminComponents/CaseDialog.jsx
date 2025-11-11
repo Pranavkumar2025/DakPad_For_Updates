@@ -1,12 +1,30 @@
-import React, { useState, useEffect, useRef } from "react";
-import { FaFilePdf, FaUpload, FaSpinner, FaPaperPlane, FaCheckCircle, FaHistory } from "react-icons/fa";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  FaFilePdf,
+  FaUpload,
+  FaSpinner,
+  FaPaperPlane,
+  FaCheckCircle,
+  FaHistory,
+} from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
-import { User, Calendar, Mail, Phone, FileText, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import {
+  User,
+  Calendar,
+  Mail,
+  Phone,
+  FileText,
+  CheckCircle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const CaseDialog = ({ data, onClose }) => {
-  // State management
-  const [applicationData, setApplicationData] = useState(data);
+import api from "../../utils/api"; // <-- Your Axios wrapper
+
+const CaseDialog = ({ data, onClose, onUpdate }) => {
+  // State
+  const [applicationData, setApplicationData] = useState(null);
   const [comment, setComment] = useState("");
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -14,141 +32,167 @@ const CaseDialog = ({ data, onClose }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const markComplianceRef = useRef(null);
 
-  // Calculate pending days
+  // Helper: Calculate pending days
   const calculatePendingDays = (issueDate, status) => {
-    if (["Compliance", "Disposed", "Dismissed"].includes(status) || !issueDate) {
-      console.warn(`Invalid issueDate or status for pending days calculation: ${issueDate}, ${status}`);
-      return 0;
-    }
+    if (["Compliance", "Disposed", "Dismissed"].includes(status) || !issueDate) return 0;
     const issue = new Date(issueDate);
-    if (isNaN(issue.getTime())) {
-      console.warn(`Invalid issueDate format: ${issueDate}`);
-      return 0;
-    }
-    const today = new Date();
-    const diffTime = Math.abs(today - issue);
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (isNaN(issue.getTime())) return 0;
+    const diff = Date.now() - issue.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
-  // Determine dynamic status based on timeline and concernedOfficer
-  const determineStatus = (timeline, concernedOfficer) => {
-    console.log("Determining status:", { timeline, concernedOfficer });
-    if (!concernedOfficer || concernedOfficer === "N/A" || concernedOfficer === "") return "Not Assigned Yet";
-    if (!timeline || !Array.isArray(timeline) || timeline.length === 0) return "In Process";
-    const latestEntry = timeline[timeline.length - 1]?.section?.toLowerCase() || "";
-    console.log("Latest timeline entry:", latestEntry);
-    if (latestEntry.includes("disposed")) return "Disposed";
-    if (latestEntry.includes("compliance")) return "Compliance";
-    if (latestEntry.includes("dismissed")) return "Dismissed";
+  // Helper: Determine status from timeline
+  const determineStatus = (timeline = [], concernedOfficer) => {
+    if (!concernedOfficer || concernedOfficer === "N/A") return "Not Assigned Yet";
+    if (!Array.isArray(timeline) || timeline.length === 0) return "In Process";
+    const latest = timeline[timeline.length - 1]?.section?.toLowerCase() || "";
+    if (latest.includes("disposed")) return "Disposed";
+    if (latest.includes("compliance")) return "Compliance";
+    if (latest.includes("dismissed")) return "Dismissed";
     return "In Process";
   };
 
-  // Update application data from localStorage
-  const updateApplicationData = () => {
+  // === FETCH SINGLE APPLICATION ===
+  const fetchApplication = useCallback(async () => {
     if (!data.applicationId) {
-      console.error("No applicationId provided in data prop:", data);
-      setErrorMessage("Invalid application ID. Please ensure the application exists.");
+      setErrorMessage("Invalid application ID");
+      setIsLoading(false);
       return;
     }
 
-    const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
-    const normalizedAppId = data.applicationId.toLowerCase();
-    const matchedApp = storedApplications.find(
-      (app) => app.ApplicantId.toLowerCase() === normalizedAppId
-    );
+    try {
+      setIsLoading(true);
+      const res = await api.get(`/api/applications/${data.applicationId}`);
+      const dbApp = res.data;
 
-    const defaultTimeline = [
-      {
-        section: "Application Received",
-        comment: `Application received at ${data.gpBlock || "N/A"} on ${data.dateOfApplication || "N/A"}`,
-        date: data.dateOfApplication || new Date().toLocaleDateString("en-GB"),
-        pdfLink: data.pdfLink || null,
-        department: "N/A",
-        officer: "N/A",
-      },
-    ];
+      const status = determineStatus(dbApp.timeline, dbApp.concernedOfficer);
+      const pendingDays = calculatePendingDays(dbApp.applicationDate, status);
 
-    let updatedData;
-    if (matchedApp) {
-      const timeline = Array.isArray(matchedApp.timeline) ? matchedApp.timeline : defaultTimeline;
-      const status = determineStatus(timeline, matchedApp.concernedOfficer);
-      const pendingDays = calculatePendingDays(matchedApp.applicationDate || data.issueDate, status);
-      updatedData = {
+      const uiData = {
         ...data,
-        applicationId: matchedApp.ApplicantId,
-        applicantName: matchedApp.applicant || data.applicantName || "Unknown",
-        dateOfApplication: matchedApp.applicationDate || data.dateOfApplication || "N/A",
-        description: matchedApp.subject || data.description || "N/A",
-        gpBlock: matchedApp.block || data.gpBlock || "N/A",
-        mobileNumber: matchedApp.phoneNumber || data.mobileNumber || "N/A",
-        email: matchedApp.emailId || data.email || "N/A",
-        issueDate: matchedApp.applicationDate || data.issueDate || "N/A",
+        applicationId: dbApp.applicantId || data.applicationId,
+        applicantName: dbApp.applicant || "Unknown",
+        dateOfApplication: dbApp.applicationDate?.split("T")[0] || "N/A",
+        description: dbApp.subject || "N/A",
+        gpBlock: dbApp.block || "N/A",
+        mobileNumber: dbApp.phoneNumber || "N/A",
+        email: dbApp.emailId || "N/A",
+        issueDate: dbApp.applicationDate?.split("T")[0] || "N/A",
         issueLetterNo: data.issueLetterNo || "N/A",
         status,
-        concernedOfficer: matchedApp.concernedOfficer || data.concernedOfficer || "N/A",
+        concernedOfficer: dbApp.concernedOfficer || "N/A",
         pendingDays,
-        pdfLink: matchedApp.attachment || data.pdfLink || null,
-        timeline,
+        pdfLink: dbApp.attachment
+          ? `${process.env.REACT_APP_API_URL || "http://localhost:5000"}${dbApp.attachment}`
+          : null,
+        timeline: Array.isArray(dbApp.timeline) && dbApp.timeline.length > 0
+          ? dbApp.timeline
+          : [
+              {
+                section: "Application Received",
+                comment: `Application received on ${dbApp.applicationDate?.split("T")[0] || "N/A"}`,
+                date: dbApp.applicationDate?.split("T")[0] || "N/A",
+                pdfLink: dbApp.attachment
+                  ? `${process.env.REACT_APP_API_URL || "http://localhost:5000"}${dbApp.attachment}`
+                  : null,
+                department: "N/A",
+                officer: "N/A",
+              },
+            ],
       };
-    } else {
-      console.warn(`Application ${data.applicationId} not found in localStorage. Using prop data.`);
-      const timeline = Array.isArray(data.timeline) ? data.timeline : defaultTimeline;
-      const status = determineStatus(timeline, data.concernedOfficer);
-      const pendingDays = calculatePendingDays(data.issueDate, status);
-      updatedData = {
-        ...data,
-        applicationId: data.applicationId,
-        applicantName: data.applicantName || "Unknown",
-        dateOfApplication: data.dateOfApplication || "N/A",
-        description: data.description || "N/A",
-        gpBlock: data.gpBlock || "N/A",
-        mobileNumber: data.mobileNumber || "N/A",
-        email: data.email || "N/A",
-        issueDate: data.issueDate || "N/A",
-        issueLetterNo: data.issueLetterNo || "N/A",
-        status,
-        concernedOfficer: data.concernedOfficer || "N/A",
-        pendingDays,
-        pdfLink: data.pdfLink || null,
-        timeline,
-      };
+
+      setApplicationData(uiData);
+    } catch (err) {
+      setErrorMessage(err.response?.data?.error || err.message || "Failed to load application");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [data.applicationId, data.issueLetterNo]);
+
+  // === MARK COMPLIANCE ===
+  const markCompliance = useCallback(async () => {
+    if (!comment.trim()) {
+      setErrorMessage("Please enter a comment.");
+      return;
     }
 
-    console.log("Updated application data:", updatedData);
-    setApplicationData(updatedData);
-  };
+    setIsSaving(true);
+    const form = new FormData();
+    form.append("status", "Compliance");
+    form.append("comment", comment);
+    if (uploadedFile?.file) form.append("file", uploadedFile.file);
 
-  // Real-time localStorage updates
+    try {
+      const res = await api.patch(`/api/applications/${data.applicationId}/compliance`, form);
+      const updatedDbApp = res.data;
+
+      const status = determineStatus(updatedDbApp.timeline, updatedDbApp.concernedOfficer);
+      const pendingDays = calculatePendingDays(updatedDbApp.applicationDate, status);
+
+      const newUiData = {
+        ...applicationData,
+        status,
+        pendingDays,
+        timeline: updatedDbApp.timeline,
+        pdfLink: updatedDbApp.attachment
+          ? `${process.env.REACT_APP_API_URL || "http://localhost:5000"}${updatedDbApp.attachment}`
+          : applicationData.pdfLink,
+      };
+
+      setApplicationData(newUiData);
+      setSaveSuccess(true);
+
+      // Notify parent table
+      onUpdate?.({
+        ...data,
+        status,
+        pendingDays,
+        concernedOfficer: updatedDbApp.concernedOfficer || data.concernedOfficer,
+        timeline: updatedDbApp.timeline,
+      });
+
+      // Reset form
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setComment("");
+        setUploadedFile(null);
+      }, 2000);
+    } catch (err) {
+      setErrorMessage(err.response?.data?.error || err.message || "Failed to mark compliance");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [
+    comment,
+    uploadedFile,
+    data.applicationId,
+    applicationData,
+    onUpdate,
+    data.concernedOfficer,
+  ]);
+
+  // === EFFECTS ===
   useEffect(() => {
-    updateApplicationData();
-    const handleStorageChange = (event) => {
-      if (event.key === "applications") {
-        console.log("CaseDialog: Storage event triggered, updating application data:", JSON.parse(event.newValue || "[]"));
-        updateApplicationData();
-      }
-    };
-    const handleCustomStorageUpdate = () => {
-      console.log("CaseDialog: Custom storage update event received");
-      updateApplicationData();
-    };
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("customStorageUpdate", handleCustomStorageUpdate);
-    const intervalId = setInterval(() => {
-      updateApplicationData();
-    }, 1000); // Poll every second to catch updates
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("customStorageUpdate", handleCustomStorageUpdate);
-      clearInterval(intervalId);
-      if (uploadedFile?.url) {
-        URL.revokeObjectURL(uploadedFile.url);
-      }
-    };
-  }, [data.applicationId, uploadedFile]);
+    fetchApplication();
 
-  // Handle file upload with validation
+    const handleUpdate = () => fetchApplication();
+    window.addEventListener("applicationUpdated", handleUpdate);
+
+    return () => {
+      window.removeEventListener("applicationUpdated", handleUpdate);
+    };
+  }, [fetchApplication]);
+
+  useEffect(() => {
+    if (uploadedFile?.url) {
+      return () => URL.revokeObjectURL(uploadedFile.url);
+    }
+  }, [uploadedFile]);
+
+  // === HANDLERS ===
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -160,91 +204,34 @@ const CaseDialog = ({ data, onClose }) => {
       setErrorMessage("Only PDF, JPEG, or PNG files are allowed.");
       return;
     }
-    setUploadedFile({ name: file.name, url: URL.createObjectURL(file), type: file.type });
+    setUploadedFile({
+      file,
+      name: file.name,
+      url: URL.createObjectURL(file),
+      type: file.type,
+    });
     setErrorMessage("");
   };
 
-  // Handle compliance submission
   const handleCompliance = (e) => {
     e.preventDefault();
-    if (!comment) {
+    if (!comment.trim()) {
       setErrorMessage("Please enter a comment.");
       return;
     }
     setIsConfirmOpen(true);
   };
 
-  // Confirm compliance
   const confirmCompliance = () => {
-    setIsSaving(true);
     setIsConfirmOpen(false);
-    setTimeout(() => {
-      const storedApplications = JSON.parse(localStorage.getItem("applications") || "[]");
-      const normalizedAppId = applicationData.applicationId.toLowerCase();
-      const applicationExists = storedApplications.some(
-        (app) => app.ApplicantId.toLowerCase() === normalizedAppId
-      );
-
-      const newTimelineEntry = {
-        section: "Compliance",
-        comment: comment || "Compliance marked",
-        date: new Date().toLocaleDateString("en-GB"),
-        pdfLink: uploadedFile?.url || null,
-        department: "N/A",
-        officer: "N/A",
-      };
-
-      let updatedApplications;
-      if (applicationExists) {
-        updatedApplications = storedApplications.map((app) =>
-          app.ApplicantId.toLowerCase() === normalizedAppId
-            ? {
-                ...app,
-                status: "Compliance",
-                timeline: [...(app.timeline || []), newTimelineEntry],
-                pendingDays: 0, // Compliance sets pendingDays to 0
-              }
-            : app
-        );
-      } else {
-        console.warn(`Application ${applicationData.applicationId} not found in localStorage. Adding new entry.`);
-        updatedApplications = [
-          ...storedApplications,
-          {
-            ApplicantId: applicationData.applicationId,
-            applicant: applicationData.applicantName || "Unknown",
-            applicationDate: applicationData.dateOfApplication || new Date().toLocaleDateString("en-GB"),
-            subject: applicationData.description || "N/A",
-            block: applicationData.gpBlock || "N/A",
-            phoneNumber: applicationData.mobileNumber || "N/A",
-            emailId: applicationData.email || "N/A",
-            concernedOfficer: applicationData.concernedOfficer || "N/A",
-            status: "Compliance",
-            timeline: [...(applicationData.timeline || []), newTimelineEntry],
-            pendingDays: 0,
-            attachment: uploadedFile?.url || applicationData.pdfLink || null,
-          },
-        ];
-      }
-
-      console.log("CaseDialog: Saving to localStorage:", updatedApplications);
-      localStorage.setItem("applications", JSON.stringify(updatedApplications));
-      window.dispatchEvent(new Event("customStorageUpdate")); // Notify other components
-      updateApplicationData(); // Ensure immediate update
-      setIsSaving(false);
-      setSaveSuccess(true);
-      setComment("");
-      setUploadedFile(null);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    }, 1000);
+    markCompliance();
   };
 
-  // Scroll to Mark Compliance section
   const scrollToMarkCompliance = () => {
     markComplianceRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Status styling
+  // === STATUS STYLING ===
   const getStatusStyle = (status) => {
     switch (status) {
       case "Not Assigned Yet":
@@ -262,6 +249,23 @@ const CaseDialog = ({ data, onClose }) => {
     }
   };
 
+  // === LOADING UI ===
+  if (isLoading) {
+    return (
+      <motion.div
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="bg-white rounded-xl p-8 shadow-xl">
+          <FaSpinner className="animate-spin text-green-600 text-4xl" />
+          <p className="mt-4 text-gray-700">Loading application...</p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // === MAIN DIALOG ===
   return (
     <motion.div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -279,7 +283,7 @@ const CaseDialog = ({ data, onClose }) => {
         {/* Header */}
         <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
           <h2 className="text-xl font-semibold text-gray-900">
-            Application ID: <span className="text-green-800">{applicationData.applicationId}</span>
+            Application ID: <span className="text-green-800">{applicationData?.applicationId}</span>
           </h2>
           <motion.button
             className="text-gray-500 hover:text-red-600 text-xl transition-colors"
@@ -292,19 +296,26 @@ const CaseDialog = ({ data, onClose }) => {
           </motion.button>
         </div>
 
+        {/* Mark Compliance Button */}
         <motion.span
           onClick={scrollToMarkCompliance}
           className={`text-green-600 hover:text-green-800 hover:underline text-md font-semibold cursor-pointer mb-6 block ${
-            applicationData.status === "Disposed" || applicationData.status === "Compliance" ? "pointer-events-none opacity-50" : ""
+            applicationData?.status === "Disposed" || applicationData?.status === "Compliance"
+              ? "pointer-events-none opacity-50"
+              : ""
           }`}
-          whileHover={{ scale: applicationData.status === "Disposed" || applicationData.status === "Compliance" ? 1 : 0.99 }}
-          whileTap={{ scale: applicationData.status === "Disposed" || applicationData.status === "Compliance" ? 1 : 0.95 }}
-          aria-label="Visit Mark Compliance"
+          whileHover={{
+            scale: applicationData?.status === "Disposed" || applicationData?.status === "Compliance" ? 1 : 0.99,
+          }}
+          whileTap={{
+            scale: applicationData?.status === "Disposed" || applicationData?.status === "Compliance" ? 1 : 0.95,
+          }}
+          aria-label="Go to Mark Compliance"
         >
           Mark Compliance
         </motion.span>
 
-        {/* Application Details Section */}
+        {/* Applicant Details */}
         <motion.div
           className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6"
           initial={{ opacity: 0, y: 10 }}
@@ -314,14 +325,14 @@ const CaseDialog = ({ data, onClose }) => {
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Applicant Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
-              { label: "Sr. No", value: applicationData.sNo || "N/A", icon: <FileText className="w-5 h-5 text-green-600" /> },
-              { label: "Applicant Name", value: applicationData.applicantName || "Unknown", icon: <User className="w-5 h-5 text-green-600" /> },
-              { label: "Mobile No.", value: applicationData.mobileNumber || "N/A", icon: <Phone className="w-5 h-5 text-green-600" /> },
-              { label: "GP, Block", value: applicationData.gpBlock || "N/A", icon: <FileText className="w-5 h-5 text-green-600" /> },
-              { label: "Date of Application", value: applicationData.dateOfApplication || "N/A", icon: <Calendar className="w-5 h-5 text-green-600" /> },
-              { label: "Email", value: applicationData.email || "N/A", icon: <Mail className="w-5 h-5 text-green-600" /> },
-              { label: "Issue Letter No", value: applicationData.issueLetterNo || "N/A", icon: <FileText className="w-5 h-5 text-green-600" /> },
-              { label: "Issue Date", value: applicationData.issueDate || "N/A", icon: <Calendar className="w-5 h-5 text-green-600" /> },
+              { label: "Sr. No", value: applicationData?.sNo || "N/A", icon: <FileText className="w-5 h-5 text-green-600" /> },
+              { label: "Applicant Name", value: applicationData?.applicantName || "Unknown", icon: <User className="w-5 h-5 text-green-600" /> },
+              { label: "Mobile No.", value: applicationData?.mobileNumber || "N/A", icon: <Phone className="w-5 h-5 text-green-600" /> },
+              { label: "GP, Block", value: applicationData?.gpBlock || "N/A", icon: <FileText className="w-5 h-5 text-green-600" /> },
+              { label: "Date of Application", value: applicationData?.dateOfApplication || "N/A", icon: <Calendar className="w-5 h-5 text-green-600" /> },
+              { label: "Email", value: applicationData?.email || "N/A", icon: <Mail className="w-5 h-5 text-green-600" /> },
+              { label: "Issue Letter No", value: applicationData?.issueLetterNo || "N/A", icon: <FileText className="w-5 h-5 text-green-600" /> },
+              { label: "Issue Date", value: applicationData?.issueDate || "N/A", icon: <Calendar className="w-5 h-5 text-green-600" /> },
             ].map((item, idx) => (
               <motion.div
                 key={idx}
@@ -339,55 +350,49 @@ const CaseDialog = ({ data, onClose }) => {
             ))}
             <div className="md:col-span-2">
               <span className="text-sm font-medium text-gray-600">Description</span>
-              <p className="text-base font-medium text-gray-900">{applicationData.description || "N/A"}</p>
+              <p className="text-base font-medium text-gray-900">{applicationData?.description || "N/A"}</p>
             </div>
             <div className="md:col-span-2">
               <span className="text-sm font-medium text-gray-600">Status</span>
               <p>
                 <span
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusStyle(applicationData.status).badge}`}
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusStyle(applicationData?.status).badge}`}
                 >
-                  {getStatusStyle(applicationData.status).icon}
-                  {applicationData.status}
+                  {getStatusStyle(applicationData?.status).icon}
+                  {applicationData?.status}
                 </span>
               </p>
             </div>
             <div className="md:col-span-2">
               <span className="text-sm font-medium text-gray-600">Concerned Officer</span>
-              <p className="text-base font-medium text-gray-900">{applicationData.concernedOfficer || "N/A"}</p>
+              <p className="text-base font-medium text-gray-900">{applicationData?.concernedOfficer || "N/A"}</p>
             </div>
             <div className="md:col-span-2">
               <span className="text-sm font-medium text-gray-600">Pending Days</span>
               <p>
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
-                    applicationData.pendingDays === 0
+                    applicationData?.pendingDays === 0
                       ? "bg-green-500 text-white"
-                      : applicationData.pendingDays <= 10
+                      : applicationData?.pendingDays <= 10
                       ? "bg-green-500 text-white"
-                      : applicationData.pendingDays <= 15
+                      : applicationData?.pendingDays <= 15
                       ? "bg-orange-500 text-white"
                       : "bg-red-500 text-white"
                   }`}
                 >
-                  {applicationData.pendingDays}
+                  {applicationData?.pendingDays}
                 </span>
               </p>
             </div>
-            {applicationData.pdfLink && (
-              <motion.div
-                className="md:col-span-2"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.6 }}
-              >
+            {applicationData?.pdfLink && (
+              <motion.div className="md:col-span-2">
                 <motion.a
                   href={applicationData.pdfLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-green-600 hover:text-green-800 font-medium text-sm flex items-center gap-2 mt-4"
                   whileHover={{ scale: 1.05 }}
-                  aria-label="View attached PDF"
                 >
                   <FaFilePdf /> View Attached Document
                 </motion.a>
@@ -396,17 +401,16 @@ const CaseDialog = ({ data, onClose }) => {
           </div>
         </motion.div>
 
-        {/* Toggle for Application Timeline */}
+        {/* Timeline Toggle */}
         <motion.button
           onClick={() => setIsTimelineOpen(!isTimelineOpen)}
           className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-2 mb-6"
           whileHover={{ scale: 1.05 }}
-          aria-label="Toggle application timeline"
         >
-          <FaHistory /> {isTimelineOpen ? "Hide Application Timeline" : "Show Application Timeline"}
+          <FaHistory /> {isTimelineOpen ? "Hide" : "Show"} Application Timeline
         </motion.button>
 
-        {/* Application Timeline Section */}
+        {/* Timeline */}
         <AnimatePresence>
           {isTimelineOpen && (
             <motion.div
@@ -414,10 +418,9 @@ const CaseDialog = ({ data, onClose }) => {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
             >
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Application Timeline</h3>
-              {applicationData.timeline?.length > 0 ? (
+              {applicationData?.timeline?.length > 0 ? (
                 <div className="relative space-y-4">
                   {applicationData.timeline.map((item, idx) => {
                     const isCompleted =
@@ -437,6 +440,7 @@ const CaseDialog = ({ data, onClose }) => {
                       : "bg-blue-600";
                     const icon = isCompleted ? <CheckCircle size={18} className="text-white" /> : null;
                     const isCompliance = item.section.toLowerCase().includes("compliance");
+
                     return (
                       <div key={idx} className="relative flex items-start pl-10">
                         <div
@@ -454,7 +458,7 @@ const CaseDialog = ({ data, onClose }) => {
                           }`}
                         />
                         <div
-                          className={`w-full p-4 rounded-lg border transition-all duration-200 ${
+                          className={`w-full p-4 rounded-lg border transition-all ${
                             idx === applicationData.timeline.length - 1
                               ? item.section.toLowerCase().includes("disposed")
                                 ? "bg-purple-50 border-purple-300 shadow-lg"
@@ -468,22 +472,18 @@ const CaseDialog = ({ data, onClose }) => {
                           </div>
                           <p className="text-sm text-gray-700">{item.comment}</p>
                           {!isCompliance && item.department !== "N/A" && (
-                            <p className="text-xs text-gray-600 font-['Montserrat'] mt-1">
-                              Department: {item.department}
-                            </p>
+                            <p className="text-xs text-gray-600 mt-1">Department: {item.department}</p>
                           )}
                           {!isCompliance && item.officer !== "N/A" && (
-                            <p className="text-xs text-gray-600 font-['Montserrat'] mt-1">Officer: {item.officer}</p>
+                            <p className="text-xs text-gray-600 mt-1">Officer: {item.officer}</p>
                           )}
                           {item.pdfLink && (
                             <motion.a
                               href={item.pdfLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-green-600 hover:text-green-800 transition-colors text-sm mt-1 flex items-center gap-2"
-                              title="View PDF"
+                              className="text-green-600 hover:text-green-800 text-sm mt-1 flex items-center gap-2"
                               whileHover={{ scale: 1.05 }}
-                              aria-label="View timeline document"
                             >
                               <FaFilePdf /> View Document
                             </motion.a>
@@ -503,31 +503,29 @@ const CaseDialog = ({ data, onClose }) => {
           )}
         </AnimatePresence>
 
-        {/* Mark Compliance Section */}
+        {/* Mark Compliance Form */}
         <div ref={markComplianceRef}>
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Mark Compliance</h3>
-          <form
-            className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6"
-            onSubmit={handleCompliance}
-          >
+          <form className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6" onSubmit={handleCompliance}>
             <div className="space-y-6">
               <div>
                 <span className="text-sm font-medium text-gray-600">Current Status</span>
                 <p>
                   <span
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusStyle(applicationData.status).badge}`}
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusStyle(applicationData?.status).badge}`}
                   >
-                    {getStatusStyle(applicationData.status).icon}
-                    {applicationData.status}
+                    {getStatusStyle(applicationData?.status).icon}
+                    {applicationData?.status}
                   </span>
                 </p>
                 <p className="text-xs text-gray-500">
                   Last updated on{" "}
-                  {applicationData.timeline?.length > 0
+                  {applicationData?.timeline?.length > 0
                     ? applicationData.timeline[applicationData.timeline.length - 1].date
-                    : applicationData.issueDate || "N/A"}
+                    : applicationData?.issueDate || "N/A"}
                 </p>
               </div>
+
               <div>
                 <span className="text-sm font-medium text-gray-600">Compliance Comment</span>
                 <textarea
@@ -535,38 +533,32 @@ const CaseDialog = ({ data, onClose }) => {
                   rows={4}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  className={`w-full mt-2 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition shadow-sm ${
-                    applicationData.status === "Disposed" || applicationData.status === "Compliance" ? "bg-gray-100 cursor-not-allowed" : ""
+                  className={`w-full mt-2 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 transition shadow-sm ${
+                    applicationData?.status === "Disposed" || applicationData?.status === "Compliance"
+                      ? "bg-gray-100 cursor-not-allowed"
+                      : ""
                   }`}
-                  disabled={applicationData.status === "Disposed" || applicationData.status === "Compliance"}
-                  aria-label="Compliance comment"
+                  disabled={applicationData?.status === "Disposed" || applicationData?.status === "Compliance"}
                 />
                 {saveSuccess && (
-                  <motion.p
-                    className="text-green-600 text-sm flex items-center gap-2 mt-2"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
+                  <motion.p className="text-green-600 text-sm flex items-center gap-2 mt-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <FaCheckCircle /> Compliance marked successfully!
                   </motion.p>
                 )}
                 {errorMessage && (
-                  <motion.p
-                    className="text-red-600 text-sm flex items-center gap-2 mt-2"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
+                  <motion.p className="text-red-600 text-sm flex items-center gap-2 mt-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <XCircle size={16} /> {errorMessage}
                   </motion.p>
                 )}
               </div>
+
               <div>
                 <span className="text-sm font-medium text-gray-600">Upload Document (Optional)</span>
                 <label
                   className={`flex items-center justify-center w-full h-24 mt-2 border-2 border-dashed border-gray-300 rounded-xl transition bg-white shadow-sm ${
-                    applicationData.status === "Disposed" || applicationData.status === "Compliance" ? "cursor-not-allowed" : "cursor-pointer hover:border-green-500"
+                    applicationData?.status === "Disposed" || applicationData?.status === "Compliance"
+                      ? "cursor-not-allowed"
+                      : "cursor-pointer hover:border-green-500"
                   }`}
                 >
                   <input
@@ -574,28 +566,37 @@ const CaseDialog = ({ data, onClose }) => {
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={handleFileUpload}
                     className="hidden"
-                    disabled={applicationData.status === "Disposed" || applicationData.status === "Compliance"}
-                    aria-label="Upload document"
+                    disabled={applicationData?.status === "Disposed" || applicationData?.status === "Compliance"}
                   />
                   <div className="flex items-center gap-2 text-gray-600">
-                    <FaUpload className={(applicationData.status === "Disposed" || applicationData.status === "Compliance") ? "text-gray-400" : "text-green-600"} />
+                    <FaUpload
+                      className={
+                        applicationData?.status === "Disposed" || applicationData?.status === "Compliance"
+                          ? "text-gray-400"
+                          : "text-green-600"
+                      }
+                    />
                     <span className="text-sm">
                       {uploadedFile ? uploadedFile.name : "Drag or click to upload (PDF, JPEG, PNG, max 5MB)"}
                     </span>
                   </div>
                 </label>
               </div>
+
               <motion.button
                 type="submit"
-                disabled={isSaving || applicationData.status === "Disposed" || applicationData.status === "Compliance"}
+                disabled={isSaving || applicationData?.status === "Disposed" || applicationData?.status === "Compliance"}
                 className={`w-full py-2.5 text-sm font-semibold rounded-xl shadow-sm transition ${
-                  isSaving || applicationData.status === "Disposed" || applicationData.status === "Compliance"
+                  isSaving || applicationData?.status === "Disposed" || applicationData?.status === "Compliance"
                     ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                     : "bg-green-600 text-white hover:bg-green-700"
                 }`}
-                whileHover={{ scale: (applicationData.status === "Disposed" || applicationData.status === "Compliance") ? 1 : 1.05 }}
-                whileTap={{ scale: (applicationData.status === "Disposed" || applicationData.status === "Compliance") ? 1 : 0.95 }}
-                aria-label="Mark compliance"
+                whileHover={{
+                  scale: applicationData?.status === "Disposed" || applicationData?.status === "Compliance" ? 1 : 1.05,
+                }}
+                whileTap={{
+                  scale: applicationData?.status === "Disposed" || applicationData?.status === "Compliance" ? 1 : 0.95,
+                }}
               >
                 {isSaving ? (
                   <>
@@ -611,7 +612,7 @@ const CaseDialog = ({ data, onClose }) => {
           </form>
         </div>
 
-        {/* Compliance Confirmation Modal */}
+        {/* Confirm Modal */}
         <AnimatePresence>
           {isConfirmOpen && (
             <motion.div
@@ -619,35 +620,26 @@ const CaseDialog = ({ data, onClose }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
             >
-              <motion.div
-                className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full"
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full">
                 <h3 className="text-lg font-semibold text-gray-900 text-center">Confirm Compliance</h3>
                 <p className="text-sm text-gray-600 mt-2 text-center">
                   Are you sure you want to mark this application as completed?
                 </p>
                 <div className="mt-6 flex gap-4 justify-center">
                   <motion.button
-                    className="px-6 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm"
+                    className="px-6 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700"
                     onClick={confirmCompliance}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    aria-label="Confirm compliance"
                   >
                     Confirm
                   </motion.button>
                   <motion.button
-                    className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition shadow-sm"
+                    className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
                     onClick={() => setIsConfirmOpen(false)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    aria-label="Cancel compliance"
                   >
                     Cancel
                   </motion.button>
@@ -660,23 +652,11 @@ const CaseDialog = ({ data, onClose }) => {
         {/* Custom CSS */}
         <style jsx global>{`
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-          .animate-spin {
-            animation: spin 1s linear infinite;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          .shadow-sm {
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-          }
-          .shadow-xl {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-          }
-          .backdrop-blur-sm {
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-          }
+          .animate-spin { animation: spin 1s linear infinite; }
+          @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+          .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,.05); }
+          .shadow-xl { box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05); }
+          .backdrop-blur-sm { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
         `}</style>
       </motion.div>
     </motion.div>
