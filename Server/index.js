@@ -62,8 +62,8 @@ const REFRESH_EXPIRES = "7d";
 const setTokenCookie = (res, name, token, maxAgeSeconds) => {
   res.cookie(name, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax", 
+    secure: true,           // ← FORCE TRUE (Render is HTTPS)
+    sameSite: "none",       // ← THIS IS THE FIX
     maxAge: maxAgeSeconds * 1000,
   });
 };
