@@ -115,7 +115,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     if (!formData.source) newErrors.source = "Please select a source";
     if (!formData.subject.trim()) newErrors.subject = "Subject is required";
     if (!formData.block) newErrors.block = "Please select a block";
-    if (!formData.attachment) newErrors.attachment = "Please upload a file";
+    // if (!formData.attachment) newErrors.attachment = "Please upload a file";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
