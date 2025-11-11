@@ -108,7 +108,7 @@ const receivedEntry = (date, block, pdfPath) => ({
 // ==================== APPLICATION ROUTES ====================
 
 // POST /api/applications
-app.post("/api/applications", upload.single("attachment"), async (req, res) => {
+app.post("/api/applications", upload.none(), async (req, res) => {
   try {
     const {
       applicantId,
@@ -119,6 +119,7 @@ app.post("/api/applications", upload.single("attachment"), async (req, res) => {
       source,
       subject,
       block,
+      attachment, // ← NOW A STRING (filename)
     } = req.body;
 
     const errors = {};
@@ -129,14 +130,15 @@ app.post("/api/applications", upload.single("attachment"), async (req, res) => {
     if (!source) errors.source = "Select source";
     if (!subject?.trim()) errors.subject = "Subject required";
     if (!block) errors.block = "Select block";
-    if (!req.file) errors.attachment = "Upload PDF";
+    // REMOVED: if (!req.file) errors.attachment = "Upload PDF";
 
     if (Object.keys(errors).length) return res.status(400).json({ errors });
 
     const existing = await prisma.application.findUnique({ where: { applicantId } });
     if (existing) return res.status(409).json({ message: "ID already exists" });
 
-    const pdfPath = `/uploads/${req.file.filename}`;
+    // Use filename from body, or null
+    const pdfPath = attachment ? `/uploads/${attachment}` : null;
     const entry = receivedEntry(applicationDate, block, pdfPath);
 
     await prisma.application.create({
@@ -149,7 +151,7 @@ app.post("/api/applications", upload.single("attachment"), async (req, res) => {
         sourceAt: source,
         subject,
         block,
-        attachment: pdfPath,
+        attachment: pdfPath, // ← saves "/uploads/filename.pdf" or null
         status: "Not Assigned Yet",
         concernedOfficer: "N/A",
         timeline: [entry],
@@ -162,6 +164,7 @@ app.post("/api/applications", upload.single("attachment"), async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // GET /api/application
 app.get("/api/applications", async (req, res) => {
