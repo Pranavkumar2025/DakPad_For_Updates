@@ -15,10 +15,17 @@ const app = express();
 const prisma = new PrismaClient();
 
 // ---------- Middleware ----------
-app.use(cors({ 
-  origin: "http://localhost:5173",
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://dak-pad-for-updates.vercel.app",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(cookieParser());
 
