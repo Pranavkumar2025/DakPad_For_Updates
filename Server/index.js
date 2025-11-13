@@ -1,4 +1,3 @@
-// server/index.js
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import multer from "multer";
@@ -26,7 +25,7 @@ app.use(
     credentials: true,
   })
 );
-app.options('*', cors());
+app.options("*", cors());
 app.use(express.json());
 app.use(cookieParser());
 
@@ -62,8 +61,8 @@ const REFRESH_EXPIRES = "7d";
 const setTokenCookie = (res, name, token, maxAgeSeconds) => {
   res.cookie(name, token, {
     httpOnly: true,
-    secure: true,           // ← FORCE TRUE (Render is HTTPS)
-    sameSite: "none",       // ← THIS IS THE FIX
+    secure: true,
+    sameSite: "none",
     maxAge: maxAgeSeconds * 1000,
   });
 };
@@ -75,7 +74,7 @@ const generateTokens = (admin) => {
   return { accessToken, refreshToken };
 };
 
-// ==================== PROTECTED MIDDLEWARE (MUST BE BEFORE ROUTES) ====================
+// ==================== PROTECTED MIDDLEWARE ====================
 const authenticateToken = (req, res, next) => {
   const token = req.cookies.access_token;
   if (!token) return res.status(401).json({ error: "Access denied" });
@@ -87,13 +86,51 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// ==================== PUBLIC TRACKING ROUTE (NO AUTH) ====================
+app.get("/api/track/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const app = await prisma.application.findUnique({
+      where: { applicantId: id },
+      select: {
+        applicantId: true,
+        applicant: true,
+        applicationDate: true,
+        subject: true,
+        block: true,
+        attachment: true,
+        timeline: true,
+        concernedOfficer: true,
+        status: true,
+      },
+    });
+
+    if (!app) {
+      return res.status(404).json({ error: "Application not found" });
+    }
+
+    res.json(app);
+  } catch (err) {
+    console.error("GET /api/track/:id error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // ==================== AUTH CHECK ROUTE (for ProtectedRoute) ====================
 app.get("/api/admin/auth-check", authenticateToken, (req, res) => {
   res.json({ user: req.user });
 });
 
-// ==================== PROTECT ALL APPLICATION ROUTES ====================
-app.use("/api/applications", authenticateToken);
+// ==================== PROTECT ALL /api/applications EXCEPT PUBLIC GET BY ID ====================
+app.use("/api/applications", (req, res, next) => {
+  // Allow public GET by applicantId (e.g., /api/applications/12345)
+  if (req.method === "GET" && req.path.match(/^\/[A-Z0-9]+$/i)) {
+    return next();
+  }
+  // All other methods → require admin auth
+  authenticateToken(req, res, next);
+});
 
 // ---------- Helper: default "Application Received" entry ----------
 const receivedEntry = (date, block, pdfPath) => ({
@@ -105,7 +142,7 @@ const receivedEntry = (date, block, pdfPath) => ({
   officer: "N/A",
 });
 
-// ==================== APPLICATION ROUTES ====================
+// ==================== APPLICATION ROUTES (ADMIN ONLY) ====================
 
 // POST /api/applications
 app.post("/api/applications", upload.none(), async (req, res) => {
@@ -119,7 +156,7 @@ app.post("/api/applications", upload.none(), async (req, res) => {
       source,
       subject,
       block,
-      attachment, // ← NOW A STRING (filename)
+      attachment,
     } = req.body;
 
     const errors = {};
@@ -130,14 +167,12 @@ app.post("/api/applications", upload.none(), async (req, res) => {
     if (!source) errors.source = "Select source";
     if (!subject?.trim()) errors.subject = "Subject required";
     if (!block) errors.block = "Select block";
-    // REMOVED: if (!req.file) errors.attachment = "Upload PDF";
 
     if (Object.keys(errors).length) return res.status(400).json({ errors });
 
     const existing = await prisma.application.findUnique({ where: { applicantId } });
     if (existing) return res.status(409).json({ message: "ID already exists" });
 
-    // Use filename from body, or null
     const pdfPath = attachment ? `/uploads/${attachment}` : null;
     const entry = receivedEntry(applicationDate, block, pdfPath);
 
@@ -151,7 +186,7 @@ app.post("/api/applications", upload.none(), async (req, res) => {
         sourceAt: source,
         subject,
         block,
-        attachment: pdfPath, // ← saves "/uploads/filename.pdf" or null
+        attachment: pdfPath,
         status: "Not Assigned Yet",
         concernedOfficer: "N/A",
         timeline: [entry],
@@ -165,11 +200,12 @@ app.post("/api/applications", upload.none(), async (req, res) => {
   }
 });
 
-
-// GET /api/application
+// GET /api/applications (admin list)
 app.get("/api/applications", async (req, res) => {
   try {
-    const apps = await prisma.application.findMany({ orderBy: { createdAt: "desc" } });
+    const apps = await prisma.application.findMany({
+      orderBy: { createdAt: "desc" },
+    });
     res.json(apps);
   } catch (err) {
     console.error("GET /applications:", err);
@@ -177,7 +213,7 @@ app.get("/api/applications", async (req, res) => {
   }
 });
 
-// GET /api/applications/:id
+// GET /api/applications/:id (PUBLIC + ADMIN)
 app.get("/api/applications/:id", async (req, res) => {
   try {
     const app = await prisma.application.findUnique({
@@ -186,7 +222,7 @@ app.get("/api/applications/:id", async (req, res) => {
     if (!app) return res.status(404).json({ error: "Not found" });
     res.json(app);
   } catch (err) {
-    console.error("GET /:id:", err);
+    console.error("GET /applications/:id:", err);
     res.status(500).json({ message: "Failed" });
   }
 });
@@ -367,11 +403,13 @@ app.post("/api/admin/refresh", async (req, res) => {
 
 // ==================== LOGOUT ====================
 app.post("/api/admin/logout", (req, res) => {
-  res.clearCookie("access_token");
-  res.clearCookie("refresh_token");
+  res.clearCookie("access_token", { path: "/", sameSite: "none", secure: true });
+  res.clearCookie("refresh_token", { path: "/", sameSite: "none", secure: true });
   res.json({ success: true });
 });
 
 // ---------- Server ----------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, "0.0.0.0", () => console.log(`Server → http://localhost:${PORT}`));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});

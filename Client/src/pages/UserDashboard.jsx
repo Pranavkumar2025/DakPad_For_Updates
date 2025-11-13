@@ -63,7 +63,7 @@ const UserDashboard = () => {
 
     try {
       const { data: app } = await api.get(
-        `/api/applications/${applicationIdInput.trim()}`
+        `/api/track/${applicationIdInput.trim()}`
       );
 
       const formatDate = (d) =>
