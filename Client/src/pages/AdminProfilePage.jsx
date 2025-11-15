@@ -1,7 +1,6 @@
 // src/pages/AdminProfilePage.jsx
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTranslation } from "react-i18next";
 import {
   User,
   Key,
@@ -11,13 +10,15 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
+  ArrowLeft,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
 const AdminProfilePage = () => {
-  const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // --- Sidebar & Navbar State ---
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -79,7 +80,7 @@ const AdminProfilePage = () => {
       setSuccess("Profile updated successfully!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to update profile");
+        setError(err.response?.data?.error || "Failed to update profile");
     } finally {
       setIsSaving(false);
     }
@@ -118,13 +119,13 @@ const AdminProfilePage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
-        <Loader2 className="animate-spin text-blue-600" size={40} />
+        <Loader2 className="animate-spin text-blue-600" size={48} />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       {/* ==================== Sidebar ==================== */}
       <Sidebar
         isMenuOpen={isMenuOpen}
@@ -134,7 +135,7 @@ const AdminProfilePage = () => {
       />
 
       {/* ==================== Main Content ==================== */}
-      <div className="flex-1 p-2 sm:p-4 md:p-6 w-full mx-auto overflow-x-hidden">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 w-full">
         <Navbar
           userName={profile.name || "Admin"}
           userPosition={profile.position || "Administrator"}
@@ -143,96 +144,107 @@ const AdminProfilePage = () => {
           toggleMenu={toggleMenu}
         />
 
-        {/* ==================== Profile Content ==================== */}
-        <div className="mt-4 sm:mt-6 max-w-4xl mx-auto">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
-          >
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 font-['Montserrat']">
-              {t("admin.profile.title") || "Admin Profile"}
-            </h1>
-            <p className="text-gray-600 mt-2 font-['Montserrat']">
-              Manage your account details and security settings
-            </p>
-          </motion.div>
+        <div className="max-w-5xl mx-auto mt-6">
+          {/* ==================== Back + Header ==================== */}
+          <div className="flex items-center justify-between mb-8">
+            <motion.button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm sm:text-base"
+              whileHover={{ x: -4 }}
+            >
+              <ArrowLeft size={20} />
+              Back to Dashboard
+            </motion.button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Profile Card */}
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center flex-1"
+            >
+              <h1 className="text-3xl sm:text-4xl font-bold  bg-clip-text text-gray-800 font-['Montserrat'] tracking-tight">
+                My Account
+              </h1>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base font-['Montserrat']">
+                Manage your profile, security, and preferences
+              </p>
+            </motion.div>
+
+            <div className="w-20" /> {/* Spacer */}
+          </div>
+
+          {/* ==================== Profile Grid ==================== */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            {/* ==================== Profile Card ==================== */}
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
               className="lg:col-span-1"
             >
-              <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
-                <div className="flex flex-col items-center">
-                  <div className="w-28 h-28 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-28 h-28 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white">
                     {profile.name.charAt(0).toUpperCase()}
                   </div>
-                  <h2 className="mt-4 text-xl font-bold text-gray-800 font-['Montserrat']">
+                  <h2 className="mt-4 text-xl font-bold text-gray-900 font-['Montserrat']">
                     {profile.name || "Admin User"}
                   </h2>
-                  <p className="text-sm text-gray-500 font-['Montserrat']">
+                  <p className="text-sm text-gray-600 font-['Montserrat']">
                     {profile.position || "Administrator"}
                   </p>
-                  <div className="mt-3 flex items-center gap-2 text-xs text-gray-600">
+                  <div className="mt-3 flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1 rounded-full font-medium">
                     <Shield size={14} />
-                    <span className="font-medium capitalize font-['Montserrat']">
-                      {profile.role || "admin"}
-                    </span>
+                    <span className="capitalize">{profile.role || "admin"}</span>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 font-['Montserrat']">Admin ID</span>
-                      <span className="font-medium text-gray-900 font-['Montserrat']">
-                        {profile.adminId}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 font-['Montserrat']">Department</span>
-                      <span className="font-medium text-gray-900 font-['Montserrat']">
-                        {profile.department || "N/A"}
-                      </span>
-                    </div>
+                <div className="mt-6 pt-6 border-t border-gray-200 space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-['Montserrat']">Admin ID</span>
+                    <span className="font-semibold text-gray-900 font-['Montserrat']">
+                      {profile.adminId}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-['Montserrat']">Department</span>
+                    <span className="font-medium text-gray-900 font-['Montserrat']">
+                      {profile.department || "N/A"}
+                    </span>
                   </div>
                 </div>
               </div>
             </motion.div>
 
-            {/* Edit Form */}
+            {/* ==================== Edit Form ==================== */}
             <motion.div
-              initial={{ opacity: 0, x: 30 }}
+              initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
               className="lg:col-span-2"
             >
-              <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-gray-100">
-                <h3 className="text-xl font-bold text-gray-800 mb-6 font-['Montserrat'] flex items-center gap-2">
-                  <User size={22} />
+              <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100">
+                <h3 className="text-xl font-bold text-gray-900 mb-6 font-['Montserrat'] flex items-center gap-2">
+                  <User size={22} className="text-blue-600" />
                   Edit Profile Information
                 </h3>
 
                 <form onSubmit={handleProfileUpdate} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2 font-['Montserrat']">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 font-['Montserrat']">
                         Full Name
                       </label>
                       <input
                         type="text"
                         value={profile.name}
                         onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all font-['Montserrat']"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-['Montserrat'] text-gray-900"
                         placeholder="Enter full name"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2 font-['Montserrat']">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 font-['Montserrat']">
                         Admin ID
                       </label>
                       <input
@@ -244,37 +256,37 @@ const AdminProfilePage = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2 font-['Montserrat']">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 font-['Montserrat']">
                         Position / Post
                       </label>
                       <input
                         type="text"
                         value={profile.position}
                         onChange={(e) => setProfile({ ...profile, position: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all font-['Montserrat']"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-['Montserrat']"
                         placeholder="e.g., Block Development Officer"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2 font-['Montserrat']">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 font-['Montserrat']">
                         Department
                       </label>
                       <input
                         type="text"
                         value={profile.department}
                         onChange={(e) => setProfile({ ...profile, department: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all font-['Montserrat']"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-['Montserrat']"
                         placeholder="e.g., Rural Development"
                       />
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="flex justify-end pt-4">
                     <motion.button
                       type="submit"
                       disabled={isSaving}
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all font-['Montserrat']"
+                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold flex items-center gap-2 shadow-md hover:shadow-lg disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all font-['Montserrat']"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -293,16 +305,16 @@ const AdminProfilePage = () => {
                   </div>
                 </form>
 
-                {/* Password Section */}
+                {/* ==================== Password Section ==================== */}
                 <div className="mt-8 pt-8 border-t border-gray-200">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-bold text-gray-800 font-['Montserrat'] flex items-center gap-2">
-                      <Key size={22} />
+                    <h3 className="text-xl font-bold text-gray-900 font-['Montserrat'] flex items-center gap-2">
+                      <Key size={22} className="text-red-600" />
                       Change Password
                     </h3>
                     <button
                       onClick={() => setShowPasswordForm(!showPasswordForm)}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium font-['Montserrat']"
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium font-['Montserrat'] underline"
                     >
                       {showPasswordForm ? "Cancel" : "Change Password"}
                     </button>
@@ -318,46 +330,46 @@ const AdminProfilePage = () => {
                         className="space-y-4 mt-4"
                       >
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2 font-['Montserrat']">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2 font-['Montserrat']">
                             Current Password
                           </label>
                           <input
                             type="password"
                             value={passwordData.current}
                             onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all font-['Montserrat']"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-['Montserrat']"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2 font-['Montserrat']">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2 font-['Montserrat']">
                             New Password
                           </label>
                           <input
                             type="password"
                             value={passwordData.new}
                             onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all font-['Montserrat']"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-['Montserrat']"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2 font-['Montserrat']">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2 font-['Montserrat']">
                             Confirm New Password
                           </label>
                           <input
                             type="password"
                             value={passwordData.confirm}
                             onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all font-['Montserrat']"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-['Montserrat']"
                             required
                           />
                         </div>
 
-                        <div className="flex justify-end">
+                        <div className="flex justify-end pt-2">
                           <motion.button
                             type="submit"
-                            className="px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all font-['Montserrat']"
+                            className="px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl font-semibold flex items-center gap-2 shadow-md hover:shadow-lg transition-all font-['Montserrat']"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -373,16 +385,16 @@ const AdminProfilePage = () => {
             </motion.div>
           </div>
 
-          {/* Feedback Messages */}
+          {/* ==================== Toast Messages ==================== */}
           <AnimatePresence>
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="fixed bottom-6 right-6 bg-red-100 border border-red-300 text-red-700 px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 font-['Montserrat']"
+                className="fixed bottom-6 right-6 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 font-['Montserrat'] text-sm"
               >
-                <XCircle size={22} />
+                <XCircle size={20} />
                 <span>{error}</span>
               </motion.div>
             )}
@@ -391,9 +403,9 @@ const AdminProfilePage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="fixed bottom-6 right-6 bg-green-100 border border-green-300 text-green-700 px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 font-['Montserrat']"
+                className="fixed bottom-6 right-6 bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 font-['Montserrat'] text-sm"
               >
-                <CheckCircle size={22} />
+                <CheckCircle size={20} />
                 <span>{success}</span>
               </motion.div>
             )}

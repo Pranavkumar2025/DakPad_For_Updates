@@ -1,14 +1,19 @@
 // src/components/Sidebar.jsx
-import React from "react";
+import React, { useState } from "react";
 import {
   LayoutDashboard,
   Settings,
   User,
   BarChart2,
+  X, // <-- NEW: Close icon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, Link } from "react-router-dom";   // <-- added Link
+import { useNavigate, Link } from "react-router-dom";
 import api from "../utils/api";
+
+// ----- Optional: Replace with your actual dashboard component -----
+import UserDashboardContent from "../pages/UserDashboard"; // <-- Your public dashboard
+// ----------------------------------------------------------------
 
 const Sidebar = ({
   isMenuOpen,
@@ -24,15 +29,28 @@ const Sidebar = ({
     year: "numeric",
   });
 
+  // ----- NEW: Modal State -----
+  const [showDashboardModal, setShowDashboardModal] = useState(false);
+
+  const openDashboardModal = () => {
+    setShowDashboardModal(true);
+    if (isMenuOpen) toggleMenu(); // Close mobile menu
+  };
+
+  const closeDashboardModal = () => setShowDashboardModal(false);
+
   // ---------- MENU ITEMS ----------
   const menuItems = [
-    { icon: <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6" />, label: "User Dashboard", link: "/" },
-    // Profile entry (visible to everyone)
+    {
+      icon: <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6" />,
+      label: "User Dashboard",
+      action: openDashboardModal, // <-- opens modal
+    },
     { icon: <User className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Profile", link: "/admin-profile" },
     ...(isSuperAdmin
       ? [{ icon: <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Performance", link: "/performance" }]
       : []),
-    { icon: <Settings className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Settings", link: "#" },
+    // { icon: <Settings className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Settings", link: "#" },
   ];
 
   // ---------- LOGOUT ----------
@@ -40,7 +58,7 @@ const Sidebar = ({
     try {
       await api.post("/api/admin/logout");
     } catch (err) {
-      console.warn("Logout API failed (cookie already gone?)", err);
+      console.warn("Logout API failed", err);
     }
     window.dispatchEvent(new Event("applicationUpdated"));
     if (isMenuOpen) toggleMenu();
@@ -56,9 +74,9 @@ const Sidebar = ({
         </div>
         <nav className="flex flex-col gap-6">
           {menuItems.map((item, index) => (
-            <Link
+            <button
               key={index}
-              to={item.link}
+              onClick={item.action || (() => navigate(item.link))}
               className="group relative flex items-center justify-center p-2 rounded-full hover:bg-[#ff5010] transition focus:outline-none focus:ring-2 focus:ring-[#ff5010]"
               aria-label={item.label}
             >
@@ -66,7 +84,7 @@ const Sidebar = ({
               <span className="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">
                 {item.label}
               </span>
-            </Link>
+            </button>
           ))}
         </nav>
       </aside>
@@ -96,9 +114,7 @@ const Sidebar = ({
                 whileTap={{ scale: 0.9 }}
                 aria-label="Close sidebar"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X className="w-6 h-6" />
               </motion.button>
             </div>
 
@@ -108,7 +124,6 @@ const Sidebar = ({
                 {today}
               </span>
 
-              {/* ---- Clickable Profile Card ---- */}
               <Link
                 to="/admin-profile"
                 onClick={toggleMenu}
@@ -125,7 +140,6 @@ const Sidebar = ({
                 </div>
               </Link>
 
-              {/* ---- Logout ---- */}
               <motion.button
                 className="flex items-center justify-center gap-2 w-full py-2 bg-[#ff5010] rounded-lg shadow-md hover:bg-[#fc641c] transition-colors focus:outline-none focus:ring-2 focus:ring-white"
                 onClick={handleLogout}
@@ -139,18 +153,17 @@ const Sidebar = ({
               </motion.button>
             </div>
 
-            {/* ---- Navigation ---- */}
+            {/* Navigation */}
             <nav className="flex flex-col gap-4 px-4 pt-4">
               {menuItems.map((item, index) => (
-                <Link
+                <button
                   key={index}
-                  to={item.link}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#ff5010] transition text-sm sm:text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-white"
-                  onClick={toggleMenu}
+                  onClick={item.action || (() => { navigate(item.link); toggleMenu(); })}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#ff5010] transition text-sm sm:text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-white text-left w-full"
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                </Link>
+                </button>
               ))}
             </nav>
           </motion.aside>
@@ -169,6 +182,49 @@ const Sidebar = ({
             onClick={toggleMenu}
             aria-hidden="true"
           />
+        )}
+      </AnimatePresence>
+
+      {/* ==================== DASHBOARD MODAL ==================== */}
+      <AnimatePresence>
+        {showDashboardModal && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              className="fixed inset-0 bg-black/50 z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeDashboardModal}
+            />
+
+            {/* Modal */}
+            <motion.div
+              className="fixed inset-4 md:inset-8 lg:inset-auto lg:left-1/2 lg:-translate-x-1/2 lg:top-8 lg:bottom-8 
+                   max-w-6xl w-full bg-white rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b bg-gray-700 text-white">
+                <h2 className="text-lg sm:text-xl font-bold font-['Montserrat']">User Dashboard</h2>
+                <button
+                  onClick={closeDashboardModal}
+                  className="p-1 rounded-full hover:bg-white/20 transition"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+                <UserDashboardContent />
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

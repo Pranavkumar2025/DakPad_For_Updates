@@ -9,7 +9,7 @@ import Sidebar from "../components/Sidebar";
 import ApplicationTable from "../components/ApplicationRecieveComponents/ApplicationTable";
 import EditCaseForm from "../components/ApplicationRecieveComponents/EditCaseForm";
 import Pagination from "../components/ApplicationRecieveComponents/Pagination";
-import api from "../utils/api"; // <-- NEW: axios with cookies
+import api from "../utils/api";
 
 const ApplicationReceive = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -22,16 +22,44 @@ const ApplicationReceive = () => {
   const [editApplication, setEditApplication] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // New: Admin profile state
+  const [admin, setAdmin] = useState({
+    name: "Loading…",
+    position: "Loading…",
+  });
+  const [profileLoading, setProfileLoading] = useState(true);
+
   const recordsPerPage = 10;
 
   // --------------------------------------------------------------
-  // 1. Fetch & Normalize Applications (with JWT cookie)
+  // 1. Fetch Admin Profile (name + position)
+  // --------------------------------------------------------------
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const { data } = await api.get("/api/admin/profile");
+        setAdmin({
+          name: data.name || "Receiver",
+          position: data.position || "Application Receiver",
+        });
+      } catch (err) {
+        console.error("Failed to load admin profile:", err);
+        setAdmin({ name: "Receiver", position: "Application Receiver" });
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    fetchAdmin();
+  }, []);
+
+  // --------------------------------------------------------------
+  // 2. Fetch Applications
   // --------------------------------------------------------------
   const fetchApplications = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get("/api/applications"); // <-- sends cookie
+      const res = await api.get("/api/applications");
       const data = Array.isArray(res.data) ? res.data : [];
 
       const normalized = data.map((app) => ({
@@ -67,7 +95,7 @@ const ApplicationReceive = () => {
   }, [fetchApplications]);
 
   // --------------------------------------------------------------
-  // 2. Real‑time updates from other components
+  // 3. Real-time updates
   // --------------------------------------------------------------
   useEffect(() => {
     const handleUpdate = () => fetchApplications();
@@ -76,7 +104,7 @@ const ApplicationReceive = () => {
   }, [fetchApplications]);
 
   // --------------------------------------------------------------
-  // 3. Handle Add/Edit Close
+  // 4. Modal Handlers
   // --------------------------------------------------------------
   const handleAddClose = () => {
     setShowAddForm(false);
@@ -102,7 +130,7 @@ const ApplicationReceive = () => {
   const toggleMenu = () => setIsMenuOpen((v) => !v);
 
   // --------------------------------------------------------------
-  // Pagination
+  // 5. Pagination
   // --------------------------------------------------------------
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
@@ -110,17 +138,34 @@ const ApplicationReceive = () => {
   const totalPages = Math.ceil(applications.length / recordsPerPage);
 
   // --------------------------------------------------------------
-  // Render
+  // 6. Early return if profile is loading
+  // --------------------------------------------------------------
+  if (profileLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="text-gray-600 animate-pulse">Loading profile…</div>
+      </div>
+    );
+  }
+
+  // --------------------------------------------------------------
+  // 7. Main Render
   // --------------------------------------------------------------
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      <Sidebar isMenuOpen={isMenuOpen} toggleMenu={toggleMenu} />
+      {/* Sidebar */}
+      <Sidebar
+        isMenuOpen={isMenuOpen}
+        toggleMenu={toggleMenu}
+        userName={admin.name}
+        userPosition={admin.position}
+      />
 
       <main className="flex-1 md:ml-16 pt-6 pb-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-8xl mx-auto md:mr-20">
           <Navbar
-            userName="Siddharth Singh"
-            userPosition="Application Receiver"
+            userName={admin.name}
+            userPosition={admin.position}
             logoLink="/application-receive"
             isMenuOpen={isMenuOpen}
             toggleMenu={toggleMenu}
