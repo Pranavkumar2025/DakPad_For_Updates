@@ -19,8 +19,20 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     check();
   }, []);
 
-  if (auth.loading) return <div className="text-center p-10">Loading...</div>;
+  // Skip loading screen on back/forward
+  if (auth.loading) {
+    const navigationEntry = performance.getEntriesByType("navigation")[0];
+    if (navigationEntry && navigationEntry.type === "back_forward") {
+      return <Navigate to="/" replace />;
+    }
 
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-gray-600 animate-pulse font-medium">Loading...</div>
+      </div>
+    );
+  }
+  
   if (!auth.user) {
     return <Navigate to="/admin-login" state={{ from: location }} replace />;
   }
