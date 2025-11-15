@@ -8,6 +8,7 @@ import PerformanceDashboard from "./pages/PerformanceDashboard";
 import WorkAssignedDashboard from "./pages/WorkAssignedDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ApplicationReceive from "./pages/ApplicationRecieve";
+import AdminProfilePage from "./pages/AdminProfilePage";   // <-- already imported
 import ProtectedRoute from "./components/ProtectedRoute";
 import { LanguageProvider } from "./contexts/LanguageContext";
 
@@ -16,12 +17,12 @@ const App = () => {
     <LanguageProvider>
       <Router>
         <Routes>
-          {/* PUBLIC ROUTES */}
+          {/* ==================== PUBLIC ROUTES ==================== */}
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/" element={<UserDashboard />} />
           <Route path="/performance" element={<PerformanceDashboard />} />
 
-          {/* PROTECTED ADMIN ROUTES */}
+          {/* ==================== PROTECTED ADMIN ROUTES ==================== */}
           <Route
             path="/Admin"
             element={
@@ -55,7 +56,17 @@ const App = () => {
             }
           />
 
-          {/* 404 */}
+          {/* ==================== ADMIN PROFILE (PROTECTED) ==================== */}
+          <Route
+            path="/admin-profile"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "superadmin", "workassigned", "receive"]}>
+                <AdminProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ==================== 404 ==================== */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

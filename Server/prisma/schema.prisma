@@ -41,8 +41,11 @@ model Admin {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   adminId      String   @unique
   password     String
+  name         String?
+  position     String?
+  department   String?
   role         String
-  refreshToken String?   // ← ADD THIS LINE
+  refreshToken String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

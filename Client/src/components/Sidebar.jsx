@@ -1,9 +1,14 @@
 // src/components/Sidebar.jsx
 import React from "react";
-import { LayoutDashboard, Settings, User, BarChart2 } from "lucide-react";
+import {
+  LayoutDashboard,
+  Settings,
+  User,
+  BarChart2,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom"; // <-- NEW
-import api from "../utils/api"; // <-- NEW
+import { useNavigate, Link } from "react-router-dom";   // <-- added Link
+import api from "../utils/api";
 
 const Sidebar = ({
   isMenuOpen,
@@ -12,16 +17,18 @@ const Sidebar = ({
   userPosition = "Application Receiver",
   isSuperAdmin = false,
 }) => {
-  const navigate = useNavigate(); // <-- NEW
+  const navigate = useNavigate();
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
 
+  // ---------- MENU ITEMS ----------
   const menuItems = [
     { icon: <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6" />, label: "User Dashboard", link: "/" },
-    { icon: <User className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Users", link: "/user" },
+    // Profile entry (visible to everyone)
+    { icon: <User className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Profile", link: "/admin-profile" },
     ...(isSuperAdmin
       ? [{ icon: <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Performance", link: "/performance" }]
       : []),
@@ -31,37 +38,27 @@ const Sidebar = ({
   // ---------- LOGOUT ----------
   const handleLogout = async () => {
     try {
-      await api.post("/api/admin/logout"); // clears cookie
+      await api.post("/api/admin/logout");
     } catch (err) {
       console.warn("Logout API failed (cookie already gone?)", err);
     }
-
-    // Notify all components
     window.dispatchEvent(new Event("applicationUpdated"));
-
-    // Close mobile menu
     if (isMenuOpen) toggleMenu();
-
-    // Redirect
     navigate("/admin-login", { replace: true });
   };
 
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* ------------------- Desktop Sidebar ------------------- */}
       <aside className="hidden md:flex fixed top-0 left-0 h-screen w-16 bg-gray-900 text-white flex-col items-center py-6 shadow-lg z-10">
         <div className="mb-12">
-          <img
-            src="/logo.svg"
-            alt="Logo"
-            className="w-10 h-10 border border-gray-700 rounded-lg p-1"
-          />
+          <img src="/logo.svg" alt="Logo" className="w-10 h-10 border border-gray-700 rounded-lg p-1" />
         </div>
         <nav className="flex flex-col gap-6">
           {menuItems.map((item, index) => (
-            <a
+            <Link
               key={index}
-              href={item.link}
+              to={item.link}
               className="group relative flex items-center justify-center p-2 rounded-full hover:bg-[#ff5010] transition focus:outline-none focus:ring-2 focus:ring-[#ff5010]"
               aria-label={item.label}
             >
@@ -69,12 +66,12 @@ const Sidebar = ({
               <span className="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">
                 {item.label}
               </span>
-            </a>
+            </Link>
           ))}
         </nav>
       </aside>
 
-      {/* Mobile Sidebar */}
+      {/* ------------------- Mobile Sidebar ------------------- */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.aside
@@ -84,12 +81,9 @@ const Sidebar = ({
             exit={{ x: "-100%" }}
             transition={{ duration: 0.3 }}
           >
+            {/* Header */}
             <div className="bg-gray-950 p-3 sm:p-4 flex items-center justify-between">
-              <img
-                src="/logo.svg"
-                alt="Logo"
-                className="w-8 h-8 sm:w-10 sm:h-10 border border-gray-700 rounded-lg p-1"
-              />
+              <img src="/logo.svg" alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 border border-gray-700 rounded-lg p-1" />
               <span
                 className="text-sm sm:text-base font-bold text-transparent uppercase bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#fc641c] tracking-tight"
                 style={{ fontFamily: "'Montserrat', sans-serif" }}
@@ -108,11 +102,18 @@ const Sidebar = ({
               </motion.button>
             </div>
 
+            {/* User info + quick actions */}
             <div className="px-4 py-3 flex flex-col gap-3 bg-gray-800/50">
               <span className="text-xs sm:text-sm text-gray-300 font-medium bg-gray-700/50 px-3 py-1 rounded-full text-center">
                 {today}
               </span>
-              <div className="flex items-center gap-2 border border-gray-600 py-1.5 px-3 rounded-full bg-gray-800 shadow-sm">
+
+              {/* ---- Clickable Profile Card ---- */}
+              <Link
+                to="/admin-profile"
+                onClick={toggleMenu}
+                className="flex items-center gap-2 border border-gray-600 py-1.5 px-3 rounded-full bg-gray-800 shadow-sm hover:bg-gray-700 transition"
+              >
                 <img
                   src="https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flat-design-social-media-profiles_1281173-3806.jpg?semt=ais_hybrid&w=740"
                   alt="user"
@@ -122,9 +123,9 @@ const Sidebar = ({
                   <span className="text-xs sm:text-sm font-semibold text-white truncate">{userName}</span>
                   <span className="text-[10px] sm:text-xs text-gray-400 font-light truncate">{userPosition}</span>
                 </div>
-              </div>
+              </Link>
 
-              {/* Logout Button */}
+              {/* ---- Logout ---- */}
               <motion.button
                 className="flex items-center justify-center gap-2 w-full py-2 bg-[#ff5010] rounded-lg shadow-md hover:bg-[#fc641c] transition-colors focus:outline-none focus:ring-2 focus:ring-white"
                 onClick={handleLogout}
@@ -138,18 +139,18 @@ const Sidebar = ({
               </motion.button>
             </div>
 
+            {/* ---- Navigation ---- */}
             <nav className="flex flex-col gap-4 px-4 pt-4">
               {menuItems.map((item, index) => (
-                <a
+                <Link
                   key={index}
-                  href={item.link}
+                  to={item.link}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#ff5010] transition text-sm sm:text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-white"
-                  aria-label={item.label}
                   onClick={toggleMenu}
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                </a>
+                </Link>
               ))}
             </nav>
           </motion.aside>
