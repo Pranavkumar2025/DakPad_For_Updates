@@ -241,6 +241,10 @@
     ],
     "Block Level Offices": [
       {
+        "value": "RDO",
+        "label": "Revenue Development Officer (RDO)"
+      },
+      {
         "value": "BDO Ara Sadar",
         "label": "Block Development Office (BDO) - Ara Sadar"
       },
