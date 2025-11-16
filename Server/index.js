@@ -149,8 +149,8 @@ app.post("/api/applications", upload.none(), async (req, res) => {
       applicantId,
       name: applicant,
       applicationDate,
-      phone = "",        // ← default empty
-      email = "",        // ← default empty
+      phone = "",        // ← default to empty string if not sent
+      email = "",        // ← default to empty string if not sent
       source,
       subject,
       block,
@@ -159,14 +159,14 @@ app.post("/api/applications", upload.none(), async (req, res) => {
 
     const errors = {};
 
-    // Required fields
+    // ---------- REQUIRED ----------
     if (!applicant?.trim()) errors.applicant = "Name required";
     if (!applicationDate) errors.applicationDate = "Date required";
     if (!source) errors.source = "Select source";
     if (!subject?.trim()) errors.subject = "Subject required";
     if (!block) errors.block = "Select block";
 
-    // Optional fields — validate only if provided
+    // ---------- OPTIONAL (validate only if provided) ----------
     if (phone && !/^\d{10}$/.test(phone)) {
       errors.phone = "10-digit phone required";
     }
@@ -178,19 +178,26 @@ app.post("/api/applications", upload.none(), async (req, res) => {
       return res.status(400).json({ errors });
     }
 
-    const existing = await prisma.application.findUnique({ where: { applicantId } });
+    // ----- ID uniqueness -----
+    const existing = await prisma.application.findUnique({
+      where: { applicantId },
+    });
     if (existing) return res.status(409).json({ message: "ID already exists" });
 
+    // ----- PDF path (filename only) -----
     const pdfPath = attachment ? `/uploads/${attachment}` : null;
+
+    // ----- Timeline entry -----
     const entry = receivedEntry(applicationDate, block, pdfPath);
 
+    // ----- Create record -----
     await prisma.application.create({
       data: {
         applicantId,
         applicant,
         applicationDate: new Date(applicationDate),
-        phoneNumber: phone || null,      // ← store null if empty
-        emailId: email || null,          // ← store null if empty
+        phoneNumber: phone || null,   // store null when empty
+        emailId: email || null,       // store null when empty
         sourceAt: source,
         subject,
         block,
@@ -201,9 +208,11 @@ app.post("/api/applications", upload.none(), async (req, res) => {
       },
     });
 
-    res.status(201).json({ success: true, applicantId, message: "Saved" });
+    res
+      .status(201)
+      .json({ success: true, applicantId, message: "Saved" });
   } catch (err) {
-    console.error("POST /applications:", err);
+    console.error("POST /applications error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
