@@ -151,8 +151,8 @@ app.post("/api/applications", upload.none(), async (req, res) => {
       applicantId,
       name: applicant,
       applicationDate,
-      phone,
-      email,
+      phone = "",        // default to empty string
+      email = "",        // default to empty string
       source,
       subject,
       block,
@@ -160,15 +160,25 @@ app.post("/api/applications", upload.none(), async (req, res) => {
     } = req.body;
 
     const errors = {};
+
+    // Required fields
     if (!applicant?.trim()) errors.applicant = "Name required";
     if (!applicationDate) errors.applicationDate = "Date required";
-    if (!/^\d{10}$/.test(phone)) errors.phone = "10-digit phone";
-    if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Valid email";
     if (!source) errors.source = "Select source";
     if (!subject?.trim()) errors.subject = "Subject required";
     if (!block) errors.block = "Select block";
 
-    if (Object.keys(errors).length) return res.status(400).json({ errors });
+    // Optional: Validate only if provided
+    if (phone && !/^\d{10}$/.test(phone)) {
+      errors.phone = "10-digit phone";
+    }
+    if (email && !/\S+@\S+\.\S+/.test(email)) {
+      errors.email = "Valid email";
+    }
+
+    if (Object.keys(errors).length) {
+      return res.status(400).json({ errors });
+    }
 
     const existing = await prisma.application.findUnique({ where: { applicantId } });
     if (existing) return res.status(409).json({ message: "ID already exists" });
@@ -181,8 +191,8 @@ app.post("/api/applications", upload.none(), async (req, res) => {
         applicantId,
         applicant,
         applicationDate: new Date(applicationDate),
-        phoneNumber: phone,
-        emailId: email,
+        phoneNumber: phone || null,        // save null if empty
+        emailId: email || null,            // save null if empty
         sourceAt: source,
         subject,
         block,

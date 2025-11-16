@@ -105,8 +105,8 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     const e = {};
     if (!formData.name.trim()) e.name = "Name is required";
     if (!formData.applicationDate) e.applicationDate = "Date is required";
-    if (!/^\d{10}$/.test(formData.phone)) e.phone = "Enter valid 10-digit phone number";
-    if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = "Enter a valid email";
+    // if (!/^\d{10}$/.test(formData.phone)) e.phone = "Enter valid 10-digit phone number";
+    // if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = "Enter a valid email";
     if (!formData.source) e.source = "Please select a source";
     if (!formData.subject.trim()) e.subject = "Subject is required";
     if (!formData.block) e.block = "Please select a block";
