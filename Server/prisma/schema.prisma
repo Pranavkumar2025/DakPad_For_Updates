@@ -13,20 +13,17 @@ model Application {
   applicantId      String   @unique
   applicant        String
   applicationDate  DateTime
-  phoneNumber      String
-  emailId          String
+  phoneNumber      String?  // ← ADD ? to make optional
+  emailId          String?  // ← ADD ? to make optional
   sourceAt         String
   subject          String
   block            String
-  attachment       String?               // "/uploads/xyz.pdf"
+  attachment       String?
 
-  // Status & officer
   concernedOfficer String?  @default("N/A")
   status           String   @default("Not Assigned Yet")
 
-  // ----- TIMELINE – ARRAY OF OBJECTS -----
-  timeline         TimelineEntry[]       // <-- MongoDB embedded array
-
+  timeline         TimelineEntry[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -36,6 +33,7 @@ model Application {
   @@index([status])
   @@index([concernedOfficer])
 }
+
 
 model Admin {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId

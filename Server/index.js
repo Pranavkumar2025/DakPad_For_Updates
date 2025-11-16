@@ -142,15 +142,15 @@ const receivedEntry = (date, block, pdfPath) => ({
 
 // ==================== APPLICATION ROUTES (ADMIN ONLY) ====================
 
-// POST /api/applications — PHONE & EMAIL OPTIONAL
+// POST /api/applications — PHONE & EMAIL OPTIONAL (MongoDB)
 app.post("/api/applications", upload.none(), async (req, res) => {
   try {
     const {
       applicantId,
       name: applicant,
       applicationDate,
-      phone = "",        // ← default to empty string if not sent
-      email = "",        // ← default to empty string if not sent
+      phone = "",        // ← default empty
+      email = "",        // ← default empty
       source,
       subject,
       block,
@@ -159,14 +159,14 @@ app.post("/api/applications", upload.none(), async (req, res) => {
 
     const errors = {};
 
-    // ---------- REQUIRED ----------
+    // Required fields
     if (!applicant?.trim()) errors.applicant = "Name required";
     if (!applicationDate) errors.applicationDate = "Date required";
     if (!source) errors.source = "Select source";
     if (!subject?.trim()) errors.subject = "Subject required";
     if (!block) errors.block = "Select block";
 
-    // ---------- OPTIONAL (validate only if provided) ----------
+    // Optional: validate only if provided
     if (phone && !/^\d{10}$/.test(phone)) {
       errors.phone = "10-digit phone required";
     }
@@ -178,26 +178,23 @@ app.post("/api/applications", upload.none(), async (req, res) => {
       return res.status(400).json({ errors });
     }
 
-    // ----- ID uniqueness -----
+    // ID uniqueness
     const existing = await prisma.application.findUnique({
       where: { applicantId },
     });
     if (existing) return res.status(409).json({ message: "ID already exists" });
 
-    // ----- PDF path (filename only) -----
     const pdfPath = attachment ? `/uploads/${attachment}` : null;
 
-    // ----- Timeline entry -----
     const entry = receivedEntry(applicationDate, block, pdfPath);
 
-    // ----- Create record -----
     await prisma.application.create({
       data: {
         applicantId,
         applicant,
         applicationDate: new Date(applicationDate),
-        phoneNumber: phone || null,   // store null when empty
-        emailId: email || null,       // store null when empty
+        phoneNumber: phone || null,     // ← null if empty
+        emailId: email || null,         // ← null if empty
         sourceAt: source,
         subject,
         block,
@@ -208,9 +205,7 @@ app.post("/api/applications", upload.none(), async (req, res) => {
       },
     });
 
-    res
-      .status(201)
-      .json({ success: true, applicantId, message: "Saved" });
+    res.status(201).json({ success: true, applicantId, message: "Saved" });
   } catch (err) {
     console.error("POST /applications error:", err);
     res.status(500).json({ message: "Server error" });
