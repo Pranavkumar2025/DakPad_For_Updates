@@ -98,7 +98,24 @@
       {
         "value": "Judicial Offices District Court",
         "label": "Judicial Offices (District Court, Ara)"
+      },
+      {
+        "value": "DPO, MANREGA",
+        "label": "DPO, MANREGA"
+      },
+      {
+        "value": "Executive Engineer, MGNREGA",
+        "label": "Executive Engineer, MGNREGA"
+      },
+      {
+        "value": "Director, DRDA",
+        "label": "Director, DRDA"
+      },
+      {
+        "value": "Director, NEP",
+        "label": "Director, NEP"
       }
+
     ],
     "Sub-Division Level Offices": [
       {
@@ -232,8 +249,20 @@
         "label": "Block Development Office (BDO) - Udwantnagar"
       },
       {
+        "value": "BDO Grahani",
+        "label": "Block Development Office (BDO) - Grahani"
+      },
+      {
         "value": "BDO Barhara",
         "label": "Block Development Office (BDO) - Barhara"
+      },
+      {
+        "value": "BDO Koilwar",
+        "label": "Block Development Office (BDO) - Koilwar"
+      },
+      {
+        "value": "BDO Sandesh",
+        "label": "Block Development Office (BDO) - Sandesh"
       },
       {
         "value": "BDO Sahar",
@@ -248,6 +277,10 @@
         "label": "Block Development Office (BDO) - Piro"
       },
       {
+        "value": "BDO Bihiya",
+        "label": "Block Development Office (BDO) - Bihiya"
+      },
+      {
         "value": "BDO Charpokhari",
         "label": "Block Development Office (BDO) - Charpokhari"
       },
@@ -255,6 +288,70 @@
         "value": "BDO Agiaon",
         "label": "Block Development Office (BDO) - Agiaon"
       },
+      {
+        "value": "BDO Shahpur",
+        "label": "Block Development Office (BDO) - Shahpur"
+      },
+      {
+        "value": "BDO Tarari",
+        "label": "Block Development Office (BDO) - Tarari"
+      },
+      {
+    "value": "PO Ara",
+    "label": "Program Officer - Ara"
+  },
+  {
+    "value": "PO Barhara",
+    "label": "Program Officer - Barhara"
+  },
+  {
+    "value": "PO Koilwar",
+    "label": "Program Officer - Koilwar"
+  },
+  {
+    "value": "PO Sandesh",
+    "label": "Program Officer - Sandesh"
+  },
+  {
+    "value": "PO Piro",
+    "label": "Program Officer - Piro"
+  },
+  {
+    "value": "PO Charpokhari",
+    "label": "Program Officer - Charpokhari"
+  },
+  {
+    "value": "PO Bihiya",
+    "label": "Program Officer - Bihiya"
+  },
+  {
+    "value": "PO Shahpur",
+    "label": "Program Officer - Shahpur"
+  },
+  {
+    "value": "PO Udwantnagar",
+    "label": "Program Officer - Udwantnagar"
+  },
+  {
+    "value": "PO Garhani",
+    "label": "Program Officer - Garhani"
+  },
+  {
+    "value": "PO Jagdishpur",
+    "label": "Program Officer - Jagdishpur"
+  },
+  {
+    "value": "PO Agiaon",
+    "label": "Program Officer - Agiaon"
+  },
+  {
+    "value": "PO Sahar",
+    "label": "Program Officer - Sahar"
+  },
+  {
+    "value": "PO Tarari",
+    "label": "Program Officer - Tarari"
+  },
       {
         "value": "CO Ara Sadar",
         "label": "Circle Officer (CO – Land & Revenue) - Ara Sadar"

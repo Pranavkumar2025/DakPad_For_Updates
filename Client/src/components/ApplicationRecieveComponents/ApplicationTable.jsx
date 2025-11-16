@@ -29,7 +29,7 @@ const ApplicationTable = ({ currentRecords, indexOfFirstRecord, handleEdit }) =>
                 <th className="px-4 py-3 text-left font-semibold w-48">Email</th>
                 <th className="px-4 py-3 text-left font-semibold flex-1 min-w-[200px]">Subject</th>
                 <th className="px-4 py-3 text-center font-semibold w-32">Attachment</th>
-                <th className="px-4 py-3 text-center font-semibold w-20">Actions</th>
+                {/* <th className="px-4 py-3 text-center font-semibold w-20">Actions</th> */}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -113,7 +113,7 @@ const ApplicationTable = ({ currentRecords, indexOfFirstRecord, handleEdit }) =>
                         <span className="text-gray-400 text-xs">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    {/* <td className="px-4 py-3 text-center">
                       <motion.button
                         whileHover={{ scale: 1.15 }}
                         whileTap={{ scale: 0.95 }}
@@ -122,7 +122,7 @@ const ApplicationTable = ({ currentRecords, indexOfFirstRecord, handleEdit }) =>
                       >
                         <Edit className="w-4.5 h-4.5" />
                       </motion.button>
-                    </td>
+                    </td> */}
                   </motion.tr>
                 ))
               )}
@@ -165,14 +165,14 @@ const ApplicationTable = ({ currentRecords, indexOfFirstRecord, handleEdit }) =>
                 </div>
 
                 {/* Floating Edit Button */}
-                <motion.button
+                {/* <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleEdit(app)}
                   className="bg-red-600 text-white p-2.5 rounded-full shadow-md hover:bg-red-700 transition-colors"
                 >
                   <Edit className="w-4 h-4" />
-                </motion.button>
+                </motion.button> */}
               </div>
 
               {/* Info Grid */}
