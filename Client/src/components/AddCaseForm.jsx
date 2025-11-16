@@ -64,7 +64,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     source: "",
     subject: "",
     block: "",
-    attachment: "", // ← ONLY FILENAME (string)
+    attachment: "", // ← ONLY FILENAME
   });
   const [randomId, setRandomId] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -100,13 +100,13 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     }
   };
 
-  // ────── validation (PDF optional) ──────
+  // ────── validation (Phone & Email OPTIONAL) ──────
   const validate = () => {
     const e = {};
     if (!formData.name.trim()) e.name = "Name is required";
     if (!formData.applicationDate) e.applicationDate = "Date is required";
-    if (!/^\d{10}$/.test(formData.phone)) e.phone = "Enter valid 10-digit phone number";
-    if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = "Enter a valid email";
+    if (formData.phone && !/^\d{10}$/.test(formData.phone)) e.phone = "Enter valid 10-digit phone number";
+    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) e.email = "Enter a valid email";
     if (!formData.source) e.source = "Please select a source";
     if (!formData.subject.trim()) e.subject = "Subject is required";
     if (!formData.block) e.block = "Please select a block";
@@ -124,13 +124,13 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     form.append("applicantId", randomId);
     form.append("name", formData.name);
     form.append("applicationDate", formData.applicationDate);
-    form.append("phone", formData.phone);
-    form.append("email", formData.email);
+    if (formData.phone) form.append("phone", formData.phone);
+    if (formData.email) form.append("email", formData.email);
     form.append("source", formData.source);
     form.append("subject", formData.subject);
     form.append("block", formData.block);
     if (formData.attachment) {
-      form.append("attachment", formData.attachment); // ← ONLY FILENAME (string)
+      form.append("attachment", formData.attachment);
     }
 
     try {
@@ -166,7 +166,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
       return;
     }
 
-    setFormData((p) => ({ ...p, attachment: file.name })); // ← SAVE ONLY NAME
+    setFormData((p) => ({ ...p, attachment: file.name }));
     setErrors((p) => ({ ...p, attachment: null }));
   };
 
@@ -185,7 +185,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
       return;
     }
 
-    setFormData((p) => ({ ...p, attachment: file.name })); // ← SAVE ONLY NAME
+    setFormData((p) => ({ ...p, attachment: file.name }));
     setErrors((p) => ({ ...p, attachment: null }));
   };
 
@@ -197,7 +197,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = () => setIsDragging(false);
 
-  // ────── input change (text fields) ──────
+  // ────── input change ──────
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
@@ -225,10 +225,9 @@ const AddCaseForm = ({ isOpen, onClose }) => {
         </p>
 
         <form onSubmit={handleSubmit}>
-          {/* ────── ALL TEXT INPUTS (unchanged) ────── */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-medium text-gray-600">Applicant Name</label>
+              <label className="text-xs font-medium text-gray-600">Applicant Name *</label>
               <input type="text" name="name" value={formData.name} onChange={handleInputChange}
                 placeholder="Enter applicant name"
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all" />
@@ -236,33 +235,35 @@ const AddCaseForm = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gray-600">Application Date</label>
+              <label className="text-xs font-medium text-gray-600">Application Date *</label>
               <input type="date" name="applicationDate" value={formData.applicationDate} onChange={handleInputChange}
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all" />
               {errors.applicationDate && <p className="text-red-500 text-xs mt-1">{errors.applicationDate}</p>}
             </div>
 
+            {/* PHONE - OPTIONAL */}
             <div>
-              <label className="text-xs font-medium text-gray-600">Phone Number</label>
+              <label className="text-xs font-medium text-gray-600">Phone Number <span className="text-gray-400">(Optional)</span></label>
               <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#ff5010]">
                 <span className="px-2 text-gray-500 text-sm">+91</span>
                 <input type="text" name="phone" value={formData.phone} onChange={handleInputChange}
-                  placeholder="Enter 10-digit number"
+                  placeholder="10-digit number"
                   className="w-full p-2 text-sm rounded-lg focus:outline-none" />
               </div>
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>
 
+            {/* EMAIL - OPTIONAL */}
             <div>
-              <label className="text-xs font-medium text-gray-600">Email ID</label>
+              <label className="text-xs font-medium text-gray-600">Email ID <span className="text-gray-400">(Optional)</span></label>
               <input type="text" name="email" value={formData.email} onChange={handleInputChange}
                 placeholder="example@hello.com"
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all" />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              {errors.email && <p class SRP="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gray-600">Source At</label>
+              <label className="text-xs font-medium text-gray-600">Source At *</label>
               <select name="source" value={formData.source} onChange={handleInputChange}
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all">
                 <option value="" disabled>Select source</option>
@@ -276,7 +277,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gray-600">Block</label>
+              <label className="text-xs font-medium text-gray-600">Block *</label>
               <DropdownButton
                 label={formData.block || "Select Block"}
                 items={[
@@ -301,7 +302,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
             </div>
 
             <div className="col-span-2">
-              <label className="text-xs font-medium text-gray-600">Subject</label>
+              <label className="text-xs font-medium text-gray-600">Subject *</label>
               <input type="text" name="subject" value={formData.subject} onChange={handleInputChange}
                 placeholder="Enter subject"
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all" />
@@ -309,7 +310,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* ────── PDF (optional, name only) ────── */}
+          {/* PDF Upload */}
           <div className="pt-4 pb-2">
             <label className="text-xs font-medium text-gray-600">
               Attach Application PDF <span className="text-gray-400">(Optional)</span>
@@ -338,7 +339,6 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                   </div>
                 </label>
 
-                {/* attached name */}
                 {formData.attachment && (
                   <div className="flex items-center gap-2 mt-2 bg-gray-100 p-2 rounded-md w-full max-w-xs">
                     <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -352,12 +352,10 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                   </div>
                 )}
 
-                {/* no file hint */}
                 {!formData.attachment && (
                   <p className="text-xs text-gray-400 mt-2">No file attached (optional)</p>
                 )}
 
-                {/* error only when file is invalid */}
                 {errors.attachment && formData.attachment && (
                   <p className="text-red-500 text-xs mt-1 font-medium">{errors.attachment}</p>
                 )}
@@ -365,7 +363,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* ────── buttons ────── */}
+          {/* Buttons */}
           <div className="w-full flex gap-4 mt-4">
             <button type="button" onClick={onClose}
               className="w-full border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
@@ -379,7 +377,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
         </form>
       </div>
 
-      {/* ────── SUCCESS MODAL ────── */}
+      {/* SUCCESS MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white w-[90%] max-w-lg rounded-2xl shadow-xl p-6 relative border-t-4 border-green-500">
@@ -433,7 +431,6 @@ const AddCaseForm = ({ isOpen, onClose }) => {
         </div>
       )}
 
-      {/* ────── CSS ────── */}
       <style jsx global>{`
         .overflow-y-auto::-webkit-scrollbar { width: 6px; }
         .overflow-y-auto::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #ff5010, #fc641c); border-radius: 3px; }

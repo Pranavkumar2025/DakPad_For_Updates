@@ -124,11 +124,9 @@ app.get("/api/admin/auth-check", authenticateToken, (req, res) => {
 
 // ==================== PROTECT ALL /api/applications EXCEPT PUBLIC GET BY ID ====================
 app.use("/api/applications", (req, res, next) => {
-  // Allow public GET by applicantId (e.g., /api/applications/12345)
   if (req.method === "GET" && req.path.match(/^\/[A-Z0-9]+$/i)) {
     return next();
   }
-  // All other methods → require admin auth
   authenticateToken(req, res, next);
 });
 
@@ -144,15 +142,15 @@ const receivedEntry = (date, block, pdfPath) => ({
 
 // ==================== APPLICATION ROUTES (ADMIN ONLY) ====================
 
-// POST /api/applications
+// POST /api/applications — PHONE & EMAIL OPTIONAL
 app.post("/api/applications", upload.none(), async (req, res) => {
   try {
     const {
       applicantId,
       name: applicant,
       applicationDate,
-      phone,
-      email,
+      phone = "",        // ← default empty
+      email = "",        // ← default empty
       source,
       subject,
       block,
@@ -160,15 +158,25 @@ app.post("/api/applications", upload.none(), async (req, res) => {
     } = req.body;
 
     const errors = {};
+
+    // Required fields
     if (!applicant?.trim()) errors.applicant = "Name required";
     if (!applicationDate) errors.applicationDate = "Date required";
-    if (!/^\d{10}$/.test(phone)) errors.phone = "10-digit phone";
-    if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Valid email";
     if (!source) errors.source = "Select source";
     if (!subject?.trim()) errors.subject = "Subject required";
     if (!block) errors.block = "Select block";
 
-    if (Object.keys(errors).length) return res.status(400).json({ errors });
+    // Optional fields — validate only if provided
+    if (phone && !/^\d{10}$/.test(phone)) {
+      errors.phone = "10-digit phone required";
+    }
+    if (email && !/\S+@\S+\.\S+/.test(email)) {
+      errors.email = "Valid email required";
+    }
+
+    if (Object.keys(errors).length) {
+      return res.status(400).json({ errors });
+    }
 
     const existing = await prisma.application.findUnique({ where: { applicantId } });
     if (existing) return res.status(409).json({ message: "ID already exists" });
@@ -181,8 +189,8 @@ app.post("/api/applications", upload.none(), async (req, res) => {
         applicantId,
         applicant,
         applicationDate: new Date(applicationDate),
-        phoneNumber: phone,
-        emailId: email,
+        phoneNumber: phone || null,      // ← store null if empty
+        emailId: email || null,          // ← store null if empty
         sourceAt: source,
         subject,
         block,
@@ -381,7 +389,6 @@ app.post("/api/admin/login", async (req, res) => {
 
 // ==================== ADMIN PROFILE ROUTES ====================
 
-// 1. GET /api/admin/profile → fetch current admin
 app.get("/api/admin/profile", authenticateToken, async (req, res) => {
   try {
     const admin = await prisma.admin.findUnique({
@@ -404,7 +411,6 @@ app.get("/api/admin/profile", authenticateToken, async (req, res) => {
   }
 });
 
-// 2. PATCH /api/admin/profile → update name, position, department
 app.patch("/api/admin/profile", authenticateToken, async (req, res) => {
   const { name, position, department } = req.body;
 
@@ -428,7 +434,6 @@ app.patch("/api/admin/profile", authenticateToken, async (req, res) => {
   }
 });
 
-// 3. PATCH /api/admin/password → change password
 app.patch("/api/admin/password", authenticateToken, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
