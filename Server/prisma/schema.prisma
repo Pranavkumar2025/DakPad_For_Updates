@@ -13,28 +13,37 @@ model Application {
   applicantId      String   @unique
   applicant        String
   applicationDate  DateTime
-  phoneNumber      String?  // ← ADD ? to make optional
-  emailId          String?  // ← ADD ? to make optional
+  phoneNumber      String?
+  emailId          String?
   sourceAt         String
   subject          String
   block            String
   attachment       String?
 
-  concernedOfficer String?  @default("N/A")
-  status           String   @default("Not Assigned Yet")
+  // Assignment
+  concernedOfficer       String?  @default("N/A")
+  department             String?  // Officer department
+  supervisor             String?  // e.g., "Person 1"
+  supervisorDepartment   String?
 
-  timeline         TimelineEntry[]
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  status                 String   @default("Not Assigned Yet")
+
+  timeline               TimelineEntry[]
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   @@index([applicant])
   @@index([applicationDate])
   @@index([block])
   @@index([status])
   @@index([concernedOfficer])
+  @@index([supervisor])
+  @@index([supervisorDepartment])
 }
 
-
+// ─────────────────────────────────────
+// ADMIN MODEL 
+// ─────────────────────────────────────
 model Admin {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   adminId      String   @unique
@@ -42,7 +51,7 @@ model Admin {
   name         String?
   position     String?
   department   String?
-  role         String
+  role         String   // e.g., "Super Admin", "Data Entry", "Officer"
   refreshToken String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -50,12 +59,36 @@ model Admin {
   @@map("AdminsDetails")
 }
 
-// Embedded document – stored **inside** the Application document
+// ─────────────────────────────────────
+// NEW: PROFESSIONAL SUPERVISOR MODEL
+// ─────────────────────────────────────
+model Supervisor {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  supervisorId  String   @unique
+  password      String             // Will be hashed
+  name          String             // e.g., "Person 1", "Dr. Rajesh Kumar"
+  designation   String?            // e.g., "Senior Officer", "Block Incharge"
+  department    String?            // e.g., "Revenue", "Panchayat"
+  phone         String?
+  email         String?
+  block         String?            // Which block they supervise
+  isActive      Boolean  @default(true)
+  role          String   @default("Supervisor")
+  refreshToken  String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("SupervisorsDetails")
+}
+
+// Embedded Timeline Entry
 type TimelineEntry {
   section     String
   comment     String
-  date        String    // "04/11/2025"
+  date        String
   pdfLink     String?
   department  String?
   officer     String?
+  supervisor  String?
 }

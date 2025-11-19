@@ -38,7 +38,8 @@ app.use("/uploads", express.static("uploads"));
 
 // Routes
 app.get("/api/track/:id", applicationRoutes);        // Public tracking
-app.use("/api", applicationRoutes);     // All application routes
+// app.use("/api",applicationRoutes);
+app.use("/api/applications", applicationRoutes);     // All application routes
 app.use("/api/admin", authRoutes);                   // All auth routes (login, logout, refresh, auth-check)
 app.use("/api/admin", adminRoutes);                  // Profile & password routes
 

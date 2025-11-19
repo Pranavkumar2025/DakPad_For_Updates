@@ -11,6 +11,7 @@ import ApplicationReceive from "./pages/ApplicationRecieve";
 import AdminProfilePage from "./pages/AdminProfilePage";   // <-- already imported
 import ProtectedRoute from "./components/ProtectedRoute";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import SupervisorDashboard from "./pages/SupervisorDashboard";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/" element={<UserDashboard />} />
           <Route path="/performance" element={<PerformanceDashboard />} />
+          <Route path="/supervisor" element={<SupervisorDashboard />} />
 
           {/* ==================== PROTECTED ADMIN ROUTES ==================== */}
           <Route
