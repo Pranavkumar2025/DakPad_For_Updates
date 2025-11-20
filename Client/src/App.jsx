@@ -8,23 +8,34 @@ import PerformanceDashboard from "./pages/PerformanceDashboard";
 import WorkAssignedDashboard from "./pages/WorkAssignedDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ApplicationReceive from "./pages/ApplicationRecieve";
-import AdminProfilePage from "./pages/AdminProfilePage";   // <-- already imported
-import ProtectedRoute from "./components/ProtectedRoute";
-import { LanguageProvider } from "./contexts/LanguageContext";
+import AdminProfilePage from "./pages/AdminProfilePage";
 import SupervisorDashboard from "./pages/SupervisorDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
+import {Toaster} from "react-hot-toast";   // Optional: for notifications
+import { LanguageProvider } from "./contexts/LanguageContext";
 
 const App = () => {
   return (
     <LanguageProvider>
       <Router>
+        <Toaster position="top-right" />
         <Routes>
           {/* ==================== PUBLIC ROUTES ==================== */}
-          <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/" element={<UserDashboard />} />
           <Route path="/performance" element={<PerformanceDashboard />} />
-          <Route path="/supervisor" element={<SupervisorDashboard />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
 
-          {/* ==================== PROTECTED ADMIN ROUTES ==================== */}
+          {/* ==================== SUPERVISOR PROTECTED ROUTE ==================== */}
+          <Route
+            path="/supervisor-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["Supervisor"]}>
+                <SupervisorDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ==================== ADMIN PROTECTED ROUTES ==================== */}
           <Route
             path="/Admin"
             element={
@@ -58,11 +69,11 @@ const App = () => {
             }
           />
 
-          {/* ==================== ADMIN PROFILE (PROTECTED) ==================== */}
+          {/* ==================== ADMIN PROFILE (ALL ADMIN ROLES) ==================== */}
           <Route
             path="/admin-profile"
             element={
-              <ProtectedRoute allowedRoles={["admin", "superadmin", "workassigned", "receive"]}>
+              <ProtectedRoute allowedRoles={["admin", "superadmin", "workassigned", "receive", "Supervisor"]}>
                 <AdminProfilePage />
               </ProtectedRoute>
             }

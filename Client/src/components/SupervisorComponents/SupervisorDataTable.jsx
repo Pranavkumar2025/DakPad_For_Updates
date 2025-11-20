@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import casesData from "../../JsonData/DataTable.json";
-import SuperAdminFilterHeader from "./SupervisorFilterHeader";
-import SuperAdminApplicationTable from "./SupevisorApplicationTable";
+import SupervisorFilterHeader from "./SupervisorFilterHeader";
+import SupervisorApplicationTable from "./SupevisorApplicationTable";
 import ViewDetails from "./ViewDetails";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -53,7 +53,7 @@ const SupervisorDataTable = () => {
 
   return (
     <div className="p-2 sm:p-4 overflow-x-hidden">
-      <SuperAdminFilterHeader
+      <SupervisorFilterHeader
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         filteredCount={filteredCases.length}
@@ -68,7 +68,7 @@ const SupervisorDataTable = () => {
         onExcelClick={handleDownloadExcel}
       />
 
-      <SuperAdminApplicationTable
+      <SupervisorApplicationTable
         data={filteredCases}
         onRowClick={(row) => {
           setSelectedCase(row);

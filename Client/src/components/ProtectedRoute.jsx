@@ -8,21 +8,33 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const location = useLocation();
 
   useEffect(() => {
-    const check = async () => {
+    const checkAuth = async () => {
       try {
-        const res = await api.get("/api/admin/auth-check");
-        setAuth({ loading: false, user: res.data.user });
-      } catch {
+        // First try Admin auth-check
+        let res = await api.get("/api/admin/auth-check").catch(() => null);
+
+        // If Admin fails → try Supervisor
+        if (!res?.data?.user) {
+          res = await api.get("/api/supervisor/auth-check").catch(() => null);
+        }
+
+        if (res?.data?.user) {
+          setAuth({ loading: false, user: res.data.user });
+        } else {
+          setAuth({ loading: false, user: null });
+        }
+      } catch (err) {
         setAuth({ loading: false, user: null });
       }
     };
-    check();
+
+    checkAuth();
   }, []);
 
-  // Skip loading screen on back/forward
+  // Prevent flash on back/forward navigation
   if (auth.loading) {
     const navigationEntry = performance.getEntriesByType("navigation")[0];
-    if (navigationEntry && navigationEntry.type === "back_forward") {
+    if (navigationEntry?.type === "back_forward") {
       return <Navigate to="/" replace />;
     }
 
@@ -32,21 +44,30 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
       </div>
     );
   }
-  
+
+  // Not logged in → redirect to correct login
   if (!auth.user) {
-    return <Navigate to="/admin-login" state={{ from: location }} replace />;
+    // Smart redirect: go to Supervisor login if URL contains "supervisor"
+    const redirectTo =
+      location.pathname.includes("supervisor") ||
+      location.pathname.includes("Supervisor")
+        ? "/supervisor-login"
+        : "/admin-login";
+
+    return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
-  if (allowedRoles.length && !allowedRoles.includes(auth.user.role)) {
-    return <Navigate to="/admin-login" replace />;
+  // Role not allowed
+  if (allowedRoles.length > 0 && !allowedRoles.includes(auth.user.role)) {
+    return <Navigate to="/unauthorized" replace />;
+    // Or redirect to their dashboard:
+    // return <Navigate to={auth.user.role === "Supervisor" ? "/supervisor-dashboard" : "/Admin"} replace />;
   }
 
   return children;
 };
 
 export default ProtectedRoute;
-
-
 
 
 // // src/components/ProtectedRoute.jsx

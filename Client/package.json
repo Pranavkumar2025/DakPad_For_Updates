@@ -28,6 +28,7 @@
     "react-date-range": "^2.0.1",
     "react-datepicker": "^8.7.0",
     "react-dom": "^19.1.0",
+    "react-hot-toast": "^2.6.0",
     "react-i18next": "^16.0.0",
     "react-icon": "^1.0.0",
     "react-icons": "^5.5.0",

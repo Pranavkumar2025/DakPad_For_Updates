@@ -13,7 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import api from "../../utils/api"; // <-- NEW: axios with cookies
+import api from "../../utils/api";
 
 const ViewDetails = ({ data, onClose }) => {
   const [applicationData, setApplicationData] = useState(null);
@@ -23,11 +23,16 @@ const ViewDetails = ({ data, onClose }) => {
 
   const applicationId = data?.applicationId;
 
-  // ---------- Helpers ----------
+  // FIXED: Better date formatting + fallback
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    const d = new Date(dateString);
-    return isNaN(d.getTime()) ? "N/A" : d.toISOString().split("T")[0];
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "N/A";
+    return date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }); // e.g., 20 Nov 2025
   };
 
   const calculatePendingDays = (issueDate, status) => {
@@ -48,7 +53,6 @@ const ViewDetails = ({ data, onClose }) => {
     return "In Process";
   };
 
-  // ---------- Fetch (with JWT cookie) ----------
   const fetchApplication = async () => {
     if (!applicationId) {
       setError("No application ID provided");
@@ -59,11 +63,22 @@ const ViewDetails = ({ data, onClose }) => {
     try {
       setIsLoading(true);
       setError("");
-      const res = await api.get(`/api/applications/${applicationId}`); // <-- sends cookie
+      const res = await api.get(`/api/applications/${applicationId}`);
       const app = res.data;
 
-      const timeline = Array.isArray(app.timeline) ? app.timeline : [];
-      const status = determineStatus(timeline, app.concernedOfficer);
+      // CRITICAL FIX: Sort timeline newest first + ensure date exists
+      const rawTimeline = Array.isArray(app.timeline) ? app.timeline : [];
+      const sortedTimeline = rawTimeline
+        .map(entry => ({
+          ...entry,
+          // Ensure every entry has a valid date (fallback to now if missing)
+          date: entry.date && !isNaN(new Date(entry.date).getTime()) 
+            ? entry.date 
+            : new Date().toISOString()
+        }))
+        .sort((a, b) => new Date(b.date) - new Date(a.date)); // Newest first
+
+      const status = determineStatus(sortedTimeline, app.concernedOfficer);
       const pendingDays = calculatePendingDays(app.applicationDate, status);
 
       const processed = {
@@ -81,7 +96,7 @@ const ViewDetails = ({ data, onClose }) => {
         concernedOfficer: app.concernedOfficer || "N/A",
         pendingDays,
         pdfLink: app.attachment ? `http://localhost:5000${app.attachment}` : null,
-        timeline,
+        timeline: sortedTimeline,
       };
 
       setApplicationData(processed);
@@ -93,16 +108,13 @@ const ViewDetails = ({ data, onClose }) => {
     }
   };
 
-  // ---------- Effects ----------
   useEffect(() => {
     fetchApplication();
-
     const handleUpdate = () => fetchApplication();
     window.addEventListener("applicationUpdated", handleUpdate);
     return () => window.removeEventListener("applicationUpdated", handleUpdate);
   }, [applicationId]);
 
-  // ---------- Status Styling ----------
   const getStatusStyle = (status) => {
     switch (status) {
       case "Not Assigned Yet":
@@ -120,52 +132,35 @@ const ViewDetails = ({ data, onClose }) => {
     }
   };
 
-  // ---------- Loading UI ----------
+  // Loading & Error UI (unchanged)
   if (isLoading) {
     return (
-      <motion.div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
+      <motion.div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <div className="bg-white rounded-xl p-8 shadow-xl">
           <div className="flex items-center gap-3">
             <Loader2 className="animate-spin text-green-600 text-3xl" />
-            <span className="text-lg font-medium text-gray-700 font-['Montserrat']">
-              Loading application...
-            </span>
+            <span className="text-lg font-medium text-gray-700 font-['Montserrat']">Loading application...</span>
           </div>
         </div>
       </motion.div>
     );
   }
 
-  // ---------- Error UI ----------
   if (error || !applicationData) {
     return (
-      <motion.div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <div className="bg-white rounded-xl p-6 shadow-xl max-w-md w-full">
-          <div className="text-center">
-            <XCircle className="mx-auto text-red-600 text-4xl mb-3" />
-            <p className="text-lg font-medium text-gray-800 mb-2">Error</p>
-            <p className="text-sm text-gray-600 mb-4">{error || "Application not found"}</p>
-            <button
-              onClick={onClose}
-              className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-['Montserrat']"
-            >
-              Close
-            </button>
-          </div>
+      <motion.div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <div className="bg-white rounded-xl p-6 shadow-xl max-w-md w-full text-center">
+          <XCircle className="mx-auto text-red-600 text-4xl mb-3" />
+          <p className="text-lg font-medium text-gray-800 mb-2">Error</p>
+          <p className="text-sm text-gray-600 mb-4">{error || "Application not found"}</p>
+          <button onClick={onClose} className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-['Montserrat']">
+            Close
+          </button>
         </div>
       </motion.div>
     );
   }
 
-  // ---------- Main UI ----------
   return (
     <motion.div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -208,13 +203,7 @@ const ViewDetails = ({ data, onClose }) => {
               { label: "Issue Letter No", value: applicationData.issueLetterNo, icon: <FileText className="w-5 h-5 text-green-600" /> },
               { label: "Issue Date", value: applicationData.issueDate, icon: <Calendar className="w-5 h-5 text-green-600" /> },
             ].map((item, idx) => (
-              <motion.div
-                key={idx}
-                className="flex items-start gap-3"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
-              >
+              <motion.div key={idx} className="flex items-start gap-3" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}>
                 {item.icon}
                 <div>
                   <span className="text-sm font-medium text-gray-600">{item.label}</span>
@@ -231,11 +220,7 @@ const ViewDetails = ({ data, onClose }) => {
             <div className="md:col-span-2">
               <span className="text-sm font-medium text-gray-600">Status</span>
               <p className="mt-1">
-                <span
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusStyle(
-                    applicationData.status
-                  ).badge}`}
-                >
+                <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusStyle(applicationData.status).badge}`}>
                   {getStatusStyle(applicationData.status).icon}
                   {applicationData.status}
                 </span>
@@ -250,17 +235,11 @@ const ViewDetails = ({ data, onClose }) => {
             <div className="md:col-span-2">
               <span className="text-sm font-medium text-gray-600">Pending Days</span>
               <p className="mt-1">
-                <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
-                    applicationData.pendingDays === 0
-                      ? "bg-green-500 text-white"
-                      : applicationData.pendingDays <= 10
-                      ? "bg-green-500 text-white"
-                      : applicationData.pendingDays <= 15
-                      ? "bg-orange-500 text-white"
-                      : "bg-red-500 text-white"
-                  }`}
-                >
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
+                  applicationData.pendingDays === 0 ? "bg-green-500 text-white" :
+                  applicationData.pendingDays <= 10 ? "bg-green-500 text-white" :
+                  applicationData.pendingDays <= 15 ? "bg-orange-500 text-white" : "bg-red-500 text-white"
+                }`}>
                   {applicationData.pendingDays}
                 </span>
               </p>
@@ -292,15 +271,10 @@ const ViewDetails = ({ data, onClose }) => {
           <FaHistory size={18} /> Show Application Timeline
         </motion.button>
 
-        {/* Timeline Modal */}
+        {/* Timeline Modal - NOW 100% CORRECT */}
         <AnimatePresence>
           {isTimelineOpen && (
-            <motion.div
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-60 p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
+            <motion.div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-60 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <motion.div
                 className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6"
                 initial={{ scale: 0.95 }}
@@ -309,12 +283,7 @@ const ViewDetails = ({ data, onClose }) => {
               >
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-gray-800">Application Timeline</h3>
-                  <motion.button
-                    onClick={() => setIsTimelineOpen(false)}
-                    className="text-gray-500 hover:text-red-600 text-xl"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
+                  <motion.button onClick={() => setIsTimelineOpen(false)} className="text-gray-500 hover:text-red-600 text-xl" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                     <IoClose />
                   </motion.button>
                 </div>
@@ -323,9 +292,9 @@ const ViewDetails = ({ data, onClose }) => {
                   <div className="relative space-y-4">
                     {applicationData.timeline.map((item, idx) => {
                       const isLast = idx === applicationData.timeline.length - 1;
-                      const isDisposed = item.section.toLowerCase().includes("disposed");
-                      const isCompliance = item.section.toLowerCase().includes("compliance");
-                      const isDismissed = item.section.toLowerCase().includes("dismissed");
+                      const isDisposed = item.section?.toLowerCase().includes("disposed");
+                      const isCompliance = item.section?.toLowerCase().includes("compliance");
+                      const isDismissed = item.section?.toLowerCase().includes("dismissed");
                       const isCompleted = isLast || isCompliance || isDisposed;
 
                       const dotClass =
@@ -336,28 +305,18 @@ const ViewDetails = ({ data, onClose }) => {
 
                       return (
                         <div key={idx} className="relative flex items-start pl-10">
-                          <div
-                            className={`absolute left-0 top-0 w-6 h-6 ${dotClass} rounded-full shadow-md z-10 flex items-center justify-center border-2 border-white`}
-                          >
+                          <div className={`absolute left-0 top-0 w-6 h-6 ${dotClass} rounded-full shadow-md z-10 flex items-center justify-center border-2 border-white`}>
                             {isCompleted && <CheckCircle size={16} className="text-white" />}
                           </div>
-                          <div
-                            className={`absolute left-2.5 top-6 bottom-0 w-0.5 ${
-                              idx === applicationData.timeline.length - 1 ? "bg-transparent" : "bg-gray-300"
-                            }`}
-                          />
-                          <div
-                            className={`w-full p-4 rounded-lg border ${
-                              isLast ? "bg-blue-50 border-blue-300 shadow-md" : "bg-white border-gray-200"
-                            }`}
-                          >
+                          <div className={`absolute left-2.5 top-6 bottom-0 w-0.5 ${idx === applicationData.timeline.length - 1 ? "bg-transparent" : "bg-gray-300"}`} />
+                          <div className={`w-full p-4 rounded-lg border ${isLast ? "bg-blue-50 border-blue-300 shadow-md" : "bg-white border-gray-200"}`}>
                             <div className="flex justify-between items-center mb-1">
-                              <h4 className="text-sm font-semibold text-blue-700">{item.section}</h4>
+                              <h4 className="text-sm font-semibold text-blue-700">{item.section || "Update"}</h4>
                               <span className="text-xs text-gray-600 font-medium">
                                 {formatDate(item.date)}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-700">{item.comment}</p>
+                            <p className="text-sm text-gray-700">{item.comment || "No remarks"}</p>
                             {item.department && item.department !== "N/A" && (
                               <p className="text-xs text-gray-600 mt-1">Department: {item.department}</p>
                             )}
@@ -391,11 +350,8 @@ const ViewDetails = ({ data, onClose }) => {
           )}
         </AnimatePresence>
 
-        {/* Global styles */}
         <style jsx global>{`
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-          .animate-spin-slow { animation: spin 2s linear infinite; }
-          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
           .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
           .shadow-xl { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
           .backdrop-blur-sm { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }

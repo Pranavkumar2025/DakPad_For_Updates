@@ -62,22 +62,23 @@ model Admin {
 // ─────────────────────────────────────
 // NEW: PROFESSIONAL SUPERVISOR MODEL
 // ─────────────────────────────────────
-model Supervisor {
+model Supervisor {                   
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   supervisorId  String   @unique
-  password      String             // Will be hashed
-  name          String             // e.g., "Person 1", "Dr. Rajesh Kumar"
-  designation   String?            // e.g., "Senior Officer", "Block Incharge"
-  department    String?            // e.g., "Revenue", "Panchayat"
+  password      String
+  name          String
+  designation   String?
+  department    String
   phone         String?
   email         String?
-  block         String?            // Which block they supervise
+  block         String?
   isActive      Boolean  @default(true)
   role          String   @default("Supervisor")
   refreshToken  String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  // FIX: Allow null for existing bad data + auto-fix on read
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @updatedAt
 
   @@map("SupervisorsDetails")
 }

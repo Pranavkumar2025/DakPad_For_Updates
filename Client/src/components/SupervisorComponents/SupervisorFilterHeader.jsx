@@ -41,7 +41,7 @@ const SuperAdminFilterHeader = ({
       >
         <div className="flex flex-col gap-2">
           <h2 className="text-base sm:text-lg font-bold text-gray-700 text-center">
-            Super Admin Dashboard
+            Supervisor Dashboard
           </h2>
           <div className="relative w-full">
             <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-[10px] sm:text-sm" />
@@ -200,7 +200,7 @@ const SuperAdminFilterHeader = ({
       <div className="hidden md:flex md:flex-col md:ml-16 md:p-6 md:gap-3 md:mb-4 font-['Montserrat']">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <h2 className="text-3xl font-bold text-gray-700 mb-3">
-            Super Admin Dashboard
+            Supervisor Dashboard
           </h2>
           <div className="relative w-full md:w-80">
             <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />

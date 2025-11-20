@@ -2,31 +2,26 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
-import { FaUsers, FaUserShield } from "react-icons/fa";
+import { FaUsers } from "react-icons/fa";
 import { motion } from "framer-motion";
 import api from "../utils/api";
+import SupervisorLogin from "./SupervisorLogin"; // Import the new component
 
 const AdminLogin = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
-  // Shared state for both logins
-  const [showPassword, setShowPassword] = useState({ admin: false, supervisor: false });
-  const [loading, setLoading] = useState({ admin: false, supervisor: false });
-  const [error, setError] = useState({ admin: "", supervisor: "" });
-
-  // Admin Login
+  // Admin Login State
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [adminId, setAdminId] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
 
-  // Supervisor Login
-  const [supervisorName, setSupervisorName] = useState("");
-  const [supervisorPassword, setSupervisorPassword] = useState("");
-
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    setError((prev) => ({ ...prev, admin: "" }));
-    setLoading((prev) => ({ ...prev, admin: true }));
+    setError("");
+    setLoading(true);
 
     try {
       const res = await api.post("/api/admin/login", {
@@ -38,36 +33,16 @@ const AdminLogin = () => {
         navigate(res.data.redirect || "/dashboard", { replace: true });
       }
     } catch (err) {
-      setError((prev) => ({
-        ...prev,
-        admin: err.response?.data?.error || "Invalid credentials",
-      }));
+      setError(err.response?.data?.error || "Invalid credentials");
     } finally {
-      setLoading((prev) => ({ ...prev, admin: false }));
-    }
-  };
-
-  const handleSupervisorLogin = (e) => {
-    e.preventDefault();
-    setError((prev) => ({ ...prev, supervisor: "" }));
-    setLoading((prev) => ({ ...prev, supervisor: true }));
-
-    // Demo login: Person 1–5 with password "123"
-    const valid = ["Person 1", "Person 2", "Person 3", "Person 4", "Person 5"].includes(supervisorName) && supervisorPassword === "123";
-
-    if (valid) {
-      localStorage.setItem("supervisor", supervisorName);
-      navigate("/supervisor-dashboard");
-    } else {
-      setError((prev) => ({ ...prev, supervisor: "Invalid name or password (use 123)" }));
-      setLoading((prev) => ({ ...prev, supervisor: false }));
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-indigo-50 px-4 py-12">
       <div className="relative w-full max-w-4xl h-[620px] perspective-1000">
-        {/* 3D Flip Card */}
+        {/* 3D Flip Card Container */}
         <motion.div
           className="absolute inset-0 preserve-3d"
           animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -111,35 +86,35 @@ const AdminLogin = () => {
                   onChange={(e) => setAdminId(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   required
-                  disabled={loading.admin}
+                  disabled={loading}
                 />
                 <div className="relative">
                   <input
-                    type={showPassword.admin ? "text" : "password"}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Password"
                     value={adminPassword}
                     onChange={(e) => setAdminPassword(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl pr-12 focus:ring-2 focus:ring-orange-500"
                     required
-                    disabled={loading.admin}
+                    disabled={loading}
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword((prev) => ({ ...prev, admin: !prev.admin }))}
+                    onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3.5 text-gray-500 hover:text-orange-600"
                   >
-                    {showPassword.admin ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
 
-                {error.admin && <p className="text-red-500 text-sm text-center">{error.admin}</p>}
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
                 <button
                   type="submit"
-                  disabled={loading.admin}
+                  disabled={loading}
                   className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3.5 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition disabled:opacity-70"
                 >
-                  {loading.admin ? "Logging in..." : "Admin Login"}
+                  {loading ? "Logging in..." : "Admin Login"}
                 </button>
               </form>
 
@@ -155,83 +130,17 @@ const AdminLogin = () => {
             </div>
           </div>
 
-          {/* Back: Supervisor Login */}
-          <div className="absolute inset-0 backface-hidden flex items-center justify-center" style={{ transform: "rotateY(180deg)" }}>
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 sm:p-10">
-              <button
-                onClick={() => setIsFlipped(false)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-indigo-600 text-xl font-bold"
-              >
-                ×
-              </button>
-
-              <div className="flex flex-col items-center mb-8 mt-8">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-4"
-                >
-                  <FaUserShield className="text-4xl text-indigo-600" />
-                </motion.div>
-                <h1 className="text-3xl font-bold text-indigo-700">Supervisor Login</h1>
-                <p className="text-sm text-gray-500 mt-2">Monitor & track assigned cases</p>
-              </div>
-
-              <form onSubmit={handleSupervisorLogin} className="space-y-5">
-                <select
-                  value={supervisorName}
-                  onChange={(e) => setSupervisorName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                  disabled={loading.supervisor}
-                >
-                  <option value="">Select Supervisor</option>
-                  <option>Person 1</option>
-                  <option>Person 2</option>
-                  <option>Person 3</option>
-                  <option>Person 4</option>
-                  <option>Person 5</option>
-                </select>
-
-                <div className="relative">
-                  <input
-                    type={showPassword.supervisor ? "text" : "password"}
-                    placeholder="Password (demo: 123)"
-                    value={supervisorPassword}
-                    onChange={(e) => setSupervisorPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl pr-12 focus:ring-2 focus:ring-indigo-500"
-                    required
-                    disabled={loading.supervisor}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => ({ ...prev, supervisor: !prev.supervisor }))}
-                    className="absolute right-3 top-3.5 text-gray-500 hover:text-indigo-600"
-                  >
-                    {showPassword.supervisor ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-
-                {error.supervisor && <p className="text-red-500 text-sm text-center">{error.supervisor}</p>}
-
-                <button
-                  type="submit"
-                  disabled={loading.supervisor}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition disabled:opacity-70"
-                >
-                  {loading.supervisor ? "Logging in..." : "Login as Supervisor"}
-                </button>
-              </form>
-
-              <p className="text-center text-xs text-gray-400 mt-6">
-                Demo Password: <span className="font-bold text-indigo-600">123</span>
-              </p>
-            </div>
+          {/* Back: Supervisor Login (as reusable component) */}
+          <div
+            className="absolute inset-0 backface-hidden flex items-center justify-center"
+            style={{ transform: "rotateY(180deg)" }}
+          >
+            <SupervisorLogin onBack={() => setIsFlipped(false)} />
           </div>
         </motion.div>
       </div>
 
-      {/* CSS for 3D Flip */}
+      {/* 3D Flip CSS */}
       <style jsx>{`
         .perspective-1000 {
           perspective: 1000px;

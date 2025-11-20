@@ -47,26 +47,34 @@ const AdminProfilePage = () => {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
   // --- Fetch Profile ---
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setIsLoading(true);
-        const { data } = await api.get("/api/admin/profile");
-        setProfile({
-          name: data.name || "",
-          adminId: data.adminId || "",
-          position: data.position || "",
-          department: data.department || "",
-          role: data.role || "",
-        });
-      } catch (err) {
-        setError(err.response?.data?.error || "Failed to load profile");
-      } finally {
-        setIsLoading(false);
+useEffect(() => {
+  const fetchProfile = async () => {
+    try {
+      setIsLoading(true);
+      // UNIVERSAL ROUTE — WORKS FOR BOTH ADMIN & SUPERVISOR
+      const { data } = await api.get("/api/me");
+
+      const user = data.user;
+
+      setProfile({
+        name: user.name || "User",
+        adminId: user.adminId || user.supervisorId || user.id || "N/A",
+        position: user.position || user.designation || "Officer",
+        department: user.department || "N/A",
+        role: user.role || "user",
+      });
+    } catch (err) {
+      console.error("Profile fetch error:", err);
+      setError(err.response?.data?.error || "Failed to load profile");
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        navigate("/login");
       }
-    };
-    fetchProfile();
-  }, []);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  fetchProfile();
+}, [navigate]);
 
   // --- Update Profile ---
   const handleProfileUpdate = async (e) => {
