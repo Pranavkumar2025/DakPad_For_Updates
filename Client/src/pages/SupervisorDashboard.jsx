@@ -62,30 +62,7 @@ const SuperAdminDashboard = () => {
           toggleMenu={toggleMenu}
         />
         <div className="p-4 sm:p-6 lg:p-8">
-          {/* Professional Dashboard Header */}
-          <div className="bg-white border-l-4 border-indigo-600 rounded-r-lg shadow-md p-5 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 max-w-[1250px] mx-auto">
-            <div className="flex items-center gap-4">
-
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 font-['Montserrat'] tracking-tight">
-                  {supervisor.name}
-                </h1>
-                <p className="text-sm sm:text-base text-gray-600 font-medium">
-                  {supervisor.department || "Field Operations Department"} <span className="text-gray-400">•</span> Field Supervisor
-                </p>
-              </div>
-            </div>
-
-            {/* Optional: Status / Session Info */}
-            <div className="text-right">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 text-xs sm:text-sm font-semibold rounded-full">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                Active Session
-              </div>
-            </div>
-          </div>
-
-          {/* Your Table */}
+          
           <SupervisorDataTable supervisor={supervisor} />
         </div>
       </div>
