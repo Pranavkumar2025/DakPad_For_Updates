@@ -167,13 +167,6 @@ const SupervisorLogin = ({ onBack }) => {
               {loading ? "Authenticating..." : "Login as Supervisor"}
             </button>
           </form>
-
-          {/* Footer - Real Login Hint */}
-          <div className="px-6 pb-6 text-center">
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Real Login Example → Supervisor: <strong>Person 1</strong> • Admin ID: <code className="bg-gray-100 px-2 py-1 rounded">SUP001</code> • Password: <code className="bg-gray-100 px-2 py-1 rounded">123456</code>
-            </p>
-          </div>
         </div>
 
         {/* Back Link */}
