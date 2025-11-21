@@ -11,7 +11,7 @@ import ApplicationReceive from "./pages/ApplicationRecieve";
 import AdminProfilePage from "./pages/AdminProfilePage";
 import SupervisorDashboard from "./pages/SupervisorDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import {Toaster} from "react-hot-toast";   // Optional: for notifications
+import { Toaster } from "react-hot-toast";
 import { LanguageProvider } from "./contexts/LanguageContext";
 
 const App = () => {
@@ -22,7 +22,6 @@ const App = () => {
         <Routes>
           {/* ==================== PUBLIC ROUTES ==================== */}
           <Route path="/" element={<UserDashboard />} />
-          <Route path="/performance" element={<PerformanceDashboard />} />
           <Route path="/admin-login" element={<AdminLogin />} />
 
           {/* ==================== SUPERVISOR PROTECTED ROUTE ==================== */}
@@ -35,7 +34,7 @@ const App = () => {
             }
           />
 
-          {/* ==================== ADMIN PROTECTED ROUTES ==================== */}
+          {/* ==================== ADMIN & SUPERADMIN PROTECTED ROUTES ==================== */}
           <Route
             path="/Admin"
             element={
@@ -44,14 +43,26 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/SuperAdmin"
+            path="/SuperAdmin/*"
             element={
               <ProtectedRoute allowedRoles={["superadmin"]}>
                 <SuperAdminDashboard />
               </ProtectedRoute>
             }
           />
+
+          {/* PERFORMANCE DASHBOARD — NOW ONLY FOR SUPERADMIN */}
+          <Route
+            path="/performance"
+            element={
+              <ProtectedRoute allowedRoles={["superadmin"]}>
+                <PerformanceDashboard />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/work-assigned"
             element={
@@ -60,6 +71,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/application-receive"
             element={
@@ -69,7 +81,7 @@ const App = () => {
             }
           />
 
-          {/* ==================== ADMIN PROFILE (ALL ADMIN ROLES) ==================== */}
+          {/* ADMIN PROFILE — ALL AUTHORIZED ROLES */}
           <Route
             path="/admin-profile"
             element={
@@ -79,7 +91,7 @@ const App = () => {
             }
           />
 
-          {/* ==================== 404 ==================== */}
+          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

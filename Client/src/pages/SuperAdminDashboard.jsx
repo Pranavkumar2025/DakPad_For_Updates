@@ -1,8 +1,10 @@
-// src/pages/SuperAdminDashboard.jsx
+
 import React, { useState, useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import SuperAdminDataTable from "../components/SuperAdminComponents/SuperAdminDataTable";
 import Sidebar from "../components/Sidebar";
+import SuperAdminDataTable from "../components/SuperAdminComponents/SuperAdminDataTable";
+import PerformanceDashboard from "./PerformanceDashboard"; // ← Your beautiful dashboard
 import api from "../utils/api";
 
 const SuperAdminDashboard = () => {
@@ -14,11 +16,11 @@ const SuperAdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  const toggleMenu = () => setIsMenuOpen((prev) => !prev);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // --------------------------------------------------------------
-  // Fetch Admin Profile (name, position, role)
-  // --------------------------------------------------------------
+  const toggleMenu = () => setIsMenuOpen(prev => !prev);
+
   useEffect(() => {
     const fetchAdmin = async () => {
       try {
@@ -30,11 +32,10 @@ const SuperAdminDashboard = () => {
         });
       } catch (err) {
         console.error("Failed to load admin profile:", err);
-        // fallback
         setAdmin({
           name: "Super Admin",
           position: "System Administrator",
-          role: "admin",
+          role: "superadmin",
         });
       } finally {
         setLoading(false);
@@ -43,43 +44,59 @@ const SuperAdminDashboard = () => {
     fetchAdmin();
   }, []);
 
-  // --------------------------------------------------------------
-  // Show loader while profile loads
-  // --------------------------------------------------------------
+  // Auto redirect to /applications if directly on /SuperAdmin
+  useEffect(() => {
+    if (location.pathname === "/SuperAdmin") {
+      navigate("/SuperAdmin/applications", { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <div className="text-gray-600 animate-pulse">Loading profile…</div>
+        <div className="text-gray-600 animate-pulse text-xl">Loading SuperAdmin Panel…</div>
       </div>
     );
   }
 
-  // --------------------------------------------------------------
-  // Main Dashboard
-  // --------------------------------------------------------------
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
+      {/* Fixed Sidebar */}
       <Sidebar
         isMenuOpen={isMenuOpen}
         toggleMenu={toggleMenu}
         userName={admin.name}
         userPosition={admin.position}
-        isSuperAdmin={admin.role === "superadmin"} // Only true for real superadmin
+        isSuperAdmin={true}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 p-2 sm:p-4 md:p-6 w-full mx-auto overflow-x-hidden">
+      {/* Main Content Area */}
+      <div className="flex-1 p-2 sm:p-4 md:p-6 w-full mx-auto overflow-x-hidden"> 
         <Navbar
           userName={admin.name}
           userPosition={admin.position}
-          logoLink="/SuperAdmin"
+          logoLink="/SuperAdmin/applications"
           isMenuOpen={isMenuOpen}
           toggleMenu={toggleMenu}
         />
 
-        <div className="mt-6">
-          <SuperAdminDataTable />
+        <div className="mt-6 ml-3">
+          <Routes>
+            {/* Default Tab: Applications List */}
+            <Route
+              path="/applications"
+              element={<SuperAdminDataTable />}
+            />
+
+            {/* Performance Dashboard Tab */}
+            <Route
+              path="/performance"
+              element={<PerformanceDashboard />}
+            />
+
+            {/* Optional: Add more tabs later */}
+            {/* <Route path="/reports" element={<ReportsPage />} /> */}
+          </Routes>
         </div>
       </div>
     </div>

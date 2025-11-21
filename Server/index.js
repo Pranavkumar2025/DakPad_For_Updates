@@ -7,6 +7,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
+import dashboardRoutes from "./routes/dashboard.js";
+
 
 dotenv.config();
 
@@ -732,6 +734,11 @@ app.get("/api/supervisor/auth-check", authenticateToken, (req, res) => {
   }
   res.json({ user: req.user });
 });
+
+app.use("/api/dashboard", dashboardRoutes);
+
+
+
 
 
 // ---------- Server ----------
