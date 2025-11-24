@@ -90,11 +90,11 @@ const SupervisorLogin = ({ onBack }) => {
                 className="w-full px-5 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-orange-50/20 text-base"
               >
                 <option value="">Choose a supervisor</option>
-                <option>Person 1</option>
-                <option>Person 2</option>
-                <option>Person 3</option>
-                <option>Person 4</option>
-                <option>Person 5</option>
+                <option>ADM Bhojpur</option>
+                <option>DDC Bhojpur</option>
+                <option>DEO Bhojpur</option>
+                <option>Civil Sergent</option>
+                <option>DPM</option>
               </select>
             </div>
 

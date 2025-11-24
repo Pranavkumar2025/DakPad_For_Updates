@@ -442,11 +442,11 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
                 <Select
                   options={[
                     { value: "", label: "— No Supervisor —" },
-                    { value: "Person 1", label: "Person 1" },
-                    { value: "Person 2", label: "Person 2" },
-                    { value: "Person 3", label: "Person 3" },
-                    { value: "Person 4", label: "Person 4" },
-                    { value: "Person 5", label: "Person 5" },
+                    { value: "ADM Bhojpur", label: "ADM Bhojpur" },
+                    { value: "DDC Bhojpur", label: "DDC Bhojpur" },
+                    { value: "DEO Bhojpur", label: "DEO Bhojpur" },
+                    { value: "Civil Sergent", label: "Civil Sergent" },
+                    { value: "DPM", label: "DPM" },
                   ]}
                   value={selectedSupervisor}
                   onChange={(opt) => setSelectedSupervisor(opt || { value: "", label: "— No Supervisor —" })}
