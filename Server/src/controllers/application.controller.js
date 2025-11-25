@@ -14,7 +14,7 @@ export const createApplication = async (req, res) => {
       source,
       subject,
       block,
-      attachment, // filename from frontend (optional)
+      attachment, 
     } = req.body;
 
     const errors = {};
@@ -36,7 +36,7 @@ export const createApplication = async (req, res) => {
       return res.status(400).json({ errors });
     }
 
-    // Check if applicantId already exists
+
     const existing = await prisma.application.findUnique({
       where: { applicantId },
     });

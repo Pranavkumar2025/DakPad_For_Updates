@@ -1,4 +1,4 @@
-// controllers/profile.controller.js
+
 import prisma from "../prisma/client.js";
 
 export const getMyProfile = async (req, res) => {

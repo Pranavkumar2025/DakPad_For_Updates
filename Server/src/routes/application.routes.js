@@ -13,10 +13,9 @@ import { upload } from "../config/multer.config.js";
 
 const router = express.Router();
 
-// Public tracking
+
 router.get("/track/:id", trackApplication);
 
-// Protected routes (except public GET by ID)
 router.use((req, res, next) => {
   if (req.method === "GET" && req.path.match(/^\/[A-Z0-9]+$/i)) {
     return next();
