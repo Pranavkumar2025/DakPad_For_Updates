@@ -1,9 +1,7 @@
 import multer from "multer";
 import path from "path";
-import fs from "fs";
 
-const uploadDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const uploadDir = path.join(process.cwd(), "server/src/uploads");
 
 const storage = multer.diskStorage({
   destination: (_, __, cb) => cb(null, uploadDir),
@@ -23,5 +21,3 @@ export const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter,
 });
-
-export const uploadNone = multer(); // For form-data without files

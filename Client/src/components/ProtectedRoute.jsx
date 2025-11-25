@@ -10,20 +10,16 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // First try Admin auth-check
-        let res = await api.get("/api/admin/auth-check").catch(() => null);
+        // CORRECT ENDPOINT
+        const res = await api.get("/api/me");   // ← FIXED HERE
 
-        // If Admin fails → try Supervisor
-        if (!res?.data?.user) {
-          res = await api.get("/api/supervisor/auth-check").catch(() => null);
-        }
-
-        if (res?.data?.user) {
+        if (res.data?.user) {
           setAuth({ loading: false, user: res.data.user });
         } else {
           setAuth({ loading: false, user: null });
         }
       } catch (err) {
+        console.log("Auth check failed:", err.response?.data || err.message);
         setAuth({ loading: false, user: null });
       }
     };
@@ -31,101 +27,36 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     checkAuth();
   }, []);
 
-  // Prevent flash on back/forward navigation
   if (auth.loading) {
-    const navigationEntry = performance.getEntriesByType("navigation")[0];
-    if (navigationEntry?.type === "back_forward") {
+    const navEntry = performance.getEntriesByType("navigation")[0];
+    if (navEntry?.type === "back_forward") {
       return <Navigate to="/" replace />;
     }
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-gray-600 animate-pulse font-medium">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange-50 to-indigo-50">
+        <div className="text-xl font-semibold text-gray-700 animate-pulse">
+          Loading Dashboard...
+        </div>
       </div>
     );
   }
 
-  // Not logged in → redirect to correct login
   if (!auth.user) {
-    // Smart redirect: go to Supervisor login if URL contains "supervisor"
-    const redirectTo =
-      location.pathname.includes("supervisor") ||
-      location.pathname.includes("Supervisor")
-        ? "/supervisor-login"
-        : "/admin-login";
-
+    const isSupervisorPath = location.pathname.toLowerCase().includes("supervisor");
+    const redirectTo = isSupervisorPath ? "/supervisor-login" : "/admin-login";
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
-  // Role not allowed
-  if (allowedRoles.length > 0 && !allowedRoles.includes(auth.user.role)) {
-    return <Navigate to="/unauthorized" replace />;
-    // Or redirect to their dashboard:
-    // return <Navigate to={auth.user.role === "Supervisor" ? "/supervisor-dashboard" : "/Admin"} replace />;
+  if (allowedRoles.length > 0) {
+    const userRole = auth.user.role || (auth.user.supervisorId ? "Supervisor" : "admin");
+    if (!allowedRoles.includes(userRole)) {
+      const homePath = userRole === "Supervisor" ? "/supervisor-dashboard" : "/dashboard";
+      return <Navigate to={homePath} replace />;
+    }
   }
 
   return children;
 };
 
 export default ProtectedRoute;
-
-
-// // src/components/ProtectedRoute.jsx
-// import React, { useEffect, useState } from "react";
-// import { Navigate, useLocation } from "react-router-dom";
-// import api from "../utils/api";
-
-// const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-//   const [auth, setAuth] = useState({ loading: true, user: null });
-//   const location = useLocation();
-
-//   useEffect(() => {
-//     // Detect if this is a back/forward navigation
-//     const navigationEntry = performance.getEntriesByType("navigation")[0];
-//     const isBackNavigation = navigationEntry && navigationEntry.type === "back_forward";
-
-//     const check = async () => {
-//       try {
-//         const res = await api.get("/api/admin/auth-check");
-//         setAuth({ loading: false, user: res.data.user });
-//       } catch (err) {
-//         // If back navigation → skip loading, go straight to /
-//         if (isBackNavigation) {
-//           setAuth({ loading: false, user: null });
-//         } else {
-//           setAuth({ loading: false, user: null });
-//         }
-//       }
-//     };
-
-//     check();
-//   }, []);
-
-//   // Skip loading screen on back/forward
-//   if (auth.loading) {
-//     const navigationEntry = performance.getEntriesByType("navigation")[0];
-//     if (navigationEntry && navigationEntry.type === "back_forward") {
-//       return <Navigate to="/" replace />;
-//     }
-
-//     return (
-//       <div className="flex min-h-screen items-center justify-center bg-gray-50">
-//         <div className="text-gray-600 animate-pulse font-medium">Loading...</div>
-//       </div>
-//     );
-//   }
-
-//   // Not authenticated → go to public dashboard
-//   if (!auth.user) {
-//     return <Navigate to="/" replace />;
-//   }
-
-//   // Wrong role
-//   if (allowedRoles.length && !allowedRoles.includes(auth.user.role)) {
-//     return <Navigate to="/admin-login" replace />;
-//   }
-
-//   return children;
-// };
-
-// export default ProtectedRoute;

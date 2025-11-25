@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { FaUsers } from "react-icons/fa";
 import { motion } from "framer-motion";
-import api from "../utils/api";
-import SupervisorLogin from "./SupervisorLogin"; // Import the new component
+import { adminLogin } from "../utils/api";
+import SupervisorLogin from "./SupervisorLogin";
 
 const AdminLogin = () => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -24,16 +24,19 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const res = await api.post("/api/admin/login", {
-        adminId,
-        password: adminPassword,
-      });
+      const res = await adminLogin({ adminId, password: adminPassword });
+
+
 
       if (res.data.success) {
-        navigate(res.data.redirect || "/dashboard", { replace: true });
+        // Redirect based on role (superadmin, admin, etc.)
+        const redirectPath = res.data.redirect || "/dashboard";
+        navigate(redirectPath, { replace: true });
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Invalid credentials");
+      const msg = err.response?.data?.error || "Invalid credentials. Please try again.";
+      setError(msg);
+      console.error("Admin login failed:", err.response?.data);
     } finally {
       setLoading(false);
     }
@@ -83,10 +86,11 @@ const AdminLogin = () => {
                   type="text"
                   placeholder="Admin ID"
                   value={adminId}
-                  onChange={(e) => setAdminId(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  onChange={(e) => setAdminId(e.target.value.trim())}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition"
                   required
                   disabled={loading}
+                  autoFocus
                 />
                 <div className="relative">
                   <input
@@ -94,25 +98,33 @@ const AdminLogin = () => {
                     placeholder="Password"
                     value={adminPassword}
                     onChange={(e) => setAdminPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl pr-12 focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl pr-12 focus:ring-2 focus:ring-orange-500 outline-none transition"
                     required
                     disabled={loading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3.5 text-gray-500 hover:text-orange-600"
+                    className="absolute right-3 top-3.5 text-gray-500 hover:text-orange-600 transition"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
 
-                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                {error && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-red-500 text-sm text-center font-medium bg-red-50 py-2 rounded-lg border border-red-200"
+                  >
+                    {error}
+                  </motion.p>
+                )}
 
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3.5 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition disabled:opacity-70"
+                  disabled={loading || !adminId || !adminPassword}
+                  className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3.5 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {loading ? "Logging in..." : "Admin Login"}
                 </button>
@@ -121,8 +133,9 @@ const AdminLogin = () => {
               <p className="text-center text-sm text-gray-500 mt-8">
                 Are you a Supervisor?{" "}
                 <button
+                  type="button"
                   onClick={() => setIsFlipped(true)}
-                  className="text-indigo-600 font-bold hover:underline"
+                  className="text-indigo-600 font-bold hover:underline transition"
                 >
                   Login here →
                 </button>
@@ -130,10 +143,13 @@ const AdminLogin = () => {
             </div>
           </div>
 
-          {/* Back: Supervisor Login (as reusable component) */}
+          {/* Back: Supervisor Login */}
           <div
             className="absolute inset-0 backface-hidden flex items-center justify-center"
-            style={{ transform: "rotateY(180deg)" }}
+            style={{
+              transform: "rotateY(180deg)",
+              backfaceVisibility: "hidden"  // Ensure it's hidden when facing away
+            }}
           >
             <SupervisorLogin onBack={() => setIsFlipped(false)} />
           </div>
