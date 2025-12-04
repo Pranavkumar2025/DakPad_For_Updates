@@ -3,11 +3,10 @@ import React, { useState, useEffect } from "react";
 import {
   Search,
   Loader2,
-  Clock,
+  Shield,
   QrCode,
   Download,
-  CheckCircle,
-  Shield,
+  Clock,
   XCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +17,7 @@ import ApplicationResultModal from "../components/ApplicationResultModal";
 import api from "../utils/api";
 import QRCode from "qrcode";
 
-// Import Images
+// Import Images (kept exactly as original)
 import pic1 from "../assets/pic1.png";
 import pic2 from "../assets/pic2.png";
 import pic3 from "../assets/pic3.png";
@@ -38,7 +37,7 @@ const UserDashboard = () => {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Auto slide every 4 seconds
+  // Auto slide every 4 seconds (unchanged)
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -58,7 +57,7 @@ const UserDashboard = () => {
       const dataUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
         width: 200,
         margin: 2,
-        color: { dark: "#ea580c", light: "#FFFFFF" },
+        color: { dark: "#0f4a91", light: "#FFFFFF" },
       });
       setQrCodeUrl(dataUrl);
     } catch (err) {
@@ -102,13 +101,13 @@ const UserDashboard = () => {
         timeline: app.timeline?.length
           ? app.timeline
           : [
-              {
-                section: isHindi ? "आवेदन प्राप्त हुआ" : "Application Received",
-                comment: `${isHindi ? "प्राप्त हुआ" : "Received"} at ${app.block || "N/A"} on ${formatDate(app.applicationDate)}`,
-                date: formatDate(app.applicationDate),
-                pdfLink: app.attachment ? `http://localhost:5000${app.attachment}` : null,
-              },
-            ],
+            {
+              section: isHindi ? "आवेदन प्राप्त हुआ" : "Application Received",
+              comment: `${isHindi ? "प्राप्त हुआ" : "Received"} at ${app.block || "N/A"} on ${formatDate(app.applicationDate)}`,
+              date: formatDate(app.applicationDate),
+              pdfLink: app.attachment ? `http://localhost:5000${app.attachment}` : null,
+            },
+          ],
         lastUpdated:
           app.timeline?.length > 0
             ? formatDate(app.timeline[app.timeline.length - 1].date)
@@ -136,78 +135,103 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
+    <div className="min-h-screen bg-gray-50 font-sans">
       <UserNavbar />
 
-      {/* Top Government Strip */}
-      <div className="bg-orange-700 text-white py-3 text-center font-semibold text-sm">
-        <span className="flex items-center justify-center gap-2">
-          <Shield size={18} />
-          भारत सरकार | जन समाधान - लोक शिकायत एवं आवेदन ट्रैकिंग पोर्टल
-        </span>
+      {/* Official Government Header Strip */}
+      
+      <div className="bg-[#0f4a91] text-white py-3 border-b-4 border-[#ff9933]">
+        <div className="container mx-auto px-4 relative">
+
+       
+          <div className="flex items-center justify-between">
+
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-9 h-9 bg-[#ff9933] rounded-full flex items-center justify-center font-bold text-[#0f4a91] text-lg">
+                IN
+              </div>
+              <div className="leading-tight">
+                <div className="font-bold text-base">भारत सरकार</div>
+                <div className="text-xs opacity-90">जन समाधान पोर्टल</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm text-right leading-tight">
+              <div>
+                <div className="font-bold text-base">Government of India</div>
+                <div className="text-xs opacity-90">Jan Samadhan Portal</div>
+              </div>
+              <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center font-bold text-[#0f4a91]">
+                GOI
+              </div>
+            </div>
+          </div>
+
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                    flex items-center gap-2.5 bg-white/15 px-5 py-1.5 rounded-full 
+                    text-xs font-medium shadow-lg border border-white/20">
+            <Shield size={16} className="text-green-300" />
+            <span>सुरक्षित पोर्टल</span>
+          </div>
+
+        </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Side */}
-            <div className="text-center lg:text-left">
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
-              >
-                <span className="text-gray-800">
-                  {isHindi ? "ट्रैक करें अपना" : "Track Your"}
-                </span>{" "}
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
-                  {isHindi ? "आवेदन" : "Application"}
-                </span>
-              </motion.h1>
 
-              <p className="text-xl text-gray-700 mb-10 max-w-2xl">
-                {isHindi
-                  ? "अब घर बैठे अपने आवेदन की स्थिति तुरंत जानें"
-                  : "Check your application status instantly from home"}
+      
+      {/* Main Hero Section */}
+      <section className="bg-gradient-to-b from-[#fff8f0] to-white py-16">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Content */}
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold text-[#0f4a91] leading-tight mb-6">
+                {isHindi ? "अपने आवेदन की स्थिति" : "Track Your Application Status"}
                 <br />
-                {isHindi ? "अपना आवेदन आईडी दर्ज करें" : "Enter your Application ID below"}
+                <span className="text-[#ff9933]">
+                  {isHindi ? "ट्रैक करें" : "Instantly & Securely"}
+                </span>
+              </h1>
+
+              <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+                {isHindi
+                  ? "अब घर बैठे अपने जन समाधान आवेदन की वर्तमान स्थिति, समयरेखा एवं आधिकारिक दस्तावेज़ देखें।"
+                  : "Check real-time status, timeline, and download official documents of your Jan Samadhan application from anywhere."}
               </p>
 
-              {/* Search Box */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-white rounded-2xl shadow-2xl p-8 border border-orange-100"
-              >
+              {/* Search Card */}
+              <div className="bg-white border-2 border-[#ff9933]/30 rounded-lg shadow-xl p-8">
+                <label className="block text-lg font-semibold text-gray-800 mb-4">
+                  {isHindi ? "आवेदन संख्या दर्ज करें" : "Enter Application ID"}
+                </label>
+
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-5 text-orange-600" size={24} />
+                    <Search className="absolute left-4 top-4 text-[#0f4a91]" size={22} />
                     <input
                       type="text"
                       value={applicationIdInput}
                       onChange={(e) => setApplicationIdInput(e.target.value.toUpperCase())}
                       onKeyDown={handleKeyPress}
-                      placeholder={isHindi ? "उदाहरण: BPXXXX" : "e.g. BPXXXX"}
-                      className="w-full pl-14 pr-6 py-5 border-2 border-orange-200 rounded-xl focus:border-orange-500 focus:outline-none text-lg font-medium"
+                      placeholder={isHindi ? "उदाहरण: BP2025001234" : "e.g. BP2025001234"}
+                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-300 rounded-md focus:border-[#ff9933] focus:outline-none text-lg uppercase tracking-wider"
                     />
                   </div>
+
                   <button
                     onClick={handleApplicationIdSearch}
                     disabled={isLoading || !applicationIdInput.trim()}
-                    className="px-10 py-5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg"
+                    className="px-8 py-4 bg-[#0f4a91] hover:bg-[#1e40af] disabled:bg-gray-400 text-white font-bold rounded-md transition-all flex items-center justify-center gap-2 shadow-md"
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="animate-spin" size={22} />
+                        <Loader2 className="animate-spin" size={20} />
                         {isHindi ? "खोज रहे हैं..." : "Searching..."}
                       </>
                     ) : (
                       <>
-                        <Search size={22} />
-                        {isHindi ? "ट्रैक करें" : "Track Now"}
+                        <Search size={20} />
+                        {isHindi ? "ट्रैक करें" : "Track Application"}
                       </>
                     )}
                   </button>
@@ -219,18 +243,25 @@ const UserDashboard = () => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
-                      className="mt-5 p-4 bg-red-50 border border-red-300 rounded-xl text-red-700 flex items-center gap-3"
+                      className="mt-5 p-4 bg-red-50 border border-red-300 rounded-md text-red-700 flex items-center gap-3"
                     >
                       <XCircle size={20} />
                       <span className="font-medium">{error}</span>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
+              </div>
+
+              <div className="mt-6 text-sm text-gray-600">
+                <strong>{isHindi ? "नोट:" : "Note:"}</strong>{" "}
+                {isHindi
+                  ? "आवेदन संख्या आपके रसीद/SMS में दी गई है।"
+                  : "Application ID is mentioned on your acknowledgment receipt/SMS."}
+              </div>
             </div>
 
-            {/* Right Side - Image Slider */}
-            <div className="relative h-96 lg:h-full overflow-hidden rounded-2xl shadow-2xl">
+            {/* Right: Image Slider (Unchanged) */}
+            <div className="relative h-96 lg:h-full overflow-hidden rounded-lg shadow-2xl border-4 border-white">
               <AnimatePresence initial={false}>
                 <motion.img
                   key={currentImageIndex}
@@ -247,9 +278,8 @@ const UserDashboard = () => {
                 {images.map((_, i) => (
                   <div
                     key={i}
-                    className={`w-3 h-3 rounded-full transition-all ${
-                      i === currentImageIndex ? "bg-orange-600 w-10" : "bg-white/70"
-                    }`}
+                    className={`w-3 h-3 rounded-full transition-all ${i === currentImageIndex ? "bg-[#ff9933] w-10" : "bg-white/70"
+                      }`}
                   />
                 ))}
               </div>
@@ -258,68 +288,81 @@ const UserDashboard = () => {
         </div>
       </section>
 
-      {/* Features Section - Hardcoded Beautiful Text */}
-      <section className="py-16 bg-white">
+      {/* Features Section */}
+      <section className="py-16 bg-gray-100 ">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold text-orange-700 mb-12">
-            {isHindi ? "जन समाधान की प्रमुख विशेषताएँ" : "Key Features of Jan Samadhan"}
+          <h2 className="text-3xl md:text-4xl font-bold text-[#0f4a91] mb-12">
+            {isHindi ? "जन समाधान पोर्टल की विशेषताएँ" : "Features of Jan Samadhan Portal"}
           </h2>
+
           <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
             {[
               {
                 icon: Clock,
-                title: isHindi ? "रीयल-टाइम अपडेट" : "Real-Time Updates",
+                title: isHindi ? "रीयल-टाइम ट्रैकिंग" : "Real-Time Tracking",
                 desc: isHindi
-                  ? "आवेदन से निस्तारण तक तुरंत स्थिति"
-                  : "Instant status from submission to disposal",
+                  ? "आवेदन की हर स्थिति का तुरंत अपडेट"
+                  : "Get instant updates on every stage of your application",
               },
               {
                 icon: QrCode,
-                title: isHindi ? "क्यूआर सत्यापन" : "QR Verification",
-                desc: isHindi ? "प्रमाणिकता के लिए सुरक्षित क्यूआर" : "Secure QR code for authenticity",
+                title: isHindi ? "क्यूआर कोड सत्यापन" : "QR Code Verification",
+                desc: isHindi
+                  ? "दस्तावेज़ की प्रामाणिकता की जाँच करें"
+                  : "Verify authenticity of documents via QR code",
               },
               {
                 icon: Download,
                 title: isHindi ? "डिजिटल दस्तावेज़" : "Digital Documents",
                 desc: isHindi
-                  ? "आधिकारिक पत्र डाउनलोड करें"
-                  : "Download official letters & orders",
+                  ? "आधिकारिक पत्र एवं आदेश डाउनलोड करें"
+                  : "Download official letters and disposal orders",
               },
               {
                 icon: Shield,
-                title: isHindi ? "पूर्णतः सुरक्षित" : "100% Secure",
+                title: isHindi ? "पूर्णतः सुरक्षित" : "Fully Secure",
                 desc: isHindi
-                  ? "सरकारी मानक अनुसार एन्क्रिप्टेड"
-                  : "Encrypted as per government standards",
+                  ? "सरकारी मानकों के अनुसार डेटा संरक्षण"
+                  : "Data protected as per Government of India standards",
               },
-            ].map((f, i) => (
-              <motion.div
+            ].map((feature, i) => (
+              <div
                 key={i}
-                whileHover={{ y: -10 }}
-                className="bg-gradient-to-b from-orange-50 to-white p-8 rounded-2xl shadow-xl border border-orange-100"
+                className="bg-white p-8 rounded-lg shadow-lg border border-gray-200 hover:shadow-xl transition-shadow"
               >
-                <div className="w-16 h-16 bg-orange-600 text-white rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg">
-                  <f.icon size={32} />
+                <div className="w-16 h-16 bg-[#ff9933] text-white rounded-full flex items-center justify-center mx-auto mb-5">
+                  <feature.icon size={32} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">{f.title}</h3>
-                <p className="text-gray-600">{f.desc}</p>
-              </motion.div>
+                <h3 className="text-xl font-bold text-[#0f4a91] mb-3">{feature.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{feature.desc}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-orange-800 text-white py-4 text-center">
-        <p className="text-lg font-medium">
-          © 2025 जन समाधान - लोक शिकायत निवारण प्रणाली | भारत सरकार
-        </p>
-        <p className="text-sm mt-2 opacity-90">
-          Department of Administrative Reforms and Public Grievances
-        </p>
+      {/* Official Footer */}
+      <footer className="bg-[#0f4a91] text-white py-5 border-t-5 border-[#ff9933]">
+        <div className="container mx-auto px-4 text-center">
+          <div className="mb-4">
+            <h3 className="text-2xl font-bold">जन समाधान पोर्टल</h3>
+            <p className="text-sm opacity-90">
+              Jan Samadhan - Public Grievance Redressal System
+            </p>
+          </div>
+          <hr className="border-white/20 my-6 max-w-2xl mx-auto" />
+          <p className="text-sm">
+            © 2025 | Department of Administrative Reforms and Public Grievances
+            <br />
+            Ministry of Personnel, Public Grievances and Pensions | Government of India
+          </p>
+          <p className="text-xs mt-4 opacity-80">
+            Developed & Maintained by National Informatics Centre (NIC)
+          </p>
+        </div>
       </footer>
 
-      {/* Modal */}
+      {/* Result Modal */}
       <ApplicationResultModal
         isOpen={!!foundApplication}
         application={foundApplication}
