@@ -140,42 +140,49 @@ const UserDashboard = () => {
 
       {/* Official Government Header Strip */}
       
-      <div className="bg-[#0f4a91] text-white py-3 border-b-4 border-[#ff9933]">
-        <div className="container mx-auto px-4 relative">
+      <div className="bg-[#0f4a91] text-white py-4 border-b-4 border-[#ff9933]">
+  <div className="container mx-auto px-4">
 
-       
-          <div className="flex items-center justify-between">
+    {/* Desktop: Left + Right + Center Badge */}
+    <div className="hidden md:flex items-center justify-between relative">
 
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-9 h-9 bg-[#ff9933] rounded-full flex items-center justify-center font-bold text-[#0f4a91] text-lg">
-                IN
-              </div>
-              <div className="leading-tight">
-                <div className="font-bold text-base">भारत सरकार</div>
-                <div className="text-xs opacity-90">जन समाधान पोर्टल</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 text-sm text-right leading-tight">
-              <div>
-                <div className="font-bold text-base">Government of India</div>
-                <div className="text-xs opacity-90">Jan Samadhan Portal</div>
-              </div>
-              <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center font-bold text-[#0f4a91]">
-                GOI
-              </div>
-            </div>
-          </div>
-
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
-                    flex items-center gap-2.5 bg-white/15 px-5 py-1.5 rounded-full 
-                    text-xs font-medium shadow-lg border border-white/20">
-            <Shield size={16} className="text-green-300" />
-            <span>सुरक्षित पोर्टल</span>
-          </div>
-
+      <div className="flex items-center gap-3 text-sm">
+        <div className="w-9 h-9 bg-[#ff9933] rounded-full flex items-center justify-center font-bold text-[#0f4a91] text-lg">
+          IN
+        </div>
+        <div className="leading-tight">
+          <div className="font-bold text-base">भारत सरकार</div>
+          <div className="text-xs opacity-90">जन समाधान पोर्टल</div>
         </div>
       </div>
+
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2.5 bg-white/20 px-5 py-1.5 rounded-full text-xs font-semibold border border-white/30">
+        <Shield size={15} className="text-green-300" />
+        सुरक्षित पोर्टल
+      </div>
+
+      <div className="flex items-center gap-3 text-sm text-right leading-tight">
+        <div>
+          <div className="font-bold text-base">Government of India</div>
+          <div className="text-xs opacity-90">Jan Samadhan Portal</div>
+        </div>
+        <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center font-bold text-[#0f4a91]">
+          GOI
+        </div>
+      </div>
+    </div>
+
+    {/* Mobile: Only centered badge + small text below */}
+    <div className="md:hidden flex flex-col items-center gap-1">
+      <div className="flex items-center gap-2.5 bg-white/20 px-5 py-1.5 rounded-full text-xs font-semibold border border-white/30">
+        <Shield size={15} className="text-green-300" />
+        सुरक्षित पोर्टल
+      </div>
+      <div className="text-xs opacity-90">भारत सरकार | Government of India</div>
+    </div>
+
+  </div>
+</div>
 
 
       
