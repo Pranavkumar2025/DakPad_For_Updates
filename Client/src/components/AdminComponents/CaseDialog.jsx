@@ -85,9 +85,7 @@ const CaseDialog = ({ data, onClose, onUpdate }) => {
         status,
         concernedOfficer: dbApp.concernedOfficer || "N/A",
         pendingDays,
-        pdfLink: dbApp.attachment
-          ? `${process.env.REACT_APP_API_URL || "http://localhost:5000"}${dbApp.attachment}`
-          : null,
+        pdfLink: dbApp.attachment || null,
         timeline: Array.isArray(dbApp.timeline) && dbApp.timeline.length > 0
           ? dbApp.timeline
           : [
