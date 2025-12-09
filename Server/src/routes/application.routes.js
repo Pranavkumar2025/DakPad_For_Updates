@@ -9,7 +9,7 @@ import {
   disposeApplication,
   trackApplication, // public
 } from "../controllers/application.controller.js";
-import { upload } from "../config/multer.config.js";
+import { upload, uploadNone } from "../config/multer.config.js";
 
 const router = express.Router();
 
@@ -23,7 +23,8 @@ router.use((req, res, next) => {
   authenticateToken(req, res, next);
 });
 
-router.post("/", upload.none(), createApplication);
+// router.post("/", uploadNone.any(), createApplication);
+router.post("/", upload.single("attachment"), createApplication);  // Now handles PDF!
 router.get("/", getAllApplications);
 router.get("/:id", getApplicationById);
 router.patch("/:id/assign", upload.single("file"), assignApplication);

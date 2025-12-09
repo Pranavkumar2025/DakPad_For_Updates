@@ -7,8 +7,8 @@ import {
   MapPin,
   FileText,
   ExternalLink,
-  Download,
   Edit3,
+  Eye,
 } from "lucide-react";
 
 const ApplicationTable = ({ currentRecords, indexOfFirstRecord, handleEdit }) => {
@@ -118,7 +118,7 @@ const ApplicationTable = ({ currentRecords, indexOfFirstRecord, handleEdit }) =>
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-medium text-sm hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all shadow-md"
                       >
-                        <Download className="w-4 h-4" />
+                        <Eye className="w-4 h-4" />
                         View
                       </a>
                     ) : (

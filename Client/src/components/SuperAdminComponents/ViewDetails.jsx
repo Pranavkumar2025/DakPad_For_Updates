@@ -13,7 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import api from "../../utils/api"; // <-- NEW: axios with cookies
+import api from "../../utils/api";
 
 const ViewDetails = ({ data, onClose }) => {
   const [applicationData, setApplicationData] = useState(null);
@@ -23,7 +23,6 @@ const ViewDetails = ({ data, onClose }) => {
 
   const applicationId = data?.applicationId;
 
-  // ---------- Helpers ----------
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const d = new Date(dateString);
@@ -48,7 +47,6 @@ const ViewDetails = ({ data, onClose }) => {
     return "In Process";
   };
 
-  // ---------- Fetch (with JWT cookie) ----------
   const fetchApplication = async () => {
     if (!applicationId) {
       setError("No application ID provided");
@@ -59,7 +57,7 @@ const ViewDetails = ({ data, onClose }) => {
     try {
       setIsLoading(true);
       setError("");
-      const res = await api.get(`/api/applications/${applicationId}`); // <-- sends cookie
+      const res = await api.get(`/api/applications/${applicationId}`);
       const app = res.data;
 
       const timeline = Array.isArray(app.timeline) ? app.timeline : [];
@@ -80,7 +78,7 @@ const ViewDetails = ({ data, onClose }) => {
         status,
         concernedOfficer: app.concernedOfficer || "N/A",
         pendingDays,
-        pdfLink: app.attachment ? `http://localhost:5000${app.attachment}` : null,
+        pdfLink: app.attachment || null, // Direct Cloudinary URL
         timeline,
       };
 
@@ -93,7 +91,6 @@ const ViewDetails = ({ data, onClose }) => {
     }
   };
 
-  // ---------- Effects ----------
   useEffect(() => {
     fetchApplication();
 
@@ -102,7 +99,6 @@ const ViewDetails = ({ data, onClose }) => {
     return () => window.removeEventListener("applicationUpdated", handleUpdate);
   }, [applicationId]);
 
-  // ---------- Status Styling ----------
   const getStatusStyle = (status) => {
     switch (status) {
       case "Not Assigned Yet":
@@ -120,7 +116,6 @@ const ViewDetails = ({ data, onClose }) => {
     }
   };
 
-  // ---------- Loading UI ----------
   if (isLoading) {
     return (
       <motion.div
@@ -140,7 +135,6 @@ const ViewDetails = ({ data, onClose }) => {
     );
   }
 
-  // ---------- Error UI ----------
   if (error || !applicationData) {
     return (
       <motion.div
@@ -165,7 +159,6 @@ const ViewDetails = ({ data, onClose }) => {
     );
   }
 
-  // ---------- Main UI ----------
   return (
     <motion.div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -179,7 +172,6 @@ const ViewDetails = ({ data, onClose }) => {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
       >
-        {/* Header */}
         <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
           <h2 className="text-xl font-semibold text-gray-900">
             Application ID: <span className="text-green-600">{applicationData.applicationId}</span>
@@ -194,7 +186,6 @@ const ViewDetails = ({ data, onClose }) => {
           </motion.button>
         </div>
 
-        {/* Applicant Details */}
         <motion.div className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Applicant Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -266,23 +257,23 @@ const ViewDetails = ({ data, onClose }) => {
               </p>
             </div>
 
+            {/* FIXED: Original PDF opens perfectly */}
             {applicationData.pdfLink && (
               <motion.div className="md:col-span-2">
                 <motion.a
-                  href={applicationData.pdfLink}
+                  href={applicationData.pdfLink.endsWith(".pdf") ? applicationData.pdfLink : `${applicationData.pdfLink}.pdf`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-green-600 hover:text-green-800 font-medium text-sm flex items-center gap-2 mt-4"
                   whileHover={{ scale: 1.05 }}
                 >
-                  <FaFilePdf size={18} /> View Attached Document
+                  <FaFilePdf size={18} /> View Original Application PDF
                 </motion.a>
               </motion.div>
             )}
           </div>
         </motion.div>
 
-        {/* Timeline Toggle */}
         <motion.button
           onClick={() => setIsTimelineOpen(true)}
           className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-2 mb-6"
@@ -292,7 +283,6 @@ const ViewDetails = ({ data, onClose }) => {
           <FaHistory size={18} /> Show Application Timeline
         </motion.button>
 
-        {/* Timeline Modal */}
         <AnimatePresence>
           {isTimelineOpen && (
             <motion.div
@@ -364,9 +354,10 @@ const ViewDetails = ({ data, onClose }) => {
                             {item.officer && item.officer !== "N/A" && (
                               <p className="text-xs text-gray-600 mt-1">Officer: {item.officer}</p>
                             )}
+                            {/* FIXED: Timeline PDFs open perfectly */}
                             {item.pdfLink && (
                               <motion.a
-                                href={`http://localhost:5000${item.pdfLink}`}
+                                href={item.pdfLink.endsWith(".pdf") ? item.pdfLink : `${item.pdfLink}.pdf`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-green-600 hover:text-green-800 text-sm mt-1 flex items-center gap-1"
@@ -391,7 +382,6 @@ const ViewDetails = ({ data, onClose }) => {
           )}
         </AnimatePresence>
 
-        {/* Global styles */}
         <style jsx global>{`
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
           .animate-spin-slow { animation: spin 2s linear infinite; }

@@ -3,10 +3,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FaFilePdf, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import api from "../../utils/api"; // <-- NEW: Use axios with cookies
+import api from "../../utils/api";
 
 const WorkAssignedApplicationTable = ({
-  data = [], // optional static fallback
+  data = [],
   onRowClick,
   searchQuery,
   selectedStatus,
@@ -19,14 +19,11 @@ const WorkAssignedApplicationTable = ({
   const [error, setError] = useState(null);
   const [openCardId, setOpenCardId] = useState(null);
 
-  // --------------------------------------------------------------
-  // 1. Fetch ONLY from DB (with cookies)
-  // --------------------------------------------------------------
   const fetchFromDB = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get("/api/applications"); // <-- Sends JWT cookie
+      const res = await api.get("/api/applications");
       const dbApps = Array.isArray(res.data) ? res.data : [];
 
       return dbApps.map((app, idx) => ({
@@ -37,7 +34,7 @@ const WorkAssignedApplicationTable = ({
         subject: app.subject || "N/A",
         gpBlock: app.block || "N/A",
         issueDate: app.applicationDate.split("T")[0],
-        attachment: app.attachment ? `http://localhost:5000${app.attachment}` : null,
+        attachment: app.attachment || null, // Only initial PDF from creation
         concernedOfficer: app.concernedOfficer || "N/A",
         timeline: Array.isArray(app.timeline) ? app.timeline : [],
         status: null,
@@ -51,9 +48,6 @@ const WorkAssignedApplicationTable = ({
     }
   }, []);
 
-  // --------------------------------------------------------------
-  // 2. Combine DB + static `data` prop
-  // --------------------------------------------------------------
   const combineAndProcess = useCallback(
     async (dbApps = []) => {
       const dbIds = new Set(dbApps.map((a) => a.applicationId));
@@ -79,16 +73,10 @@ const WorkAssignedApplicationTable = ({
     [data, searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate]
   );
 
-  // --------------------------------------------------------------
-  // 3. Load on mount + filter change
-  // --------------------------------------------------------------
   useEffect(() => {
     fetchFromDB().then(combineAndProcess);
   }, [fetchFromDB, combineAndProcess]);
 
-  // --------------------------------------------------------------
-  // Helpers
-  // --------------------------------------------------------------
   const calculatePendingDays = (issueDate, status) => {
     if (["Compliance", "Disposed", "Dismissed"].includes(status) || !issueDate)
       return 0;
@@ -133,9 +121,6 @@ const WorkAssignedApplicationTable = ({
     });
   };
 
-  // --------------------------------------------------------------
-  // Styling
-  // --------------------------------------------------------------
   const getPendingDaysColor = (days) => {
     if (days === 0 || days <= 10) return "bg-green-500 text-white";
     if (days <= 15) return "bg-orange-500 text-white";
@@ -158,9 +143,6 @@ const WorkAssignedApplicationTable = ({
     setOpenCardId((prev) => (prev === id ? null : id));
   };
 
-  // --------------------------------------------------------------
-  // Render
-  // --------------------------------------------------------------
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -242,21 +224,25 @@ const WorkAssignedApplicationTable = ({
                     <span className={getStatusStyle(app.status)}>{app.status}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <motion.button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (app.attachment) {
-                          window.open(app.attachment, "_blank", "noopener,noreferrer");
-                        } else {
-                          alert("No PDF attached");
-                        }
-                      }}
-                      className="inline-flex items-center gap-1 px-4 py-1.5 text-sm rounded-lg border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition shadow-sm"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <FaFilePdf /> PDF
-                    </motion.button>
+                    {/* ONLY SHOW PDF BUTTON IF INITIAL ATTACHMENT EXISTS */}
+                    {app.attachment ? (
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const pdfUrl = app.attachment.endsWith(".pdf")
+                            ? app.attachment
+                            : `${app.attachment}.pdf`;
+                          window.open(pdfUrl, "_blank", "noopener,noreferrer");
+                        }}
+                        className="inline-flex items-center gap-1 px-4 py-1.5 text-sm rounded-lg border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition shadow-sm"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <FaFilePdf /> PDF
+                      </motion.button>
+                    ) : (
+                      <span className="text-gray-400 text-xs italic">No initial PDF</span>
+                    )}
                   </td>
                 </motion.tr>
               ))
@@ -349,29 +335,26 @@ const WorkAssignedApplicationTable = ({
                 </div>
               </motion.div>
 
-              {/* Fixed Bottom PDF Button (Mobile Only) */}
-              <div
-                className={`fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-center border-t border-gray-200 ${
-                  openCardId === app.applicationId ? "block" : "hidden"
-                } md:hidden z-10`}
-              >
-                <motion.button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (app.attachment) {
-                      window.open(app.attachment, "_blank", "noopener,noreferrer");
-                    } else {
-                      alert("No PDF attached");
-                    }
-                  }}
-                  className="flex items-center justify-center gap-1 bg-green-600 text-white px-2 py-1 rounded-xl shadow-sm hover:bg-green-700 transition font-semibold text-[9px] sm:text-xs"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <FaFilePdf className="text-white text-[12px] sm:text-base" />
-                  <span>PDF</span>
-                </motion.button>
-              </div>
+              {/* Mobile: Only show PDF button if initial attachment exists */}
+              {app.attachment && openCardId === app.applicationId && (
+                <div className="fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-center border-t border-gray-200 md:hidden z-10">
+                  <motion.button
+                    onClick={() => {
+                      app.originalAttachment && (
+                        <button onClick={() => window.open(app.originalAttachment.endsWith(".pdf") ? app.originalAttachment : `${app.originalAttachment}.pdf`, "_blank")}>
+                          PDF
+                        </button>
+                      )
+                    }}
+                    className="flex items-center justify-center gap-1 bg-green-600 text-white px-2 py-1 rounded-xl shadow-sm hover:bg-green-700 transition font-semibold text-[9px] sm:text-xs"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <FaFilePdf className="text-white text-[12px] sm:text-base" />
+                    <span>PDF</span>
+                  </motion.button>
+                </div>
+              )}
             </motion.div>
           ))
         )}

@@ -8,29 +8,35 @@ datasource db {
 }
 
 model Application {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
 
-  applicantId      String   @unique
-  applicant        String
-  applicationDate  DateTime
-  phoneNumber      String?
-  emailId          String?
-  sourceAt         String
-  subject          String
-  block            String
-  attachment       String?
+  applicantId        String   @unique
+  applicant          String
+  applicationDate    DateTime
+  phoneNumber        String?
+  emailId            String?
+  sourceAt           String
+  subject            String
+  block              String
 
-  // Assignment
-  concernedOfficer       String?  @default("N/A")
-  department             String?  // Officer department
-  supervisor             String?  // e.g., "Person 1"
-  supervisorDepartment   String?
+  // ORIGINAL PDF — NEVER CHANGES AFTER CREATION
+  originalAttachment       String?
+  originalAttachmentPublicId String?
 
-  status                 String   @default("Not Assigned Yet")
+  // CURRENT PDF (changes during workflow) — for timeline
+  attachment               String?
+  attachmentPublicId       String?
 
-  timeline               TimelineEntry[]
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  concernedOfficer         String?  @default("N/A")
+  department               String?
+  supervisor               String?
+  supervisorDepartment     String?
+
+  status                   String   @default("Not Assigned Yet")
+
+  timeline                 TimelineEntry[]
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   @@index([applicant])
   @@index([applicationDate])
@@ -38,7 +44,6 @@ model Application {
   @@index([status])
   @@index([concernedOfficer])
   @@index([supervisor])
-  @@index([supervisorDepartment])
 }
 
 // ─────────────────────────────────────

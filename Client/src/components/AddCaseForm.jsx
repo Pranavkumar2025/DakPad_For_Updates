@@ -64,14 +64,15 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     source: "",
     subject: "",
     block: "",
-    attachment: "", // ← ONLY FILENAME
   });
+  const [selectedFile, setSelectedFile] = useState(null); // ← Actual File object
   const [randomId, setRandomId] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ────── generate unique ID ──────
+  // Generate unique ID
   const generateRandomId = () => {
     let id;
     const existing = JSON.parse(localStorage.getItem("applications") || "[]");
@@ -81,9 +82,12 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     } while (existing.some((a) => a.ApplicantId === id));
     return id;
   };
-  useEffect(() => setRandomId(generateRandomId()), []);
 
-  // ────── QR code ──────
+  useEffect(() => {
+    setRandomId(generateRandomId());
+  }, []);
+
+  // QR Code
   const generateQRCode = async (id, name, date) => {
     try {
       const data = JSON.stringify({
@@ -96,11 +100,11 @@ const AddCaseForm = ({ isOpen, onClose }) => {
       const url = await QRCode.toDataURL(data, { width: 256, margin: 2 });
       setQrCodeUrl(url);
     } catch (e) {
-      console.error(e);
+      console.error("QR Code generation failed:", e);
     }
   };
 
-  // ────── validation (Phone & Email OPTIONAL) ──────
+  // Validation
   const validate = () => {
     const e = {};
     if (!formData.name.trim()) e.name = "Name is required";
@@ -111,48 +115,62 @@ const AddCaseForm = ({ isOpen, onClose }) => {
     if (!formData.subject.trim()) e.subject = "Subject is required";
     if (!formData.block) e.block = "Please select a block";
 
+    if (selectedFile && selectedFile.size > 10 * 1024 * 1024) {
+      e.attachment = "File must be less than 10 MB";
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  // ────── submit ──────
+  // Submit with actual file upload
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
+    setIsSubmitting(true);
+
     const form = new FormData();
     form.append("applicantId", randomId);
-    form.append("name", formData.name);
+    form.append("name", formData.name.trim());
     form.append("applicationDate", formData.applicationDate);
     if (formData.phone) form.append("phone", formData.phone);
     if (formData.email) form.append("email", formData.email);
     form.append("source", formData.source);
-    form.append("subject", formData.subject);
+    form.append("subject", formData.subject.trim());
     form.append("block", formData.block);
-    if (formData.attachment) {
-      form.append("attachment", formData.attachment);
+
+    // Only append file if one is selected
+    if (selectedFile) {
+      form.append("attachment", selectedFile); // This sends the actual file
     }
 
     try {
-      await api.post("/api/applications", form);
+      await api.post("/api/applications", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       await generateQRCode(randomId, formData.name, formData.applicationDate);
       setShowModal(true);
 
       // Reset form
       setFormData({
         name: "", applicationDate: "", phone: "", email: "", source: "",
-        subject: "", block: "", attachment: "",
+        subject: "", block: "",
       });
+      setSelectedFile(null);
       setRandomId(generateRandomId());
       window.dispatchEvent(new Event("applicationUpdated"));
     } catch (err) {
       const data = err.response?.data;
       if (data?.errors) setErrors(data.errors);
       else alert(data?.message || err.message || "Submission failed");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // ────── file handling (only name) ──────
+  // File handling
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -161,13 +179,13 @@ const AddCaseForm = ({ isOpen, onClose }) => {
       setErrors((p) => ({ ...p, attachment: "Only PDF files are allowed" }));
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setErrors((p) => ({ ...p, attachment: "File must be < 5 MB" }));
+    if (file.size > 10 * 1024 * 1024) {
+      setErrors((p) => ({ ...p, attachment: "File must be < 10 MB" }));
       return;
     }
 
-    setFormData((p) => ({ ...p, attachment: file.name }));
-    setErrors((p) => ({ ...p, attachment: null }));
+    setSelectedFile(file);
+    setErrors((p) => ({ ...p, attachment: undefined }));
   };
 
   const handleDrop = (e) => {
@@ -180,24 +198,26 @@ const AddCaseForm = ({ isOpen, onClose }) => {
       setErrors((p) => ({ ...p, attachment: "Only PDF files are allowed" }));
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setErrors((p) => ({ ...p, attachment: "File must be < 5 MB" }));
+    if (file.size > 10 * 1024 * 1024) {
+      setErrors((p) => ({ ...p, attachment: "File must be < 10 MB" }));
       return;
     }
 
-    setFormData((p) => ({ ...p, attachment: file.name }));
-    setErrors((p) => ({ ...p, attachment: null }));
+    setSelectedFile(file);
+    setErrors((p) => ({ ...p, attachment: undefined }));
   };
 
   const handleRemoveFile = () => {
-    setFormData((p) => ({ ...p, attachment: "" }));
-    setErrors((p) => ({ ...p, attachment: null }));
+    setSelectedFile(null);
+    setErrors((p) => ({ ...p, attachment: undefined }));
   };
 
-  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
   const handleDragLeave = () => setIsDragging(false);
 
-  // ────── input change ──────
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
@@ -207,7 +227,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl p-6 relative">
+      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl p-6 relative overflow-y-auto max-h-[95vh]">
         <h2 className="text-xl font-bold mb-4 text-[#ff5010] tracking-tight">
           Add New Application
         </h2>
@@ -226,6 +246,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4">
+            {/* All your existing inputs (unchanged) */}
             <div>
               <label className="text-xs font-medium text-gray-600">Applicant Name *</label>
               <input type="text" name="name" value={formData.name} onChange={handleInputChange}
@@ -241,7 +262,6 @@ const AddCaseForm = ({ isOpen, onClose }) => {
               {errors.applicationDate && <p className="text-red-500 text-xs mt-1">{errors.applicationDate}</p>}
             </div>
 
-            {/* PHONE - OPTIONAL */}
             <div>
               <label className="text-xs font-medium text-gray-600">Phone Number <span className="text-gray-400">(Optional)</span></label>
               <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#ff5010]">
@@ -253,13 +273,12 @@ const AddCaseForm = ({ isOpen, onClose }) => {
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>
 
-            {/* EMAIL - OPTIONAL */}
             <div>
               <label className="text-xs font-medium text-gray-600">Email ID <span className="text-gray-400">(Optional)</span></label>
               <input type="text" name="email" value={formData.email} onChange={handleInputChange}
                 placeholder="example@hello.com"
                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff5010] focus:border-transparent transition-all" />
-              {errors.email && <p class SRP="text-red-500 text-xs mt-1">{errors.email}</p>}
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
 
             <div>
@@ -281,21 +300,20 @@ const AddCaseForm = ({ isOpen, onClose }) => {
               <DropdownButton
                 label={formData.block || "Select Block"}
                 items={[
-                  { label: "All", onClick: () => setFormData((p) => ({ ...p, block: "" })) },
-                  { label: "Agiaon", onClick: () => setFormData((p) => ({ ...p, block: "Agiaon" })) },
-                  { label: "Ara Sadar", onClick: () => setFormData((p) => ({ ...p, block: "Ara Sadar" })) },
-                  { label: "Barhara", onClick: () => setFormData((p) => ({ ...p, block: "Barhara" })) },
-                  { label: "Behea", onClick: () => setFormData((p) => ({ ...p, block: "Behea" })) },
-                  { label: "Charpokhari", onClick: () => setFormData((p) => ({ ...p, block: "Charpokhari" })) },
-                  { label: "Garhani", onClick: () => setFormData((p) => ({ ...p, block: "Garhani" })) },
-                  { label: "Jagdishpur", onClick: () => setFormData((p) => ({ ...p, block: "Jagdishpur" })) },
-                  { label: "Koilwar", onClick: () => setFormData((p) => ({ ...p, block: "Koilwar" })) },
-                  { label: "Piro", onClick: () => setFormData((p) => ({ ...p, block: "Piro" })) },
-                  { label: "Sahar", onClick: () => setFormData((p) => ({ ...p, block: "Sahar" })) },
-                  { label: "Sandesh", onClick: () => setFormData((p) => ({ ...p, block: "Sandesh" })) },
-                  { label: "Shahpur", onClick: () => setFormData((p) => ({ ...p, block: "Shahpur" })) },
-                  { label: "Tarari", onClick: () => setFormData((p) => ({ ...p, block: "Tarari" })) },
-                  { label: "Udwant Nagar", onClick: () => setFormData((p) => ({ ...p, block: "Udwant Nagar" })) },
+                  { label: "Agiaon", onClick: () => setFormData(p => ({ ...p, block: "Agiaon" })) },
+                  { label: "Ara Sadar", onClick: () => setFormData(p => ({ ...p, block: "Ara Sadar" })) },
+                  { label: "Barhara", onClick: () => setFormData(p => ({ ...p, block: "Barhara" })) },
+                  { label: "Behea", onClick: () => setFormData(p => ({ ...p, block: "Behea" })) },
+                  { label: "Charpokhari", onClick: () => setFormData(p => ({ ...p, block: "Charpokhari" })) },
+                  { label: "Garhani", onClick: () => setFormData(p => ({ ...p, block: "Garhani" })) },
+                  { label: "Jagdishpur", onClick: () => setFormData(p => ({ ...p, block: "Jagdishpur" })) },
+                  { label: "Koilwar", onClick: () => setFormData(p => ({ ...p, block: "Koilwar" })) },
+                  { label: "Piro", onClick: () => setFormData(p => ({ ...p, block: "Piro" })) },
+                  { label: "Sahar", onClick: () => setFormData(p => ({ ...p, block: "Sahar" })) },
+                  { label: "Sandesh", onClick: () => setFormData(p => ({ ...p, block: "Sandesh" })) },
+                  { label: "Shahpur", onClick: () => setFormData(p => ({ ...p, block: "Shahpur" })) },
+                  { label: "Tarari", onClick: () => setFormData(p => ({ ...p, block: "Tarari" })) },
+                  { label: "Udwant Nagar", onClick: () => setFormData(p => ({ ...p, block: "Udwant Nagar" })) },
                 ]}
               />
               {errors.block && <p className="text-red-500 text-xs mt-1">{errors.block}</p>}
@@ -310,10 +328,10 @@ const AddCaseForm = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* PDF Upload */}
+          {/* PDF Upload - Now uploads real file */}
           <div className="pt-4 pb-2">
             <label className="text-xs font-medium text-gray-600">
-              Attach Application PDF <span className="text-gray-400">(Optional)</span>
+              Attach Application PDF <span className="text-gray-400">(Optional • Max 10 MB)</span>
             </label>
             <div
               className={`w-full mt-1 p-4 bg-gray-50 rounded-lg border-2 border-dashed transition-all ${
@@ -329,7 +347,7 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                     d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
                 </svg>
                 <h2 className="text-xs font-medium text-gray-500 text-center">
-                  {isDragging ? "Drop your PDF here" : "Drag & drop a PDF or click to select (max 5 MB)"}
+                  {isDragging ? "Drop your PDF here" : "Drag & drop a PDF or click to select"}
                 </h2>
 
                 <label className="relative cursor-pointer">
@@ -339,106 +357,108 @@ const AddCaseForm = ({ isOpen, onClose }) => {
                   </div>
                 </label>
 
-                {formData.attachment && (
-                  <div className="flex items-center gap-2 mt-2 bg-gray-100 p-2 rounded-md w-full max-w-xs">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                {selectedFile && (
+                  <div className="flex items-center gap-2 mt-2 bg-green-50 border border-green-200 p-3 rounded-lg w-full max-w-md">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span className="text-xs text-gray-700 truncate flex-1">{formData.attachment}</span>
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-gray-700 truncate">{selectedFile.name}</p>
+                      <p className="text-xs text-gray-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
                     <button type="button" onClick={handleRemoveFile}
-                      className="text-red-500 text-xs font-medium hover:underline">
-                      Remove
+                      className="text-red-500 hover:text-red-700 transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
                     </button>
                   </div>
                 )}
 
-                {!formData.attachment && (
-                  <p className="text-xs text-gray-400 mt-2">No file attached (optional)</p>
-                )}
-
-                {errors.attachment && formData.attachment && (
-                  <p className="text-red-500 text-xs mt-1 font-medium">{errors.attachment}</p>
+                {errors.attachment && (
+                  <p className="text-red-500 text-xs mt-2 font-medium">{errors.attachment}</p>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Buttons */}
-          <div className="w-full flex gap-4 mt-4">
+          {/* Submit Buttons */}
+          <div className="w-full flex gap-4 mt-6">
             <button type="button" onClick={onClose}
               className="w-full border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
               Cancel
             </button>
-            <button type="submit"
-              className="w-full bg-[#ff5010] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#e6490f] transition-colors">
-              Submit
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`w-full px-4 py-2 rounded-lg font-semibold text-white transition-all ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#ff5010] hover:bg-[#e6490f]"
+              }`}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Application"}
             </button>
           </div>
         </form>
-      </div>
 
-      {/* SUCCESS MODAL */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white w-[90%] max-w-lg rounded-2xl shadow-xl p-6 relative border-t-4 border-green-500">
-            <button className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-              onClick={() => { setShowModal(false); setQrCodeUrl(null); onClose(); }}>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+        {/* Success Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white w-[90%] max-w-lg rounded-2xl shadow-xl p-6 relative border-t-4 border-green-500">
+              <button className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+                onClick={() => { setShowModal(false); setQrCodeUrl(""); onClose(); }}>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
 
-            <div className="flex flex-col items-center gap-4">
-              <svg className="w-12 h-12 text-green-600 animate-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <h2 className="text-xl font-bold text-gray-800">Application Submitted Successfully!</h2>
+              <div className="flex flex-col items-center gap-4">
+                <svg className="w-12 h-12 text-green-600 animate-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <h2 className="text-xl font-bold text-gray-800">Application Submitted Successfully!</h2>
 
-              <div className="w-full space-y-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-2 font-medium">Your Application ID:</p>
-                  <p className="text-lg font-bold text-blue-600 break-all text-center">{randomId}</p>
+                <div className="w-full space-y-4">
+                  <div className="p-4 bg-gray-50 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-2 font-medium">Your Application ID:</p>
+                    <p className="text-2xl font-bold text-[#ff5010]">{randomId}</p>
+                  </div>
+
+                  {qrCodeUrl && (
+                    <div className="p-4 bg-gray-50 rounded-lg text-center">
+                      <p className="text-sm text-gray-600 mb-3 font-medium">Scan to Track Status</p>
+                      <img src={qrCodeUrl} alt="QR Code" className="mx-auto border rounded-lg shadow-sm w-40 h-40" />
+                      <button
+                        onClick={() => {
+                          const a = document.createElement("a");
+                          a.href = qrCodeUrl;
+                          a.download = `dakpad-${randomId}-qr.png`;
+                          a.click();
+                        }}
+                        className="mt-3 px-4 py-2 bg-[#ff5010] text-white rounded-lg hover:bg-[#e6490f] text-sm font-medium"
+                      >
+                        Download QR Code
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {qrCodeUrl && (
-                  <div className="p-4 bg-gray-50 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-3 font-medium">QR Code for Quick Access:</p>
-                    <div className="flex justify-center mb-3">
-                      <img src={qrCodeUrl} alt="QR" className="border rounded-lg shadow-sm w-32 h-32" />
-                    </div>
-                    <button onClick={() => {
-                      const a = document.createElement("a");
-                      a.download = `dakpad-${randomId}.png`;
-                      a.href = qrCodeUrl;
-                      a.click();
-                    }} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
-                      Download QR
-                    </button>
-                  </div>
-                )}
+                <button
+                  onClick={() => { setShowModal(false); setQrCodeUrl(""); onClose(); }}
+                  className="mt-4 bg-[#ff5010] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#e6490f] transition-colors"
+                >
+                  Done
+                </button>
               </div>
-
-              <p className="text-xs text-gray-600 text-center">
-                {formData.attachment ? "PDF name saved." : "No PDF attached."}
-              </p>
-
-              <button onClick={() => { setShowModal(false); setQrCodeUrl(null); onClose(); }}
-                className="mt-3 bg-[#ff5010] text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-[#e6490f] transition-colors">
-                Done
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <style jsx global>{`
-        .overflow-y-auto::-webkit-scrollbar { width: 6px; }
-        .overflow-y-auto::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #ff5010, #fc641c); border-radius: 3px; }
-        .overflow-y-auto::-webkit-scrollbar-track { background-color: #f3f4f6; }
-        @keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .animate-scaleIn { animation: scaleIn .3s ease-out; }
         @keyframes check { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-        .animate-check { animation: check .5s ease-out; }
+        .animate-check { animation: check 0.6s ease-out; }
       `}</style>
     </div>
   );

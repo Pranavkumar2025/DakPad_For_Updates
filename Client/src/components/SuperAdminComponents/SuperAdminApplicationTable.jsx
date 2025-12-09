@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FaFilePdf, FaSpinner, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { motion } from "framer-motion";
-import api from "../../utils/api"; // <-- NEW: axios with cookies
+import api from "../../utils/api";
 
 const SuperAdminApplicationTable = ({
   onRowClick,
@@ -17,7 +17,6 @@ const SuperAdminApplicationTable = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ---------- Helpers ----------
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -44,7 +43,6 @@ const SuperAdminApplicationTable = ({
     return "In Process";
   };
 
-  // ---------- Filter ----------
   const filterApplications = useCallback(
     (rawApps) => {
       return rawApps.filter((app) => {
@@ -71,12 +69,11 @@ const SuperAdminApplicationTable = ({
     [searchQuery, selectedStatus, selectedDepartment, selectedBlock, selectedDate]
   );
 
-  // ---------- Fetch (with JWT cookie) ----------
   const fetchApplications = useCallback(async () => {
     try {
       setIsLoading(true);
       setError("");
-      const res = await api.get("/api/applications"); // <-- sends cookie
+      const res = await api.get("/api/applications");
       const rawApps = Array.isArray(res.data) ? res.data : [];
 
       const processed = rawApps.map((app, index) => {
@@ -93,7 +90,7 @@ const SuperAdminApplicationTable = ({
           issueDate: formatDate(app.applicationDate),
           pendingDays: calculatePendingDays(app.applicationDate, status),
           status,
-          attachment: app.attachment ? `http://localhost:5000${app.attachment}` : null,
+          attachment: app.attachment || null, // Direct Cloudinary URL
           concernedOfficer: app.concernedOfficer || "N/A",
           timeline,
         };
@@ -109,19 +106,16 @@ const SuperAdminApplicationTable = ({
     }
   }, [filterApplications]);
 
-  // 1. Fetch on filter change
   useEffect(() => {
     fetchApplications();
   }, [fetchApplications]);
 
-  // 2. Real-time updates from other components
   useEffect(() => {
     const handleUpdate = () => fetchApplications();
     window.addEventListener("applicationUpdated", handleUpdate);
     return () => window.removeEventListener("applicationUpdated", handleUpdate);
   }, [fetchApplications]);
 
-  // ---------- Styling ----------
   const getPendingDaysColor = (days) => {
     if (days === 0) return "bg-green-500 text-white";
     if (days <= 10) return "bg-green-500 text-white";
@@ -144,7 +138,6 @@ const SuperAdminApplicationTable = ({
     setOpenCardId(openCardId === id ? null : id);
   };
 
-  // ---------- Render ----------
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -224,15 +217,19 @@ const SuperAdminApplicationTable = ({
                   </td>
                   <td className="px-6 py-4">
                     {app.attachment ? (
-                      <button
+                      <motion.button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRowClick(app);
+                          // FIXED: Force .pdf for Cloudinary raw files
+                          const pdfUrl = app.attachment.endsWith(".pdf") ? app.attachment : `${app.attachment}.pdf`;
+                          window.open(pdfUrl, "_blank", "noopener,noreferrer");
                         }}
-                        className="inline-flex items-center gap-1 px-4 py-1.5 text-sm rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition"
+                        className="inline-flex items-center gap-1 px-4 py-1.5 text-sm rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition shadow-sm"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
                         <FaFilePdf /> PDF
-                      </button>
+                      </motion.button>
                     ) : (
                       <span className="text-gray-400 text-xs">N/A</span>
                     )}
@@ -329,27 +326,28 @@ const SuperAdminApplicationTable = ({
                 </div>
               </motion.div>
 
-              <div
-                className={`fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-center border-t border-gray-200 ${
-                  openCardId === app.applicationId ? "block" : "hidden"
-                } md:hidden z-10`}
-              >
-                {app.attachment ? (
-                  <motion.button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRowClick(app);
-                    }}
-                    className="flex items-center justify-center gap-1 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-2 py-1 rounded-xl shadow-lg font-semibold text-[9px] sm:text-xs"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FaFilePdf /> PDF
-                  </motion.button>
-                ) : (
-                  <span className="text-gray-400 text-[9px] sm:text-xs">No PDF</span>
-                )}
-              </div>
+              {/* Mobile Bottom PDF Button */}
+              {openCardId === app.applicationId && (
+                <div className="fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-center border-t border-gray-200 md:hidden z-10">
+                  {app.attachment ? (
+                    <motion.button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // FIXED: Force .pdf for Cloudinary raw files
+                        const pdfUrl = app.attachment.endsWith(".pdf") ? app.attachment : `${app.attachment}.pdf`;
+                        window.open(pdfUrl, "_blank", "noopener,noreferrer");
+                      }}
+                      className="flex items-center justify-center gap-1 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-2 py-1 rounded-xl shadow-lg font-semibold text-[9px] sm:text-xs"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <FaFilePdf /> PDF
+                    </motion.button>
+                  ) : (
+                    <span className="text-gray-400 text-[9px] sm:text-xs">No PDF</span>
+                  )}
+                </div>
+              )}
             </motion.div>
           ))
         )}

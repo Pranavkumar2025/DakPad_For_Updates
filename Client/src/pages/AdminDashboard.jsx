@@ -71,7 +71,7 @@ const AdminDashboard = () => {
           toggleMenu={toggleMenu}
         />
 
-        <div className="mt-4 sm:mt-6">
+        <div className="">
           <DataTable />
         </div>
       </div>

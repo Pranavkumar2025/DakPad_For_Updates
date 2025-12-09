@@ -2,9 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { FaFilePdf, FaSpinner, FaChevronDown, FaChevronUp, FaTimesCircle, FaCalendarAlt, FaComment } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import api from "../../utils/api"; // <-- NEW
+import api from "../../utils/api";
 
-// Clean date formatter
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
@@ -71,7 +70,7 @@ const ApplicationTable = ({
 
   const updateApplications = async () => {
     try {
-      const res = await api.get("/api/applications"); // <-- USE api.get
+      const res = await api.get("/api/applications");
       const rawData = Array.isArray(res.data) ? res.data : [];
 
       const processed = rawData.map((app, index) => {
@@ -290,9 +289,19 @@ const ApplicationTable = ({
                   </td>
                   <td className="px-6 py-4">
                     {c.attachment ? (
-                      <button onClick={(e) => { e.stopPropagation(); onRowClick(c); }} className="px-4 py-1.5 text-sm border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg">
-                        PDF
-                      </button>
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // FIXED: Force .pdf for Cloudinary raw files
+                          const pdfUrl = c.attachment.endsWith(".pdf") ? c.attachment : `${c.attachment}.pdf`;
+                          window.open(pdfUrl, "_blank", "noopener,noreferrer");
+                        }}
+                        className="px-4 py-1.5 text-sm border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <FaFilePdf className="inline mr-1" /> PDF
+                      </motion.button>
                     ) : (
                       <span className="text-gray-400 text-xs">N/A</span>
                     )}
@@ -363,28 +372,38 @@ const ApplicationTable = ({
                 </div>
               </motion.div>
 
-              <div className={`fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-between gap-1 border-t ${openCardId === c.applicationId ? "block" : "hidden"} md:hidden z-10`}>
-                {c.attachment ? (
-                  <motion.button
-                    onClick={(e) => { e.stopPropagation(); onRowClick(c); }}
-                    className="flex-1 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-2 py-1 rounded-xl text-xs"
-                  >
-                    PDF
-                  </motion.button>
-                ) : (
-                  <span className="flex-1 text-center text-gray-400 text-xs">No PDF</span>
-                )}
-                {c.status !== "Disposed" ? (
-                  <motion.button
-                    onClick={(e) => { e.stopPropagation(); handleDisposeClick(c.applicationId); }}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-xl text-xs"
-                  >
-                    Dispose
-                  </motion.button>
-                ) : (
-                  <span className="flex-1 text-center text-gray-400 text-xs">N/A</span>
-                )}
-              </div>
+              {/* Mobile Bottom Buttons */}
+              {openCardId === c.applicationId && (
+                <div className="fixed bottom-0 left-0 right-0 w-full max-w-[320px] mx-auto bg-white shadow-md p-1.5 flex justify-between gap-1 border-t md:hidden z-10">
+                  {c.attachment ? (
+                    <motion.button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // FIXED: Force .pdf for Cloudinary raw files
+                        const pdfUrl = c.attachment.endsWith(".pdf") ? c.attachment : `${c.attachment}.pdf`;
+                        window.open(pdfUrl, "_blank", "noopener,noreferrer");
+                      }}
+                      className="flex-1 bg-gradient-to-r from-[#ff5010] to-[#fc641c] text-white px-2 py-1 rounded-xl text-xs flex items-center justify-center gap-1"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <FaFilePdf /> PDF
+                    </motion.button>
+                  ) : (
+                    <span className="flex-1 text-center text-gray-400 text-xs">No PDF</span>
+                  )}
+                  {c.status !== "Disposed" ? (
+                    <motion.button
+                      onClick={(e) => { e.stopPropagation(); handleDisposeClick(c.applicationId); }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-xl text-xs"
+                    >
+                      Dispose
+                    </motion.button>
+                  ) : (
+                    <span className="flex-1 text-center text-gray-400 text-xs">N/A</span>
+                  )}
+                </div>
+              )}
             </motion.div>
           ))
         )}

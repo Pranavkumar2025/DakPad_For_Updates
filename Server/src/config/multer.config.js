@@ -1,23 +1,54 @@
+// src/config/multer.config.js
 import multer from "multer";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
+import streamifier from "streamifier";
 
-const uploadDir = path.join(process.cwd(), "server/src/uploads");
-
-const storage = multer.diskStorage({
-  destination: (_, __, cb) => cb(null, uploadDir),
-  filename: (_, file, cb) => {
-    const uniq = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${file.fieldname}-${uniq}${path.extname(file.originalname)}`);
-  },
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const fileFilter = (_, file, cb) =>
-  file.mimetype === "application/pdf"
-    ? cb(null, true)
-    : cb(new Error("Only PDF files are allowed"), false);
+const storage = multer.memoryStorage();
 
 export const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") cb(null, true);
+    else cb(new Error("Only PDF files are allowed!"), false);
+  },
 });
+
+export const uploadNone = multer();
+
+export const uploadPdfToCloudinary = (buffer, originalName) => {
+  return new Promise((resolve, reject) => {
+    const cleanName = originalName
+      .replace(/[^a-zA-Z0-9.-]/g, "_")
+      .replace(/\.pdf$/i, "");
+
+    const publicId = `${Date.now()}-${cleanName}`;
+
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "my_dak_pad/pdfs",
+        public_id: publicId,
+        format: "pdf",
+        resource_type: "raw",
+        overwrite: true,
+        tags: ["pdf", "dakpad"],
+        context: { content_type: "application/pdf" },
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+
+    streamifier.createReadStream(buffer).pipe(uploadStream);
+  });
+};

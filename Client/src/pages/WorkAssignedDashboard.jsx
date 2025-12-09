@@ -74,7 +74,7 @@ const WorkAssignedDashboard = () => {
           toggleMenu={toggleMenu}
         />
 
-        <div className="mt-4 sm:mt-6">
+        <div className="">
           <WorkAssignedDataTable />
         </div>
       </div>

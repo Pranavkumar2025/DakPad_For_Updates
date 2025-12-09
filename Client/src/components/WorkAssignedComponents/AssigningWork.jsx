@@ -26,14 +26,12 @@ import Data from "./Data.json";
 import api from "../../utils/api";
 
 const AssigningWork = ({ data, onClose, onUpdate }) => {
-  // ---------- UI state ----------
   const [selectedType, setSelectedType] = useState({ value: "", label: "Select a type" });
   const [selectedOption, setSelectedOption] = useState({
     value: data.concernedOfficer || "",
     label: data.concernedOfficer || "Select an option",
   });
 
-  // NEW: Supervisor States
   const [selectedSupervisorType, setSelectedSupervisorType] = useState({ value: "", label: "No Supervisor" });
   const [selectedSupervisor, setSelectedSupervisor] = useState({ value: "", label: "Select supervisor (optional)" });
 
@@ -45,12 +43,10 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
   const [assignmentNote, setAssignmentNote] = useState("");
   const [uploadedFile, setUploadedFile] = useState(null);
 
-  // ---------- Application data (from DB) ----------
   const [applicationData, setApplicationData] = useState(data);
 
   const { types, optionsByType } = Data;
 
-  // ---------- Helpers ----------
   const calculatePendingDays = (issueDate, status) => {
     if (["Compliance", "Disposed", "Dismissed"].includes(status) || !issueDate) return 0;
     const issue = new Date(issueDate);
@@ -82,16 +78,15 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
       subject: dbApp.subject || "N/A",
       gpBlock: dbApp.block || "N/A",
       issueDate: dbApp.applicationDate.split("T")[0],
-      attachment: dbApp.attachment ? `http://localhost:5000${dbApp.attachment}` : null,
+      attachment: dbApp.attachment || null,
       concernedOfficer: dbApp.concernedOfficer || "N/A",
-      supervisor: dbApp.supervisor || "N/A", // Added
+      supervisor: dbApp.supervisor || "N/A",
       timeline: Array.isArray(dbApp.timeline) ? dbApp.timeline : [],
       status,
       pendingDays,
     };
   };
 
-  // ---------- API calls ----------
   const fetchApplication = useCallback(async () => {
     try {
       const res = await api.get(`/api/applications/${data.applicationId}`);
@@ -112,28 +107,27 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
         issueDate: dbApp.applicationDate.split("T")[0],
         status,
         concernedOfficer: dbApp.concernedOfficer || "N/A",
-        supervisor: dbApp.supervisor || "N/A", // Added
-        supervisorDepartment: dbApp.supervisorDepartment || "N/A", // Added
+        supervisor: dbApp.supervisor || "N/A",
+        supervisorDepartment: dbApp.supervisorDepartment || "N/A",
         pendingDays,
-        pdfLink: dbApp.attachment ? `http://localhost:5000${dbApp.attachment}` : null,
+        pdfLink: dbApp.attachment || null,
         timeline:
           dbApp.timeline && dbApp.timeline.length > 0
             ? dbApp.timeline
             : [
-              {
-                section: "Application Received",
-                comment: `Application received on ${dbApp.applicationDate?.split("T")[0] || "N/A"}`,
-                date: dbApp.applicationDate?.split("T")[0] || "N/A",
-                pdfLink: dbApp.attachment ? `http://localhost:5000${dbApp.attachment}` : null,
-                department: "N/A",
-                officer: "N/A",
-              },
-            ],
+                {
+                  section: "Application Received",
+                  comment: `Application received on ${dbApp.applicationDate?.split("T")[0] || "N/A"}`,
+                  date: dbApp.applicationDate?.split("T")[0] || "N/A",
+                  pdfLink: dbApp.attachment || null,
+                  department: "N/A",
+                  officer: "N/A",
+                },
+              ],
       };
 
       setApplicationData(uiApp);
 
-      // Pre-fill Officer
       if (dbApp.concernedOfficer && dbApp.concernedOfficer !== "N/A") {
         const typeKey = Object.keys(optionsByType).find((t) =>
           optionsByType[t].some((o) => o.value === dbApp.concernedOfficer)
@@ -149,7 +143,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
         }
       }
 
-      // Pre-fill Supervisor (NEW)
       if (dbApp.supervisor && dbApp.supervisor !== "N/A") {
         const supTypeKey = Object.keys(optionsByType).find((t) =>
           optionsByType[t].some((o) => o.value === dbApp.supervisor)
@@ -180,7 +173,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
     if (selectedType.label) form.append("department", selectedType.label);
     if (uploadedFile?.file) form.append("file", uploadedFile.file);
 
-    // NEW: Add Supervisor to FormData
     if (selectedSupervisor?.value && selectedSupervisor.value !== "") {
       form.append("supervisor", selectedSupervisor.value);
       form.append("supervisorDepartment", selectedSupervisorType.label);
@@ -201,11 +193,11 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
       setApplicationData((prev) => ({
         ...prev,
         concernedOfficer: updatedDbApp.concernedOfficer,
-        supervisor: updatedDbApp.supervisor || "N/A", // Updated
-        supervisorDepartment: updatedDbApp.supervisorDepartment || "N/A", // Updated
+        supervisor: updatedDbApp.supervisor || "N/A",
+        supervisorDepartment: updatedDbApp.supervisorDepartment || "N/A",
         status,
         pendingDays,
-        pdfLink: updatedDbApp.attachment ? `http://localhost:5000${updatedDbApp.attachment}` : prev.pdfLink,
+        pdfLink: updatedDbApp.attachment || prev.pdfLink,
         timeline: updatedDbApp.timeline,
       }));
 
@@ -233,7 +225,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
     fetchApplication();
   }, [fetchApplication]);
 
-  // ---------- Handlers ----------
   const handleTypeChange = (opt) => {
     setSelectedType(opt || { value: "", label: "Select a type" });
     setSelectedOption({ value: "", label: "Select an option" });
@@ -269,7 +260,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
     assignWork();
   };
 
-  // ---------- UI helpers ----------
   const getStatusStyle = (status) => {
     const map = {
       "Not Assigned Yet": { bg: "bg-gray-100", text: "text-gray-700", badge: "bg-gray-500 text-white", icon: <Loader2 size={20} /> },
@@ -350,7 +340,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
       >
-        {/* Header */}
         <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
           <h2 className="text-xl font-semibold text-gray-900">
             Application ID: <span className="text-green-800">{applicationData.applicationId}</span>
@@ -365,11 +354,9 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
           </motion.button>
         </div>
 
-        {/* Assign Work */}
         <motion.div className="bg-gray-50 rounded-xl shadow-sm p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Assign Work</h3>
 
-          {/* Current status badge */}
           <div className="mb-4">
             <span className="text-sm font-medium text-gray-600">Current Status</span>
             <p className="mt-1">
@@ -384,7 +371,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
             </p>
           </div>
 
-          {/* Type → Officer selects */}
           <div className="space-y-4">
             <div>
               <span className="text-sm font-medium text-gray-600">Select Type</span>
@@ -424,7 +410,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
               </div>
             </div>
 
-            {/* NEW: Supervisor Assignment */}
             <div className="pt-6 border-t-2 border-dashed border-gray-300">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
@@ -437,7 +422,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
                 Recommended for oversight & timely escalation
               </p>
 
-              {/* Professional Supervisor Dropdown */}
               <div className="relative">
                 <Select
                   options={[
@@ -471,7 +455,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
                 />
               </div>
 
-              {/* Current Supervisor Badge */}
               {applicationData.supervisor && applicationData.supervisor !== "N/A" && (
                 <div className="mt-3 flex items-center gap-2">
                   <span className="text-xs font-medium text-gray-600">Current:</span>
@@ -482,7 +465,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
               )}
             </div>
 
-            {/* Note */}
             <div>
               <span className="text-sm font-medium text-gray-600">Assignment Note</span>
               <textarea
@@ -496,7 +478,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
               />
             </div>
 
-            {/* File upload */}
             <div>
               <span className="text-sm font-medium text-gray-600">Upload Document (Optional)</span>
               <label
@@ -527,7 +508,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
               </label>
             </div>
 
-            {/* Save button */}
             <motion.button
               onClick={handleSaveAssignment}
               disabled={
@@ -573,7 +553,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
               )}
             </motion.button>
 
-            {/* Success / error */}
             {saveSuccess && (
               <motion.p
                 className="text-green-600 text-sm flex items-center gap-2 mt-2"
@@ -595,7 +574,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
           </div>
         </motion.div>
 
-        {/* Timeline toggle */}
         <motion.button
           onClick={() => setIsTimelineOpen(!isTimelineOpen)}
           className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-2 mb-6"
@@ -604,7 +582,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
           <FaHistory /> {isTimelineOpen ? "Hide Application Timeline" : "Show Application Timeline"}
         </motion.button>
 
-        {/* Timeline */}
         <AnimatePresence>
           {isTimelineOpen && (
             <motion.div
@@ -662,15 +639,15 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
                           {item.officer && item.officer !== "N/A" && (
                             <p className="text-xs text-gray-600 mt-1">Officer: {item.officer}</p>
                           )}
-                          {/* Show supervisor in timeline */}
                           {item.supervisor && item.supervisor !== "N/A" && (
                             <p className="text-xs font-medium text-indigo-700 mt-1">
                               Supervised by: {item.supervisor}
                             </p>
                           )}
+                          {/* FIXED: Cloudinary PDF opens correctly */}
                           {item.pdfLink && (
                             <motion.a
-                              href={`http://localhost:5000${item.pdfLink}`}
+                              href={item.pdfLink.endsWith(".pdf") ? item.pdfLink : `${item.pdfLink}.pdf`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-green-600 hover:text-green-800 transition-colors text-sm mt-1 flex items-center gap-2"
@@ -694,7 +671,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
           )}
         </AnimatePresence>
 
-        {/* Details button */}
         <motion.button
           onClick={() => setModalState({ type: "details", isOpen: true })}
           className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-2 mb-6"
@@ -703,7 +679,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
           <FaInfoCircle /> Show Application Details
         </motion.button>
 
-        {/* Details modal */}
         <AnimatePresence>
           {modalState.isOpen && modalState.type === "details" && (
             <motion.div
@@ -773,7 +748,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
                     <p className="text-base font-medium text-gray-900">{applicationData.concernedOfficer}</p>
                   </div>
 
-                  {/* Show Supervisor in Details */}
                   {applicationData.supervisor && applicationData.supervisor !== "N/A" && (
                     <div className="sm:col-span-2">
                       <span className="text-sm font-medium text-gray-600">Supervisor</span>
@@ -802,10 +776,11 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
                     </p>
                   </div>
 
+                  {/* FIXED: Main PDF in Details Modal */}
                   {applicationData.pdfLink && (
                     <div className="sm:col-span-2">
                       <motion.a
-                        href={applicationData.pdfLink}
+                        href={applicationData.pdfLink.endsWith(".pdf") ? applicationData.pdfLink : `${applicationData.pdfLink}.pdf`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-green-600 hover:text-green-800 font-medium text-sm flex items-center gap-2"
@@ -820,7 +795,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
             </motion.div>
           )}
 
-          {/* Confirm modal */}
           {modalState.isOpen && modalState.type === "confirm" && (
             <ConfirmModal
               onConfirm={confirmSave}
@@ -842,7 +816,6 @@ const AssigningWork = ({ data, onClose, onUpdate }) => {
           )}
         </AnimatePresence>
 
-        {/* Inline CSS */}
         <style jsx>{`
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
           .animate-spin { animation: spin 1s linear infinite; }

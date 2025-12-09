@@ -1,7 +1,7 @@
 // src/pages/ApplicationReceive.jsx
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { File, PlusCircle, Loader2 } from "lucide-react";
+import { File, PlusCircle, Loader2, FileText } from "lucide-react";
 
 import AddCaseForm from "../components/AddCaseForm";
 import Navbar from "../components/Navbar";
@@ -68,10 +68,10 @@ const ApplicationReceive = () => {
         applicant: app.applicant || app.name || "Unknown Applicant",
         applicationDate: app.applicationDate
           ? new Date(app.applicationDate).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
           : "—",
         block: app.block || "—",
         sourceAt: app.sourceAt || app.source || "unknown",
@@ -175,20 +175,22 @@ const ApplicationReceive = () => {
         <div className="max-w-7xl mx-auto mt-6">
           {/* Header */}
           <div className="flex flex-row items-center justify-between mb-4 sm:mb-6 gap-2 sm:gap-4">
-            <h1 className="text-base sm:text-xl md:text-2xl font-semibold text-gray-800 flex items-center gap-2">
-              <File className="w-4 h-4 sm:w-5 sm:h-5 text-[#2810ff]" />
-              Applications
+            <h1 className="text-base sm:text-xl md:text-2xl font-semibold text-gray-800 flex items-center gap-2 uppercase">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5  text-[#2810ff]" />
+              Applications List
             </h1>
 
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-1 sm:gap-2 px-3 py-1 sm:px-6 sm:py-2 bg-green-600 text-white rounded-md text-xs sm:text-md font-medium hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-600"
+              className="group flex items-center gap-2.5 px-5 py-3 bg-gradient-to-r from-green-600 to-green-600 text-white font-semibold rounded-xl shadow-md hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/30"
             >
-              <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="inline sm:hidden">Add</span>
-              <span className="hidden sm:inline">Add Application</span>
+              <PlusCircle className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+              <span className="text-sm sm:text-base font-medium">
+                <span className="inline sm:hidden">Add</span>
+                <span className="hidden sm:inline">Add Application</span>
+              </span>
             </motion.button>
           </div>
 
