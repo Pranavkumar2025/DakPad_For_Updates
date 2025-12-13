@@ -1,10 +1,13 @@
+// src/pages/SupervisorDashboard.jsx
 import React, { useState, useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import api from "../utils/api";
 import SupervisorDataTable from "../components/SupervisorComponents/SupervisorDataTable";
+import AdminProfilePage from "./AdminProfilePage"; // ← Profile content
 
-const SuperAdminDashboard = () => {
+const SupervisorDashboard = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [supervisor, setSupervisor] = useState({
     name: "Loading…",
@@ -12,6 +15,9 @@ const SuperAdminDashboard = () => {
     department: "",
   });
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -34,6 +40,13 @@ const SuperAdminDashboard = () => {
     fetchProfile();
   }, []);
 
+  // Redirect base path to applications tab
+  useEffect(() => {
+    if (location.pathname === "/supervisor-dashboard" || location.pathname === "/supervisor-dashboard/") {
+      navigate("/supervisor-dashboard/applications", { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -46,28 +59,41 @@ const SuperAdminDashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
       <Sidebar
         isMenuOpen={isMenuOpen}
         toggleMenu={toggleMenu}
         userName={supervisor.name}
         userPosition={supervisor.position}
+        isSuperAdmin={false}
       />
 
-      <div className="flex-1 flex flex-col mt-4">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
         <Navbar
           userName={supervisor.name}
           userPosition={supervisor.position}
-          logoLink="/Supervisor"
+          logoLink="/supervisor-dashboard/applications"
           isMenuOpen={isMenuOpen}
           toggleMenu={toggleMenu}
         />
-        <div className="p-4 sm:p-6 lg:p-8">
-          
-          <SupervisorDataTable supervisor={supervisor} />
+
+        {/* Nested Routes */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-8">
+          <Routes>
+            {/* Main Applications Tab */}
+            <Route
+              path="applications"
+              element={<SupervisorDataTable supervisor={supervisor} />}
+            />
+
+            {/* Profile Tab */}
+            <Route path="profile" element={<AdminProfilePage />} />
+          </Routes>
         </div>
       </div>
     </div>
   );
 };
 
-export default SuperAdminDashboard;
+export default SupervisorDashboard;

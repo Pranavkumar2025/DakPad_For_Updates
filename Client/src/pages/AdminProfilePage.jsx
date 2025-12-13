@@ -1,21 +1,26 @@
 // src/pages/AdminProfilePage.jsx
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ← Added for back button
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  User,
-  Key,
+  UserCircle2,
+  Lock,
   Building2,
-  Shield,
+  Briefcase,
+  Badge,
   Save,
   Loader2,
   CheckCircle,
   XCircle,
   Eye,
   EyeOff,
+  ArrowLeft,
 } from "lucide-react";
 import api from "../utils/api";
 
 const AdminProfilePage = () => {
+  const navigate = useNavigate(); // ← For back navigation
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -75,7 +80,7 @@ const AdminProfilePage = () => {
     try {
       await api.patch("/api/admin/profile", profile);
       setSuccess("Profile updated successfully!");
-      setTimeout(() => setSuccess(""), 4000);
+      setTimeout(() => setSuccess(""), 5000);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to update profile");
     } finally {
@@ -106,298 +111,296 @@ const AdminProfilePage = () => {
       setSuccess("Password changed successfully!");
       setPasswordData({ current: "", new: "", confirm: "" });
       setShowPasswordForm(false);
-      setTimeout(() => setSuccess(""), 4000);
+      setTimeout(() => setSuccess(""), 5000);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to change password");
     }
   };
 
-  // Loading State
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <Loader2 className="animate-spin text-orange-600 mx-auto" size={56} />
-          <p className="text-gray-700 mt-6 text-lg font-medium">Loading your profile...</p>
+          <Loader2 className="animate-spin text-indigo-700 mx-auto" size={56} />
+          <p className="text-gray-600 mt-6 text-lg font-medium">Loading profile information...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-      {/* Page Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-center mb-12"
-      >
-        <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 tracking-tight">
-          My Account
-        </h1>
-        <p className="text-gray-600 text-lg mt-4 font-medium">
-          Government of India • Secure Administrative Portal
-        </p>
-      </motion.div>
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl sm:ml-24 mx-auto">
+        {/* Back Button + Header */}
+        <div className="mb-10">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-3 text-indigo-500 hover:text-indigo-800 cursor-pointer font-medium mb-6 transition-colors"
+          >
+            <ArrowLeft size={22} />
+            Back to Dashboard
+          </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left: Profile Summary Card */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="lg:col-span-4"
-        >
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="p-8 text-center">
-              <div className="w-32 h-32 mx-auto bg-gradient-to-br from-orange-100 to-orange-200 border-4 border-orange-300 rounded-full flex items-center justify-center text-5xl font-bold text-orange-700 shadow-xl">
-                {profile.name.charAt(0).toUpperCase()}
-              </div>
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">My Account</h1>
+            <p className="text-gray-600 mt-3 text-lg font-medium">
+              Government of India • Secure Administrative Portal
+            </p>
+            <div className="mt-5 w-32 h-1 bg-indigo-700 mx-auto"></div>
+          </div>
+        </div>
 
-              <h2 className="mt-6 text-2xl font-bold text-gray-800">{profile.name}</h2>
-              <p className="text-gray-600 mt-1 font-medium">{profile.position}</p>
-
-              <div className="mt-6 inline-flex items-center gap-3 bg-blue-50 text-blue-800 px-6 py-3 rounded-full font-semibold text-sm">
-                <Shield size={18} />
-                <span className="capitalize">{profile.role || "Administrator"}</span>
-              </div>
-
-              <div className="mt-8 pt-6 border-t border-gray-200 space-y-5 text-left">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">Admin ID</span>
-                  <span className="font-bold text-gray-800">{profile.adminId}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Left Column: Profile Summary */}
+          <div className="lg:col-span-1">
+            <div className="bg-white border border-gray-200 shadow-sm bg-gradient-to-br from-indigo-50/30 to-white">
+              <div className="p-8 text-center border-b border-gray-200">
+                <div className="w-32 h-32 mx-auto bg-indigo-700 text-white flex items-center justify-center text-5xl font-bold shadow-xl">
+                  {profile.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 font-medium flex items-center gap-2">
-                    <Building2 size={16} />
+                <h2 className="mt-6 text-2xl font-bold text-gray-900">{profile.name}</h2>
+                <p className="text-gray-600 mt-1 text-lg">{profile.position}</p>
+              </div>
+
+              <div className="p-6 space-y-6">
+                <div className="flex items-center justify-between py-4 border-b border-gray-100">
+                  <span className="text-gray-600 font-medium flex items-center gap-3">
+                    <Badge className="w-5 h-5 text-indigo-700" />
+                    Role
+                  </span>
+                  <span className="font-semibold text-gray-900 capitalize">{profile.role}</span>
+                </div>
+
+                <div className="flex items-center justify-between py-4 border-b border-gray-100">
+                  <span className="text-gray-600 font-medium flex items-center gap-3">
+                    <UserCircle2 className="w-5 h-5 text-indigo-700" />
+                    Admin ID
+                  </span>
+                  <span className="font-mono font-bold text-gray-900">{profile.adminId}</span>
+                </div>
+
+                <div className="flex items-center justify-between py-4">
+                  <span className="text-gray-600 font-medium flex items-center gap-3">
+                    <Building2 className="w-5 h-5 text-indigo-700" />
                     Department
                   </span>
-                  <span className="font-medium text-gray-800">{profile.department || "N/A"}</span>
+                  <span className="font-medium text-gray-900">{profile.department || "N/A"}</span>
                 </div>
               </div>
             </div>
           </div>
-        </motion.div>
 
-        {/* Right: Edit Forms */}
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="lg:col-span-8 space-y-8"
-        >
-          {/* Edit Profile Information */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-4 bg-orange-100 rounded-xl">
-                <User className="text-orange-600" size={28} />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-800">Edit Profile Information</h3>
-            </div>
-
-            <form onSubmit={handleProfileUpdate} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
-                  <input
-                    type="text"
-                    value={profile.name}
-                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                    className="w-full px-5 py-4 rounded-xl border-2 border-gray-300 focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all font-medium"
-                    placeholder="Enter full name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Admin ID</label>
-                  <input
-                    type="text"
-                    value={profile.adminId}
-                    readOnly
-                    className="w-full px-5 py-4 rounded-xl border-2 border-gray-300 bg-gray-100 text-gray-600 cursor-not-allowed font-medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Position / Designation</label>
-                  <input
-                    type="text"
-                    value={profile.position}
-                    onChange={(e) => setProfile({ ...profile, position: e.target.value })}
-                    className="w-full px-5 py-4 rounded-xl border-2 border-gray-300 focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all font-medium"
-                    placeholder="e.g., Block Development Officer"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Department</label>
-                  <input
-                    type="text"
-                    value={profile.department}
-                    onChange={(e) => setProfile({ ...profile, department: e.target.value })}
-                    className="w-full px-5 py-4 rounded-xl border-2 border-gray-300 focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all font-medium"
-                    placeholder="e.g., Rural Development Department"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-6">
-                <motion.button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl font-bold flex items-center gap-3 shadow-lg hover:shadow-xl disabled:opacity-70 transition-all"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="animate-spin" size={22} />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save size={22} />
-                      Save Changes
-                    </>
-                  )}
-                </motion.button>
-              </div>
-            </form>
-          </div>
-
-          {/* Change Password */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-green-100 rounded-xl">
-                  <Key className="text-green-700" size={28} />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800">Change Password</h3>
-              </div>
-              <button
-                onClick={() => setShowPasswordForm(!showPasswordForm)}
-                className="text-orange-600 hover:text-orange-700 font-bold underline text-lg"
-              >
-                {showPasswordForm ? "Cancel" : "Change Password"}
-              </button>
-            </div>
-
-            <AnimatePresence>
-              {showPasswordForm && (
-                <motion.form
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.4 }}
-                  onSubmit={handlePasswordChange}
-                  className="space-y-6"
-                >
-                  <div className="relative">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Current Password</label>
-                    <input
-                      type={showCurrent ? "text" : "password"}
-                      value={passwordData.current}
-                      onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
-                      className="w-full px-5 py-4 pr-14 rounded-xl border-2 border-gray-300 focus:border-green-600 focus:ring-4 focus:ring-green-100 transition-all font-medium"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowCurrent(!showCurrent)}
-                      className="absolute right-4 top-11 text-gray-600 hover:text-gray-800"
-                    >
-                      {showCurrent ? <EyeOff size={22} /> : <Eye size={22} />}
-                    </button>
+          {/* Right Column: Forms */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Edit Profile */}
+            <div className="bg-white border border-gray-200 shadow-sm bg-gradient-to-br from-indigo-50/20 to-white">
+              <div className="px-8 py-6 border-b border-gray-200 bg-indigo-50/50">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-indigo-100 text-indigo-700 rounded">
+                    <Briefcase size={28} />
                   </div>
+                  <h3 className="text-xl font-bold text-gray-900">Edit Profile Information</h3>
+                </div>
+              </div>
 
-                  <div className="relative">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">New Password</label>
-                    <input
-                      type={showNew ? "text" : "password"}
-                      value={passwordData.new}
-                      onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
-                      className="w-full px-5 py-4 pr-14 rounded-xl border-2 border-gray-300 focus:border-green-600 focus:ring-4 focus:ring-green-100 transition-all font-medium"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNew(!showNew)}
-                      className="absolute right-4 top-11 text-gray-600 hover:text-gray-800"
-                    >
-                      {showNew ? <EyeOff size={22} /> : <Eye size={22} />}
-                    </button>
-                  </div>
+              <div className="p-8">
+                <form onSubmit={handleProfileUpdate} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                      <input
+                        type="text"
+                        value={profile.name}
+                        onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition-colors font-medium"
+                        placeholder="Enter full name"
+                      />
+                    </div>
 
-                  <div className="relative">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Confirm New Password</label>
-                    <input
-                      type={showConfirm ? "text" : "password"}
-                      value={passwordData.confirm}
-                      onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
-                      className="w-full px-5 py-4 pr-14 rounded-xl border-2 border-gray-300 focus:border-green-600 focus:ring-4 focus:ring-green-100 transition-all font-medium"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute right-4 top-11 text-gray-600 hover:text-gray-800"
-                    >
-                      {showConfirm ? <EyeOff size={22} /> : <Eye size={22} />}
-                    </button>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Admin ID</label>
+                      <input
+                        type="text"
+                        value={profile.adminId}
+                        readOnly
+                        className="w-full px-4 py-3 border border-gray-300 bg-gray-50 text-gray-600 font-medium cursor-not-allowed"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Position / Designation</label>
+                      <input
+                        type="text"
+                        value={profile.position}
+                        onChange={(e) => setProfile({ ...profile, position: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition-colors font-medium"
+                        placeholder="e.g., Block Development Officer"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Department</label>
+                      <input
+                        type="text"
+                        value={profile.department}
+                        onChange={(e) => setProfile({ ...profile, department: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition-colors font-medium"
+                        placeholder="e.g., Rural Development Department"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex justify-end pt-6">
                     <motion.button
                       type="submit"
-                      className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl font-bold flex items-center gap-3 shadow-lg hover:shadow-xl transition-all"
+                      disabled={isSaving}
+                      className="px-8 py-3 bg-indigo-700 text-white font-bold flex items-center gap-3 hover:bg-indigo-800 disabled:opacity-60 transition-colors shadow-md"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <Key size={22} />
-                      Update Password
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="animate-spin" size={20} />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save size={20} />
+                          Save Changes
+                        </>
+                      )}
                     </motion.button>
                   </div>
-                </motion.form>
-              )}
-            </AnimatePresence>
+                </form>
+              </div>
+            </div>
+
+            {/* Change Password */}
+            <div className="bg-white border border-gray-200 shadow-sm bg-gradient-to-br from-emerald-50/20 to-white">
+              <div className="px-8 py-6 border-b border-gray-200 bg-emerald-50/50 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-emerald-100 text-emerald-700 rounded">
+                    <Lock size={28} />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Change Password</h3>
+                </div>
+                <button
+                  onClick={() => setShowPasswordForm(!showPasswordForm)}
+                  className="text-indigo-700 hover:text-indigo-800 font-medium underline"
+                >
+                  {showPasswordForm ? "Cancel" : "Change Password"}
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {showPasswordForm && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="p-8 border-t border-gray-100"
+                  >
+                    <form onSubmit={handlePasswordChange} className="space-y-6">
+                      <div className="relative">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+                        <input
+                          type={showCurrent ? "text" : "password"}
+                          value={passwordData.current}
+                          onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
+                          className="w-full px-4 py-3 pr-12 border border-gray-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition-colors font-medium"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCurrent(!showCurrent)}
+                          className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
+                        >
+                          {showCurrent ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                      </div>
+
+                      <div className="relative">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+                        <input
+                          type={showNew ? "text" : "password"}
+                          value={passwordData.new}
+                          onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
+                          className="w-full px-4 py-3 pr-12 border border-gray-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition-colors font-medium"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNew(!showNew)}
+                          className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
+                        >
+                          {showNew ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                      </div>
+
+                      <div className="relative">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                        <input
+                          type={showConfirm ? "text" : "password"}
+                          value={passwordData.confirm}
+                          onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
+                          className="w-full px-4 py-3 pr-12 border border-gray-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition-colors font-medium"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirm(!showConfirm)}
+                          className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
+                        >
+                          {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                      </div>
+
+                      <div className="flex justify-end pt-4">
+                        <motion.button
+                          type="submit"
+                          className="px-8 py-3 bg-emerald-700 text-white font-bold flex items-center gap-3 hover:bg-emerald-800 transition-colors shadow-md"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Lock size={20} />
+                          Update Password
+                        </motion.button>
+                      </div>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </motion.div>
+        </div>
+
+        {/* Toast Notifications */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="fixed bottom-8 right-8 bg-red-600 text-white px-6 py-4 shadow-2xl flex items-center gap-3 font-medium z-50 border border-red-700"
+            >
+              <XCircle size={24} />
+              {error}
+            </motion.div>
+          )}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="fixed bottom-8 right-8 bg-green-600 text-white px-6 py-4 shadow-2xl flex items-center gap-3 font-medium z-50 border border-green-700"
+            >
+              <CheckCircle size={24} />
+              {success}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-
-      {/* Toast Notifications */}
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="fixed bottom-8 right-8 bg-red-600 text-white px-8 py-5 rounded-xl shadow-2xl flex items-center gap-3 font-bold z-50"
-          >
-            <XCircle size={26} />
-            {error}
-          </motion.div>
-        )}
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="fixed bottom-8 right-8 bg-green-600 text-white px-8 py-5 rounded-xl shadow-2xl flex items-center gap-3 font-bold z-50"
-          >
-            <CheckCircle size={26} />
-            {success}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Font Import (Optional - keep if not in index.html) */}
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
-        body {
-          font-family: 'Hind Siliguri', 'Roboto', system-ui, sans-serif;
-        }
-      `}</style>
     </div>
   );
 };

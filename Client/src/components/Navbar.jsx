@@ -155,7 +155,7 @@
 import React from "react";
 import { FaBars, FaTimes, FaCalendarAlt, FaSignOutAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // ← Added useLocation
 import api from "../utils/api";
 
 const Navbar = ({
@@ -164,15 +164,32 @@ const Navbar = ({
   logoLink = "/",
   isMenuOpen,
   toggleMenu,
-  sidebarOpen = false, // optional: to adjust left margin when sidebar is open
+  sidebarOpen = false,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // ← To detect current path
 
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
+
+  // ---------- Dynamic Profile Navigation ----------
+  const goToProfile = () => {
+    const path = location.pathname;
+
+    let profilePath = "/Admin/profile"; // default fallback
+
+    if (path.startsWith("/SuperAdmin")) profilePath = "/SuperAdmin/profile";
+    else if (path.startsWith("/Admin")) profilePath = "/Admin/profile";
+    else if (path.startsWith("/supervisor-dashboard")) profilePath = "/supervisor-dashboard/profile";
+    else if (path.startsWith("/work-assigned")) profilePath = "/work-assigned/profile";
+    else if (path.startsWith("/application-receive")) profilePath = "/application-receive/profile";
+
+    navigate(profilePath);
+    if (isMenuOpen) toggleMenu();
+  };
 
   const handleLogout = async () => {
     try {
@@ -183,11 +200,6 @@ const Navbar = ({
     window.dispatchEvent(new Event("applicationUpdated"));
     if (isMenuOpen) toggleMenu();
     navigate("/admin-login", { replace: true });
-  };
-
-  const goToProfile = () => {
-    navigate("/admin-profile");
-    if (isMenuOpen) toggleMenu();
   };
 
   return (
