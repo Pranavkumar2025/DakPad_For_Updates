@@ -4,11 +4,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
-import PerformanceDashboard from "./pages/PerformanceDashboard";
 import WorkAssignedDashboard from "./pages/WorkAssignedDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ApplicationReceive from "./pages/ApplicationRecieve";
-import AdminProfilePage from "./pages/AdminProfilePage";
 import SupervisorDashboard from "./pages/SupervisorDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
@@ -24,9 +22,9 @@ const App = () => {
           <Route path="/" element={<UserDashboard />} />
           <Route path="/admin-login" element={<AdminLogin />} />
 
-          {/* ==================== SUPERVISOR PROTECTED ROUTE ==================== */}
+          {/* ==================== SUPERVISOR DASHBOARD ==================== */}
           <Route
-            path="/supervisor-dashboard"
+            path="/supervisor-dashboard/*"  // ← Add wildcard if Supervisor uses nested routes
             element={
               <ProtectedRoute allowedRoles={["Supervisor"]}>
                 <SupervisorDashboard />
@@ -34,9 +32,9 @@ const App = () => {
             }
           />
 
-          {/* ==================== ADMIN & SUPERADMIN PROTECTED ROUTES ==================== */}
+          {/* ==================== ADMIN DASHBOARD ==================== */}
           <Route
-            path="/Admin"
+            path="/Admin/*"  // ← Add wildcard for future nested routes (e.g., profile)
             element={
               <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                 <AdminDashboard />
@@ -44,6 +42,7 @@ const App = () => {
             }
           />
 
+          {/* ==================== SUPERADMIN DASHBOARD ==================== */}
           <Route
             path="/SuperAdmin/*"
             element={
@@ -53,18 +52,9 @@ const App = () => {
             }
           />
 
-          {/* PERFORMANCE DASHBOARD — NOW ONLY FOR SUPERADMIN */}
+          {/* ==================== ROLE-SPECIFIC DASHBOARDS ==================== */}
           <Route
-            path="/performance"
-            element={
-              <ProtectedRoute allowedRoles={["superadmin"]}>
-                <PerformanceDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/work-assigned"
+            path="/work-assigned/*"
             element={
               <ProtectedRoute allowedRoles={["workassigned", "superadmin"]}>
                 <WorkAssignedDashboard />
@@ -73,20 +63,10 @@ const App = () => {
           />
 
           <Route
-            path="/application-receive"
+            path="/application-receive/*"
             element={
               <ProtectedRoute allowedRoles={["receive", "superadmin"]}>
                 <ApplicationReceive />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* ADMIN PROFILE — ALL AUTHORIZED ROLES */}
-          <Route
-            path="/admin-profile"
-            element={
-              <ProtectedRoute allowedRoles={["admin", "superadmin", "workassigned", "receive", "Supervisor"]}>
-                <AdminProfilePage />
               </ProtectedRoute>
             }
           />
@@ -100,9 +80,3 @@ const App = () => {
 };
 
 export default App;
-
-
-
-
-
-

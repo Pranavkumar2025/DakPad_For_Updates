@@ -1,10 +1,11 @@
-
+// src/pages/SuperAdminDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import SuperAdminDataTable from "../components/SuperAdminComponents/SuperAdminDataTable";
-import PerformanceDashboard from "./PerformanceDashboard"; // ← Your beautiful dashboard
+import PerformanceDashboard from "./PerformanceDashboard";
+import AdminProfilePage from "./AdminProfilePage";  // ← Import Profile Content Only
 import api from "../utils/api";
 
 const SuperAdminDashboard = () => {
@@ -18,7 +19,6 @@ const SuperAdminDashboard = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-
   const toggleMenu = () => setIsMenuOpen(prev => !prev);
 
   useEffect(() => {
@@ -44,9 +44,9 @@ const SuperAdminDashboard = () => {
     fetchAdmin();
   }, []);
 
-  // Auto redirect to /applications if directly on /SuperAdmin
+  // Redirect /SuperAdmin → /SuperAdmin/applications
   useEffect(() => {
-    if (location.pathname === "/SuperAdmin") {
+    if (location.pathname === "/SuperAdmin" || location.pathname === "/SuperAdmin/") {
       navigate("/SuperAdmin/applications", { replace: true });
     }
   }, [location.pathname, navigate]);
@@ -71,7 +71,7 @@ const SuperAdminDashboard = () => {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 p-2 sm:p-4 md:p-6 w-full mx-auto overflow-x-hidden"> 
+      <div className="flex-1 flex flex-col">
         <Navbar
           userName={admin.name}
           userPosition={admin.position}
@@ -80,22 +80,12 @@ const SuperAdminDashboard = () => {
           toggleMenu={toggleMenu}
         />
 
-        <div className="mt-6 ml-3">
+        <div className="flex-1 p-4 sm:p-6 md:p-8">
           <Routes>
-            {/* Default Tab: Applications List */}
-            <Route
-              path="/applications"
-              element={<SuperAdminDataTable />}
-            />
-
-            {/* Performance Dashboard Tab */}
-            <Route
-              path="/performance"
-              element={<PerformanceDashboard />}
-            />
-
-            {/* Optional: Add more tabs later */}
-            {/* <Route path="/reports" element={<ReportsPage />} /> */}
+            <Route path="applications" element={<SuperAdminDataTable />} />
+            <Route path="performance" element={<PerformanceDashboard />} />
+            <Route path="profile" element={<AdminProfilePage />} />  {/* ← Nested Profile */}
+            {/* Add more nested routes later */}
           </Routes>
         </div>
       </div>

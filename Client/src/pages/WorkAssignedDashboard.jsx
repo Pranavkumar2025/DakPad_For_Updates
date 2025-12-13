@@ -1,6 +1,8 @@
 // src/pages/WorkAssignedDashboard.jsx
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import WorkAssignedDataTable from "../components/WorkAssignedComponents/WorkAssignedDataTable";
+import AdminProfilePage from "./AdminProfilePage"; // ← Pure profile content
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import api from "../utils/api";
@@ -13,11 +15,12 @@ const WorkAssignedDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
 
-  // --------------------------------------------------------------
   // Fetch Admin Profile (name + position)
-  // --------------------------------------------------------------
   useEffect(() => {
     const fetchAdmin = async () => {
       try {
@@ -28,7 +31,6 @@ const WorkAssignedDashboard = () => {
         });
       } catch (err) {
         console.error("Failed to load admin profile:", err);
-        // fallback
         setAdmin({
           name: "Work Assign Officer",
           position: "Work Assigned",
@@ -40,42 +42,54 @@ const WorkAssignedDashboard = () => {
     fetchAdmin();
   }, []);
 
-  // --------------------------------------------------------------
-  // Show loader while profile loads
-  // --------------------------------------------------------------
+  // Redirect base path /work-assigned → /work-assigned/applications
+  useEffect(() => {
+    if (location.pathname === "/work-assigned" || location.pathname === "/work-assigned/") {
+      navigate("/work-assigned/applications", { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <div className="text-gray-600 animate-pulse">Loading profile…</div>
+        <div className="text-gray-600 animate-pulse text-xl">Loading Work Assigned Panel…</div>
       </div>
     );
   }
 
-  // --------------------------------------------------------------
-  // Main Dashboard
-  // --------------------------------------------------------------
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
+      {/* Fixed Sidebar */}
       <Sidebar
         isMenuOpen={isMenuOpen}
         toggleMenu={toggleMenu}
         userName={admin.name}
         userPosition={admin.position}
+        isSuperAdmin={false} // Work Assigned role is not superadmin
       />
 
-      {/* Main Content */}
-      <div className="flex-1 p-2 sm:p-4 md:p-6 w-full mx-auto overflow-x-hidden">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
         <Navbar
           userName={admin.name}
           userPosition={admin.position}
-          logoLink="/work-assigned"
+          logoLink="/work-assigned/applications"
           isMenuOpen={isMenuOpen}
           toggleMenu={toggleMenu}
         />
 
-        <div className="">
-          <WorkAssignedDataTable />
+        {/* Nested Routes */}
+        <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+          <Routes>
+            {/* Main Tab */}
+            <Route path="applications" element={<WorkAssignedDataTable />} />
+
+            {/* Profile Tab */}
+            <Route path="profile" element={<AdminProfilePage />} />
+
+            {/* Add more nested routes later if needed */}
+            {/* <Route path="reports" element={<ReportsPage />} /> */}
+          </Routes>
         </div>
       </div>
     </div>

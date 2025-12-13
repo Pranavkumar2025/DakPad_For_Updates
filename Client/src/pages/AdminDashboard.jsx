@@ -1,8 +1,10 @@
 // src/pages/AdminDashboard.jsx
 import React, { useState, useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import DataTable from "../components/AdminComponents/DataTable";
 import Sidebar from "../components/Sidebar";
+import DataTable from "../components/AdminComponents/DataTable";
+import AdminProfilePage from "./AdminProfilePage"; // ← Import the pure content profile
 import api from "../utils/api";
 
 const AdminDashboard = () => {
@@ -13,11 +15,12 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
 
-  // --------------------------------------------------------------
-  // 1. Fetch admin profile (name + position) once on mount
-  // --------------------------------------------------------------
+  // Fetch admin profile (name + position)
   useEffect(() => {
     const fetchAdmin = async () => {
       try {
@@ -28,7 +31,6 @@ const AdminDashboard = () => {
         });
       } catch (err) {
         console.error("Failed to load admin profile:", err);
-        // fallback – still allow UI to render
         setAdmin({ name: "Admin", position: "Administrator" });
       } finally {
         setLoading(false);
@@ -37,42 +39,54 @@ const AdminDashboard = () => {
     fetchAdmin();
   }, []);
 
-  // --------------------------------------------------------------
-  // 2. Show a minimal loader while fetching (optional)
-  // --------------------------------------------------------------
+  // Optional: Redirect /Admin to /Admin/applications (or main tab) if you add more tabs later
+  useEffect(() => {
+    if (location.pathname === "/Admin" || location.pathname === "/Admin/") {
+      navigate("/Admin/applications", { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <div className="text-gray-600 animate-pulse">Loading profile…</div>
+        <div className="text-gray-600 animate-pulse text-xl">Loading Admin Panel…</div>
       </div>
     );
   }
 
-  // --------------------------------------------------------------
-  // 3. Render Dashboard with dynamic data
-  // --------------------------------------------------------------
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
+      {/* Fixed Sidebar */}
       <Sidebar
         isMenuOpen={isMenuOpen}
         toggleMenu={toggleMenu}
         userName={admin.name}
         userPosition={admin.position}
+        isSuperAdmin={false} // Regular admin, not superadmin
       />
 
-      {/* Main Content */}
-      <div className="flex-1 p-2 sm:p-4 md:p-6 w-full mx-auto overflow-x-hidden">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
         <Navbar
           userName={admin.name}
           userPosition={admin.position}
-          logoLink="/Admin"
+          logoLink="/Admin/applications" // or whatever your default tab is
           isMenuOpen={isMenuOpen}
           toggleMenu={toggleMenu}
         />
 
-        <div className="">
-          <DataTable />
+        {/* Nested Routes Content */}
+        <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+          <Routes>
+            {/* Default/Main Tab */}
+            <Route path="applications" element={<DataTable />} />
+
+            {/* Profile Tab */}
+            <Route path="profile" element={<AdminProfilePage />} />
+
+            {/* Add more nested routes here in the future */}
+            {/* <Route path="settings" element={<SettingsPage />} /> */}
+          </Routes>
         </div>
       </div>
     </div>

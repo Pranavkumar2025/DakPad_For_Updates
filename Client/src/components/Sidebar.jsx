@@ -2,18 +2,15 @@
 import React, { useState } from "react";
 import {
   LayoutDashboard,
-  Settings,
   User,
   BarChart2,
-  X, // <-- NEW: Close icon
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import api from "../utils/api";
 
-// ----- Optional: Replace with your actual dashboard component -----
-import UserDashboardContent from "../pages/UserDashboard"; // <-- Your public dashboard
-// ----------------------------------------------------------------
+import UserDashboardContent from "../pages/UserDashboard";
 
 const Sidebar = ({
   isMenuOpen,
@@ -23,34 +20,63 @@ const Sidebar = ({
   isSuperAdmin = false,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // ← NEW: To detect current path
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
 
-  // ----- NEW: Modal State -----
   const [showDashboardModal, setShowDashboardModal] = useState(false);
 
   const openDashboardModal = () => {
     setShowDashboardModal(true);
-    if (isMenuOpen) toggleMenu(); // Close mobile menu
+    if (isMenuOpen) toggleMenu();
   };
 
   const closeDashboardModal = () => setShowDashboardModal(false);
+
+  // ---------- DYNAMIC PROFILE LINK ----------
+  const getProfileLink = () => {
+    const path = location.pathname;
+
+    if (path.startsWith("/SuperAdmin")) return "/SuperAdmin/profile";
+    if (path.startsWith("/Admin")) return "/Admin/profile";
+    if (path.startsWith("/supervisor-dashboard")) return "/supervisor-dashboard/profile";
+    if (path.startsWith("/work-assigned")) return "/work-assigned/profile";
+    if (path.startsWith("/application-receive")) return "/application-receive/profile";
+
+    // Fallback
+    // return "/Admin/profile";
+  };
+
+  // ---------- CHECK ACTIVE STATE ----------
+  const isActive = (link) => {
+    if (!link) return false;
+    return location.pathname === link || location.pathname.startsWith(link + "/");
+  };
 
   // ---------- MENU ITEMS ----------
   const menuItems = [
     {
       icon: <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6" />,
       label: "User Dashboard",
-      action: openDashboardModal, // <-- opens modal
+      action: openDashboardModal,
     },
-    { icon: <User className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Profile", link: "/admin-profile" },
+    {
+      icon: <User className="w-5 h-5 sm:w-6 sm:h-6" />,
+      label: "Profile",
+      link: getProfileLink(),
+    },
     ...(isSuperAdmin
-      ? [{ icon: <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Performance", link: "/SuperAdmin/performance" }]
+      ? [
+          {
+            icon: <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6" />,
+            label: "Performance",
+            link: "/SuperAdmin/performance",
+          },
+        ]
       : []),
-    // { icon: <Settings className="w-5 h-5 sm:w-6 sm:h-6" />, label: "Settings", link: "#" },
   ];
 
   // ---------- LOGOUT ----------
@@ -77,7 +103,11 @@ const Sidebar = ({
             <button
               key={index}
               onClick={item.action || (() => navigate(item.link))}
-              className="group relative flex items-center justify-center p-2 rounded-full hover:bg-[#ff5010] transition focus:outline-none focus:ring-2 focus:ring-[#ff5010]"
+              className={`group relative flex items-center justify-center p-2 rounded-full transition focus:outline-none focus:ring-2 focus:ring-[#ff5010] ${
+                item.link && isActive(item.link)
+                  ? "bg-[#ff5010]"
+                  : "hover:bg-[#ff5010]"
+              }`}
               aria-label={item.label}
             >
               {item.icon}
@@ -109,7 +139,6 @@ const Sidebar = ({
                 Jan Samadhan
               </span>
               <motion.button
-                className="text-white text-lg sm:text-xl focus:outline-none focus:ring-2 focus:ring-white"
                 onClick={toggleMenu}
                 whileTap={{ scale: 0.9 }}
                 aria-label="Close sidebar"
@@ -118,14 +147,15 @@ const Sidebar = ({
               </motion.button>
             </div>
 
-            {/* User info + quick actions */}
+            {/* User info + actions */}
             <div className="px-4 py-3 flex flex-col gap-3 bg-gray-800/50">
               <span className="text-xs sm:text-sm text-gray-300 font-medium bg-gray-700/50 px-3 py-1 rounded-full text-center">
                 {today}
               </span>
 
+              {/* Updated: Dynamic Profile Link */}
               <Link
-                to="/admin-profile"
+                to={getProfileLink()}
                 onClick={toggleMenu}
                 className="flex items-center gap-2 border border-gray-600 py-1.5 px-3 rounded-full bg-gray-800 shadow-sm hover:bg-gray-700 transition"
               >
@@ -141,10 +171,9 @@ const Sidebar = ({
               </Link>
 
               <motion.button
-                className="flex items-center justify-center gap-2 w-full py-2 bg-[#ff5010] rounded-lg shadow-md hover:bg-[#fc641c] transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                className="flex items-center justify-center gap-2 w-full py-2 bg-[#ff5010] rounded-lg shadow-md hover:bg-[#fc641c] transition-colors"
                 onClick={handleLogout}
                 whileTap={{ scale: 0.95 }}
-                aria-label="Logout"
               >
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 512 512" fill="white">
                   <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64-0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"></path>
@@ -158,8 +187,18 @@ const Sidebar = ({
               {menuItems.map((item, index) => (
                 <button
                   key={index}
-                  onClick={item.action || (() => { navigate(item.link); toggleMenu(); })}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#ff5010] transition text-sm sm:text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-white text-left w-full"
+                  onClick={
+                    item.action ||
+                    (() => {
+                      navigate(item.link);
+                      toggleMenu();
+                    })
+                  }
+                  className={`flex items-center gap-3 p-3 rounded-lg transition text-sm sm:text-base font-medium text-left w-full ${
+                    item.link && isActive(item.link)
+                      ? "bg-[#ff5010] text-white"
+                      : "hover:bg-[#ff5010] text-white"
+                  }`}
                 >
                   {item.icon}
                   <span>{item.label}</span>
@@ -180,16 +219,14 @@ const Sidebar = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             onClick={toggleMenu}
-            aria-hidden="true"
           />
         )}
       </AnimatePresence>
 
-      {/* ==================== DASHBOARD MODAL ==================== */}
+      {/* Dashboard Modal */}
       <AnimatePresence>
         {showDashboardModal && (
           <>
-            {/* Backdrop */}
             <motion.div
               className="fixed inset-0 bg-black/50 z-50"
               initial={{ opacity: 0 }}
@@ -197,29 +234,19 @@ const Sidebar = ({
               exit={{ opacity: 0 }}
               onClick={closeDashboardModal}
             />
-
-            {/* Modal */}
             <motion.div
-              className="fixed inset-4 md:inset-8 lg:inset-auto lg:left-1/2 lg:-translate-x-1/2 lg:top-8 lg:bottom-8 
-                   max-w-6xl w-full bg-white rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col"
+              className="fixed inset-4 md:inset-8 lg:inset-auto lg:left-1/2 lg:-translate-x-1/2 lg:top-8 lg:bottom-8 max-w-6xl w-full bg-white rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
-              {/* Header */}
               <div className="flex items-center justify-between p-4 border-b bg-gray-700 text-white">
                 <h2 className="text-lg sm:text-xl font-bold font-['Montserrat']">User Dashboard</h2>
-                <button
-                  onClick={closeDashboardModal}
-                  className="p-1 rounded-full hover:bg-white/20 transition"
-                  aria-label="Close"
-                >
+                <button onClick={closeDashboardModal} className="p-1 rounded-full hover:bg-white/20">
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               </div>
-
-              {/* Content */}
               <div className="flex-1 overflow-y-auto p-4 sm:p-6">
                 <UserDashboardContent />
               </div>
@@ -229,7 +256,6 @@ const Sidebar = ({
       </AnimatePresence>
 
       <style jsx global>{`
-        * { box-sizing: border-box; }
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
       `}</style>
     </>
