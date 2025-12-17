@@ -205,7 +205,7 @@ const Navbar = ({
   return (
     <>
       {/* Fixed Professional Navbar */}
-      <header className="fixed top-0 left-0 right-0 z-1 bg-white shadow-lg border-b border-gray-100">
+      <header className="fixed top-0 left-0 right-0 z-30 bg-white shadow-lg border-b border-gray-100">
         <div className="mx-auto flex items-center justify-between h-20 px-5 lg:px-8">
 
           {/* Left: Logo & Title */}

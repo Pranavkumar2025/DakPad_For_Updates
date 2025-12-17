@@ -94,7 +94,7 @@ const Sidebar = ({
   return (
     <>
       {/* ------------------- Desktop Sidebar ------------------- */}
-      <aside className="hidden md:flex fixed top-0 left-0 h-screen w-16 bg-gray-900 text-white flex-col items-center py-6 shadow-lg z-10">
+      <aside className="hidden md:flex fixed top-0 left-0 h-screen w-16 bg-gray-900 text-white flex-col items-center py-6 shadow-lg z-40">
         <div className="mb-12">
           <img src="/logo.svg" alt="Logo" className="w-10 h-10 border border-gray-700 rounded-lg p-1" />
         </div>
