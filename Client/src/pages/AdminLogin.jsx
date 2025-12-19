@@ -64,9 +64,9 @@ const AdminLogin = () => {
               {/* Logo & Title */}
               <div className="text-center mt-8 mb-10">
                 <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                  // initial={{ scale: 0, rotate: -180 }}
+                  // animate={{ scale: 1, rotate: 0 }}
+                  // transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
                   className="inline-flex items-center justify-center w-20 h-20  rounded-2xl shadow-lg mb-6 p-3"
                 >
                   <img
