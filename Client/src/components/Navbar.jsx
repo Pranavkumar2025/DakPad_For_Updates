@@ -256,7 +256,7 @@ const Navbar = ({
               onClick={goToProfile}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-4 px-6 py-3 bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-xl hover:border-blue-300 transition-all duration-300 cursor-pointer group"
+              className="flex items-center gap-4 px-6 py-3 rounded-2xl hover:shadow-xl hover:border-blue-300 transition-all duration-300 cursor-pointer group"
             >
               <div className="relative">
                 <img
