@@ -43,14 +43,14 @@ const AdminLogin = () => {
       <div className="relative w-full max-w-5xl">
         {/* 3D Flip Container */}
         <motion.div
-          className="relative h-[640px] md:h-[620px] preserve-3d"
+          className="relative h-[720px] md:h-[620px] preserve-3d" // Increased mobile height for better spacing
           animate={{ rotateY: isFlipped ? 180 : 0 }}
           transition={{ duration: 0.8, type: "spring", stiffness: 100, damping: 20 }}
           style={{ transformStyle: "preserve-3d" }}
         >
           {/* Front: Admin Login */}
           <div className="absolute inset-0 backface-hidden flex items-center justify-center px-4">
-            <div className="w-full max-w-md bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-8 md:p-10">
+            <div className="w-full max-w-md bg-white shadow-2xl border border-gray-300 p-8 md:p-10"> {/* Removed rounded-2xl and backdrop-blur for sharper, professional look */}
               {/* Back Link */}
               <motion.a
                 href="/"
@@ -62,12 +62,9 @@ const AdminLogin = () => {
               </motion.a>
 
               {/* Logo & Title */}
-              <div className="text-center mt-8 mb-10">
+              <div className="text-center mt-12 mb-10"> {/* Increased top margin for mobile breathing room */}
                 <motion.div
-                  // initial={{ scale: 0, rotate: -180 }}
-                  // animate={{ scale: 1, rotate: 0 }}
-                  // transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-                  className="inline-flex items-center justify-center w-20 h-20  rounded-2xl shadow-lg mb-6 p-3"
+                  className="inline-flex items-center justify-center w-24 h-24 bg-indigo-100 rounded-full shadow-md mb-6 p-4 mx-auto" // Slightly larger logo container, subtle background
                 >
                   <img
                     src="/logo.svg"
@@ -93,7 +90,7 @@ const AdminLogin = () => {
                     placeholder="Enter your Admin ID"
                     value={adminId}
                     onChange={(e) => setAdminId(e.target.value.trim())}
-                    className="w-full px-5 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white/70"
+                    className="w-full px-5 py-4 border border-gray-400 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-600 outline-none transition-all text-base"
                     required
                     disabled={loading}
                     autoFocus
@@ -110,7 +107,7 @@ const AdminLogin = () => {
                       placeholder="Enter your password"
                       value={adminPassword}
                       onChange={(e) => setAdminPassword(e.target.value)}
-                      className="w-full px-5 py-3.5 border border-gray-300 rounded-xl pr-14 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white/70"
+                      className="w-full px-5 py-4 border border-gray-400 pr-14 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-600 outline-none transition-all text-base"
                       required
                       disabled={loading}
                     />
@@ -119,7 +116,7 @@ const AdminLogin = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600 transition-colors"
                     >
-                      {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                      {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
                     </button>
                   </div>
                 </div>
@@ -128,7 +125,7 @@ const AdminLogin = () => {
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium text-center"
+                    className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 text-sm font-medium text-center"
                   >
                     {error}
                   </motion.div>
@@ -137,15 +134,15 @@ const AdminLogin = () => {
                 <button
                   type="submit"
                   disabled={loading || !adminId || !adminPassword}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg py-4 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {loading ? "Signing in..." : "Admin Login"}
                 </button>
               </form>
 
               {/* Supervisor Toggle */}
-              <div className="mt-10 text-center">
-                <p className="text-gray-600">
+              <div className="mt-12 text-center"> {/* More margin on mobile */}
+                <p className="text-gray-600 text-base">
                   Are you a Supervisor?{" "}
                   <button
                     type="button"
