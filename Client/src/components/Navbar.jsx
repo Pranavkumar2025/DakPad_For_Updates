@@ -155,7 +155,7 @@
 import React from "react";
 import { FaBars, FaTimes, FaCalendarAlt, FaSignOutAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { useNavigate, useLocation } from "react-router-dom"; // ← Added useLocation
+import { useNavigate, useLocation } from "react-router-dom";
 import api from "../utils/api";
 
 const Navbar = ({
@@ -167,7 +167,7 @@ const Navbar = ({
   sidebarOpen = false,
 }) => {
   const navigate = useNavigate();
-  const location = useLocation(); // ← To detect current path
+  const location = useLocation();
 
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -175,11 +175,10 @@ const Navbar = ({
     year: "numeric",
   });
 
-  // ---------- Dynamic Profile Navigation ----------
   const goToProfile = () => {
     const path = location.pathname;
 
-    let profilePath = "/Admin/profile"; // default fallback
+    let profilePath = "/Admin/profile";
 
     if (path.startsWith("/SuperAdmin")) profilePath = "/SuperAdmin/profile";
     else if (path.startsWith("/Admin")) profilePath = "/Admin/profile";
@@ -204,33 +203,32 @@ const Navbar = ({
 
   return (
     <>
-      {/* Fixed Professional Navbar */}
-      <header className="fixed top-0 left-0 right-0 z-30 bg-white shadow-lg border-b border-gray-100">
-        <div className="mx-auto flex items-center justify-between h-20 px-5 lg:px-8">
+      {/* Clean Professional Fixed Navbar */}
+      <header className="fixed top-0 left-0 right-0 z-30 bg-white border-b border-gray-200 shadow-sm">
+        <div className="mx-auto flex items-center justify-between h-20 px-6 lg:px-10">
 
           {/* Left: Logo & Title */}
           <div className={`flex items-center transition-all duration-300 ${sidebarOpen ? "lg:ml-64" : "lg:ml-20"}`}>
             <a href={logoLink} className="flex items-center gap-4 select-none">
               <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6 }}
                 whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-3"
+                className="flex items-center gap-4"
               >
-                {/* Gradient Logo Circle */}
-                <div className="relative w-12 h-12 bg-gradient-to-br from-[#0f4c8a] to-[#1e88e5] rounded-full flex items-center justify-center shadow-xl border-4 border-white">
-                  <img src="/logo.svg" alt="Jan Samadhan" className="w-7 h-7" />
-                  <div className="absolute inset-0 rounded-full shadow-inner"></div>
+                {/* Simple Solid Professional Logo */}
+                <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center shadow-lg border border-gray-300">
+                  <img src="/logo.svg" alt="Jan Samadhan" className="w-8 h-8 object-contain" />
                 </div>
 
-                {/* Title */}
+                {/* Clean Typography */}
                 <div>
-                  <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#0f4c8a] to-[#1e56a0] tracking-tight">
+                  <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                     Jan Samadhan
                   </h1>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
-                    Admin Portal
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Government Portal
                   </p>
                 </div>
               </motion.div>
@@ -238,91 +236,65 @@ const Navbar = ({
           </div>
 
           {/* Right Section - Desktop */}
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-8">
 
-            {/* Date Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full border border-blue-200"
-            >
-              <FaCalendarAlt className="w-5 h-5 text-[#0f4c8a]" />
-              <span className="text-sm font-semibold text-gray-700">{today}</span>
-            </motion.div>
+            {/* Minimal Date Display */}
+            <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
+              <FaCalendarAlt className="w-5 h-5 text-gray-600" />
+              <span className="text-sm font-medium text-gray-700">{today}</span>
+            </div>
 
-            {/* User Card - Clickable */}
+            {/* Professional User Info - Clickable */}
             <motion.button
               onClick={goToProfile}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-4 px-6 py-3 rounded-2xl hover:shadow-xl hover:border-blue-300 transition-all duration-300 cursor-pointer group"
+              whileHover={{ y: -2 }}
+              whileTap={{ y: 0 }}
+              className="flex items-center gap-4 px-5 py-3 rounded-xl cursor-pointer hover:bg-gray-200 transition-all duration-200 border border-transparent hover:border-gray-200"
             >
-              <div className="relative">
-                <img
-                  src="https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flat-design-social-media-profiles_1281173-3806.jpg?w=740"
-                  alt={userName}
-                  className="w-12 h-12 rounded-full ring-4 ring-white shadow-lg group-hover:ring-blue-100 transition-all"
-                />
-                <div className="absolute inset-0 rounded-full ring-4 ring-transparent group-hover:ring-blue-200 transition-all"></div>
+              <div className="w-12 h-12 bg-gray-200 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center">
+                <span className="text-xl font-bold text-gray-600">
+                  {userName.charAt(0).toUpperCase()}
+                </span>
               </div>
               <div className="text-left">
-                <p className="font-bold text-gray-800">{userName}</p>
-                <p className="text-xs text-gray-600 font-medium">{userPosition}</p>
+                <p className="font-semibold text-gray-900">{userName}</p>
+                <p className="text-sm text-gray-600">{userPosition}</p>
               </div>
             </motion.button>
 
-            {/* Animated Expanding Logout Button */}
+            {/* Clean Logout Button */}
             <motion.button
               onClick={handleLogout}
-              className="group relative flex items-center justify-center w-14 h-14 bg-gradient-to-r from-red-500 to-orange-600 text-white rounded-full shadow-xl overflow-hidden transition-all duration-500 hover:w-40 hover:rounded-3xl"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Logout"
+              className="flex items-center gap-3 px-6 py-3 cursor-pointer bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {/* Icon */}
-              <FaSignOutAlt className="w-6 h-6 absolute left-4 transition-all duration-500 group-hover:left-6 z-10" />
-
-              {/* Text */}
-              <span className="absolute font-bold text-sm opacity-0 translate-x-10 group-hover:opacity-100 group-hover:translate-x-4 transition-all duration-500 whitespace-nowrap">
-                Logout
-              </span>
-
-              {/* Background shine effect */}
-              <motion.div
-                className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20"
-                initial={{ x: "-100%" }}
-                whileHover={{ x: "100%" }}
-                transition={{ duration: 0.6 }}
-              />
+              <FaSignOutAlt className="w-5 h-5" />
+              <span>Logout</span>
             </motion.button>
           </div>
 
           {/* Mobile Menu Toggle */}
           <motion.button
             onClick={toggleMenu}
-            className={`lg:hidden p-4 rounded-full transition-all duration-300 ${
-              isMenuOpen
-                ? "bg-orange-100 text-orange-600 shadow-lg"
-                : "bg-gradient-to-r from-[#0f4c8a] to-[#1e56a0] text-white shadow-xl"
-            }`}
-            whileTap={{ scale: 0.9 }}
+            className="lg:hidden p-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+            whileTap={{ scale: 0.95 }}
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           >
-            {isMenuOpen ? <FaTimes size={26} /> : <FaBars size={26} />}
+            {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
           </motion.button>
         </div>
       </header>
 
-      {/* Spacer to push content below fixed navbar */}
+      {/* Spacer for fixed navbar */}
       <div className="h-20" />
 
-      {/* Global Fonts */}
+      {/* Global Clean Font */}
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Montserrat:wght@700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
         body {
-          font-family: 'Inter', 'Montserrat', system-ui, sans-serif;
+          font-family: 'Inter', system-ui, sans-serif;
         }
       `}</style>
     </>
