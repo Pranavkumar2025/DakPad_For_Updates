@@ -39,32 +39,55 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 via-blue-100 to-indigo-200 px-4 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 via-blue-100 to-indigo-200 px-4 py-12">
+      {/* Mobile-only Top Bar: Back to Home (left) + Logo (right) */}
+      <div className="w-full max-w-md flex justify-between items-center mb-6 md:hidden">
+        {/* Back to Home - Left */}
+        <motion.a
+          href="/"
+          className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 text-sm font-medium transition-colors group"
+          whileHover={{ x: -4 }}
+        >
+          <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
+          Back to Home
+        </motion.a>
+
+        {/* Logo - Right */}
+        <div className="w-12 h-12 bg-indigo-100 rounded-full shadow-md p-2 flex items-center justify-center">
+          <img
+            src="/logo.svg"
+            alt="Jan Samadhan Logo"
+            className="w-full h-full object-contain"
+          />
+        </div>
+      </div>
+
       <div className="relative w-full max-w-5xl">
         {/* 3D Flip Container */}
         <motion.div
-          className="relative h-[720px] md:h-[620px] preserve-3d" // Increased mobile height for better spacing
+          className="relative h-[720px] md:h-[620px] preserve-3d"
           animate={{ rotateY: isFlipped ? 180 : 0 }}
           transition={{ duration: 0.8, type: "spring", stiffness: 100, damping: 20 }}
           style={{ transformStyle: "preserve-3d" }}
         >
           {/* Front: Admin Login */}
           <div className="absolute inset-0 backface-hidden flex items-center justify-center px-4">
-            <div className="w-full max-w-md bg-white shadow-2xl border border-gray-300 p-8 md:p-10"> {/* Removed rounded-2xl and backdrop-blur for sharper, professional look */}
-              {/* Back Link */}
+            <div className="w-full max-w-md bg-white shadow-2xl border border-gray-300 p-8 md:p-10">
+              {/* Desktop-only Back Link (inside card) */}
               <motion.a
                 href="/"
-                className="absolute top-5 left-5 flex items-center gap-2 text-gray-600 hover:text-indigo-600 text-sm font-medium transition-colors group"
+                className="hidden md:flex absolute top-5 left-5 items-center gap-2 text-gray-600 hover:text-indigo-600 text-sm font-medium transition-colors group"
                 whileHover={{ x: -4 }}
               >
                 <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                 Back to Home
               </motion.a>
 
-              {/* Logo & Title */}
-              <div className="text-center mt-12 mb-10"> {/* Increased top margin for mobile breathing room */}
+              {/* Logo & Title - Hidden on mobile since logo is now in top bar */}
+              <div className="text-center mt-12 mb-10 md:mt-0">
+                {/* Mobile logo hidden, desktop logo shown */}
                 <motion.div
-                  className="inline-flex items-center justify-center w-24 h-24 bg-indigo-100 rounded-full shadow-md mb-6 p-4 mx-auto" // Slightly larger logo container, subtle background
+                  className="hidden md:inline-flex items-center justify-center w-24 h-24 bg-indigo-100 rounded-full shadow-md mb-6 p-4 mx-auto"
                 >
                   <img
                     src="/logo.svg"
@@ -141,7 +164,7 @@ const AdminLogin = () => {
               </form>
 
               {/* Supervisor Toggle */}
-              <div className="mt-12 text-center"> {/* More margin on mobile */}
+              <div className="mt-12 text-center">
                 <p className="text-gray-600 text-base">
                   Are you a Supervisor?{" "}
                   <button
