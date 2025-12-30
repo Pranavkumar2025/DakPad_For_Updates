@@ -1,11 +1,10 @@
-// server/src/server.js  (Your main entry point - FINAL WORKING VERSION)
-
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
+import helmet from "helmet"; // ← Added
 
 import prisma from "./prisma/client.js";
 import corsConfig from "./config/cors.config.js";
@@ -20,7 +19,7 @@ import supervisorRoutes from "./routes/supervisor.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 
-// Controller (for /api/me)
+// Controller
 import { getMyProfile } from "./controllers/profile.controller.js";
 
 dotenv.config();
@@ -31,6 +30,57 @@ const uploadDir = path.join(process.cwd(), "src/uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
+
+// === SECURITY: Helmet.js with secure defaults + custom settings ===
+app.use(
+  helmet({
+    // Recommended strong defaults are enabled automatically
+
+    // Content-Security-Policy: Safe for JSON API + static uploads
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"], // Allows inline scripts if needed, but safe for API
+        styleSrc: ["'self'", "'unsafe-inline'"], // Allows CSS in uploads if any
+        imgSrc: ["'self'", "data:", "https:"], // Allows images from uploads + external
+        fontSrc: ["'self'", "https:", "data:"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+
+    // HSTS: Enforce HTTPS (critical for production)
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+
+    // Referrer Policy
+    referrerPolicy: {
+      policy: "strict-origin-when-cross-origin",
+    },
+
+    // Permissions Policy: Disable unnecessary features
+    permissionsPolicy: {
+      camera: [],
+      microphone: [],
+      geolocation: [],
+      payment: [],
+      fullscreen: [],
+    },
+
+    // Frame options: Prevent clickjacking
+    frameguard: { action: "DENY" },
+
+    // Already enabled by default:
+    // - xContentTypeOptions: nosniff
+    // - hidePoweredBy
+    // - noSniff
+    // - dnsPrefetchControl
+    // - ieNoOpen
+  })
+);
 
 // === Middleware ===
 app.use(cors(corsConfig));
@@ -76,7 +126,7 @@ app.use("/api/supervisor", supervisorRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-// === UNIVERSAL PROFILE ROUTE (THIS FIXES YOUR PROBLEM!) ===
+// === UNIVERSAL PROFILE ROUTE ===
 app.get("/api/me", authenticateToken, getMyProfile);
 
 // === Global Error Handler ===
