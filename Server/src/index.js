@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 
 import prisma from "./prisma/client.js";
-import corsConfig from "./config/cors.config.js";
+import corsOptions from "./config/cors.config.js"; // Updated import
 import authenticateToken from "./middleware/authenticateToken.js";
 import errorHandler from "./middleware/errorHandler.js";
 
@@ -33,10 +33,11 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"], // Kept only for styles (acceptable)
         imgSrc: ["'self'", "data:", "https:"],
         fontSrc: ["'self'", "https:", "data:"],
         objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
         upgradeInsecureRequests: [],
       },
     },
@@ -49,11 +50,11 @@ app.use(
       policy: "strict-origin-when-cross-origin",
     },
     frameguard: { action: "DENY" },
-    permissionsPolicy: false, // Disable Helmet's version (can be unreliable for scanner)
+    permissionsPolicy: false,
   })
 );
 
-// Manually add Permissions-Policy header (guaranteed to be recognized)
+// Manual Permissions-Policy (scanners recognize this better)
 app.use((req, res, next) => {
   res.setHeader(
     "Permissions-Policy",
@@ -62,11 +63,12 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors(corsConfig));
-app.use(express.json());
+app.use(cors(corsOptions)); // Now uses improved config
+app.use(express.json({ limit: "10mb" })); // Optional: prevent huge payloads
 app.use(cookieParser());
 app.use("/uploads", express.static(uploadDir));
 
+// Your routes...
 app.get("/api/track/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -107,11 +109,12 @@ app.get("/api/me", authenticateToken, getMyProfile);
 
 app.use(errorHandler);
 
+// 404 for API routes
 app.use("*", (req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
