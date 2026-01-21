@@ -70,25 +70,27 @@ const Sidebar = ({
     },
     ...(isSuperAdmin
       ? [
-          {
-            icon: <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6" />,
-            label: "Performance",
-            link: "/SuperAdmin/performance",
-          },
-        ]
+        {
+          icon: <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6" />,
+          label: "Performance",
+          link: "/SuperAdmin/performance",
+        },
+      ]
       : []),
   ];
 
   // ---------- LOGOUT ----------
   const handleLogout = async () => {
     try {
-      await api.post("/api/admin/logout");
+      await api.post("/api/auth/logout");
     } catch (err) {
       console.warn("Logout API failed", err);
     }
     window.dispatchEvent(new Event("applicationUpdated"));
     if (isMenuOpen) toggleMenu();
-    navigate("/admin-login", { replace: true });
+
+    // Force hard reload to clear any client-side state/cache
+    window.location.href = "/admin-login";
   };
 
   return (
@@ -103,11 +105,10 @@ const Sidebar = ({
             <button
               key={index}
               onClick={item.action || (() => navigate(item.link))}
-              className={`group relative flex items-center justify-center p-2 rounded-full transition focus:outline-none focus:ring-2 focus:ring-[#ff5010] ${
-                item.link && isActive(item.link)
+              className={`group relative flex items-center justify-center p-2 rounded-full transition focus:outline-none focus:ring-2 focus:ring-[#ff5010] ${item.link && isActive(item.link)
                   ? "bg-[#ff5010]"
                   : "hover:bg-[#ff5010]"
-              }`}
+                }`}
               aria-label={item.label}
             >
               {item.icon}
@@ -194,11 +195,10 @@ const Sidebar = ({
                       toggleMenu();
                     })
                   }
-                  className={`flex items-center gap-3 p-3 rounded-lg transition text-sm sm:text-base font-medium text-left w-full ${
-                    item.link && isActive(item.link)
+                  className={`flex items-center gap-3 p-3 rounded-lg transition text-sm sm:text-base font-medium text-left w-full ${item.link && isActive(item.link)
                       ? "bg-[#ff5010] text-white"
                       : "hover:bg-[#ff5010] text-white"
-                  }`}
+                    }`}
                 >
                   {item.icon}
                   <span>{item.label}</span>
