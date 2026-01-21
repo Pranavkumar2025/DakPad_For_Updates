@@ -24,10 +24,10 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchAdmin = async () => {
       try {
-        const { data } = await api.get("/api/admin/profile");
+        const { data } = await api.get("/api/me");
         setAdmin({
-          name: data.name || "Admin",
-          position: data.position || "Administrator",
+          name: data.user?.name || "Admin",
+          position: data.user?.position || data.user?.role || "Administrator",
         });
       } catch (err) {
         console.error("Failed to load admin profile:", err);
@@ -70,7 +70,8 @@ const AdminDashboard = () => {
         <Navbar
           userName={admin.name}
           userPosition={admin.position}
-          logoLink="/Admin/applications" // or whatever your default tab is
+          logoLink="/Admin/applications"
+          profileLink="/Admin/profile"
           isMenuOpen={isMenuOpen}
           toggleMenu={toggleMenu}
         />

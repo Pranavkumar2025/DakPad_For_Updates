@@ -37,13 +37,15 @@ const ApplicationReceive = () => {
   // --------------------------------------------------------------
   // 1. Fetch Admin Profile
   // --------------------------------------------------------------
+  // 1. Fetch Admin Profile
+  // --------------------------------------------------------------
   useEffect(() => {
     const fetchAdmin = async () => {
       try {
-        const { data } = await api.get("/api/admin/profile");
+        const { data } = await api.get("/api/me");
         setAdmin({
-          name: data.name || "Receiver",
-          position: data.position || "Application Receiver",
+          name: data.user?.name || "Receiver",
+          position: data.user?.position || "Application Receiver",
         });
       } catch (err) {
         console.error("Failed to load admin profile:", err);
@@ -71,10 +73,10 @@ const ApplicationReceive = () => {
         applicant: app.applicant || app.name || "Unknown Applicant",
         applicationDate: app.applicationDate
           ? new Date(app.applicationDate).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
           : "—",
         block: app.block || "—",
         sourceAt: app.sourceAt || app.source || "unknown",
@@ -164,6 +166,7 @@ const ApplicationReceive = () => {
           userName={admin.name}
           userPosition={admin.position}
           logoLink="/application-receive/applications"
+          profileLink="/application-receive/profile"
           isMenuOpen={isMenuOpen}
           toggleMenu={toggleMenu}
         />

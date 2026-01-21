@@ -10,6 +10,7 @@ import {
   trackApplication, // public
 } from "../controllers/application.controller.js";
 import { upload, uploadNone } from "../config/multer.config.js";
+import { validateApplication, validateAssign, validateAction } from "../middleware/validator.middleware.js";
 
 const router = express.Router();
 
@@ -24,11 +25,11 @@ router.use((req, res, next) => {
 });
 
 // router.post("/", uploadNone.any(), createApplication);
-router.post("/", upload.single("attachment"), createApplication);  // Now handles PDF!
+router.post("/", upload.single("attachment"), validateApplication, createApplication);  // Now handles PDF!
 router.get("/", getAllApplications);
 router.get("/:id", getApplicationById);
-router.patch("/:id/assign", upload.single("file"), assignApplication);
-router.patch("/:id/compliance", upload.single("file"), complianceApplication);
-router.patch("/:id/dispose", upload.single("file"), disposeApplication);
+router.patch("/:id/assign", upload.single("file"), validateAssign, assignApplication);
+router.patch("/:id/compliance", upload.single("file"), validateAction, complianceApplication);
+router.patch("/:id/dispose", upload.single("file"), validateAction, disposeApplication);
 
 export default router;

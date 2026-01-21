@@ -24,10 +24,10 @@ const WorkAssignedDashboard = () => {
   useEffect(() => {
     const fetchAdmin = async () => {
       try {
-        const { data } = await api.get("/api/admin/profile");
+        const { data } = await api.get("/api/me");
         setAdmin({
-          name: data.name || "Work Assign Officer",
-          position: data.position || "Work Assigned",
+          name: data.user?.name || "Work Assign Officer",
+          position: data.user?.position || data.user?.role || "Work Assigned",
         });
       } catch (err) {
         console.error("Failed to load admin profile:", err);
@@ -74,6 +74,7 @@ const WorkAssignedDashboard = () => {
           userName={admin.name}
           userPosition={admin.position}
           logoLink="/work-assigned/applications"
+          profileLink="/work-assigned/profile"
           isMenuOpen={isMenuOpen}
           toggleMenu={toggleMenu}
         />

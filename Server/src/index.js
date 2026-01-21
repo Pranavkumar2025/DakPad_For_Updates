@@ -11,6 +11,7 @@ import corsOptions from "./config/cors.config.js"; // Updated import
 import authenticateToken from "./middleware/authenticateToken.js";
 import errorHandler from "./middleware/errorHandler.js";
 
+import { authLimiter } from "./middleware/rateLimit.middleware.js";
 import applicationRoutes from "./routes/application.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import supervisorRoutes from "./routes/supervisor.routes.js";
@@ -102,7 +103,7 @@ app.get("/api/track/:id", async (req, res) => {
 app.use("/api/applications", applicationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/supervisor", supervisorRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
 app.get("/api/me", authenticateToken, getMyProfile);

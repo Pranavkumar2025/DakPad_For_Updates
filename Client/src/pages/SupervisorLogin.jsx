@@ -126,6 +126,7 @@ const SupervisorLogin = ({ onBack }) => {
               required
               disabled={loading}
               className="w-full px-5 py-3.5 border border-gray-300 rounded-xl pr-14 focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-orange-50/20 text-base"
+              autoComplete="new-password"
             />
             <button
               type="button"

@@ -133,6 +133,7 @@ const AdminLogin = () => {
                       className="w-full px-5 py-4 border border-gray-400 pr-14 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-600 outline-none transition-all text-base"
                       required
                       disabled={loading}
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"

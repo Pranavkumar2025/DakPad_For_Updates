@@ -11,6 +11,10 @@ export const getMyProfile = async (req, res) => {
         select: { adminId: true, name: true, position: true, department: true, role: true },
       });
       if (!admin) return res.status(404).json({ error: "Admin not found" });
+      
+      // Prevent caching
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+      
       return res.json({ user: { ...admin, role: admin.role || "admin" } });
     }
 

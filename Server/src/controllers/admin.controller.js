@@ -56,6 +56,14 @@ export const changePassword = async (req, res) => {
       return res.status(401).json({ error: "Current password is incorrect" });
     }
 
+    // Verify new password complexity
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        error: "Password must be at least 8 characters long, contain 1 uppercase letter, and 1 special character.",
+      });
+    }
+
     // Hash the new password
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 

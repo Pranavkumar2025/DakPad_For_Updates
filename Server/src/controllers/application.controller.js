@@ -25,7 +25,7 @@ export const createApplication = async (req, res) => {
     if (!block) errors.block = "Block is required";
 
     if (phone && !/^\d{10}$/.test(phone)) errors.phone = "Phone must be exactly 10 digits";
-    if (email && !/^\S+@\S+\.\S+$/.test(email)) errors.email = "Invalid email format";
+    if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) errors.email = "Invalid email format";
 
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ errors });

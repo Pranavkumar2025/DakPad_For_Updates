@@ -108,9 +108,11 @@ const AddCaseForm = ({ isOpen, onClose }) => {
   const validate = () => {
     const e = {};
     if (!formData.name.trim()) e.name = "Name is required";
+    else if (!/^[a-zA-Z\s]+$/.test(formData.name.trim())) e.name = "Name should not contain numbers or special characters";
+
     if (!formData.applicationDate) e.applicationDate = "Date is required";
     if (formData.phone && !/^\d{10}$/.test(formData.phone)) e.phone = "Enter valid 10-digit phone number";
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) e.email = "Enter a valid email";
+    if (formData.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) e.email = "Enter a valid email address";
     if (!formData.source) e.source = "Please select a source";
     if (!formData.subject.trim()) e.subject = "Subject is required";
     if (!formData.block) e.block = "Please select a block";
@@ -334,9 +336,8 @@ const AddCaseForm = ({ isOpen, onClose }) => {
               Attach Application PDF <span className="text-gray-400">(Optional • Max 10 MB)</span>
             </label>
             <div
-              className={`w-full mt-1 p-4 bg-gray-50 rounded-lg border-2 border-dashed transition-all ${
-                isDragging ? "border-[#ff5010] bg-orange-50" : "border-gray-300 hover:border-[#ff5010]"
-              }`}
+              className={`w-full mt-1 p-4 bg-gray-50 rounded-lg border-2 border-dashed transition-all ${isDragging ? "border-[#ff5010] bg-orange-50" : "border-gray-300 hover:border-[#ff5010]"
+                }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -391,11 +392,10 @@ const AddCaseForm = ({ isOpen, onClose }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full px-4 py-2 rounded-lg font-semibold text-white transition-all ${
-                isSubmitting
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#ff5010] hover:bg-[#e6490f]"
-              }`}
+              className={`w-full px-4 py-2 rounded-lg font-semibold text-white transition-all ${isSubmitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#ff5010] hover:bg-[#e6490f]"
+                }`}
             >
               {isSubmitting ? "Submitting..." : "Submit Application"}
             </button>

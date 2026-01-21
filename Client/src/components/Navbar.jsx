@@ -162,12 +162,13 @@ const Navbar = ({
   userName = "Admin User",
   userPosition = "Administrator",
   logoLink = "/",
+  profileLink = "/Admin/profile", // Default fallback
   isMenuOpen,
   toggleMenu,
   sidebarOpen = false,
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation(); // Not needed anymore for profile logic
 
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -176,29 +177,21 @@ const Navbar = ({
   });
 
   const goToProfile = () => {
-    const path = location.pathname;
-
-    let profilePath = "/Admin/profile";
-
-    if (path.startsWith("/SuperAdmin")) profilePath = "/SuperAdmin/profile";
-    else if (path.startsWith("/Admin")) profilePath = "/Admin/profile";
-    else if (path.startsWith("/supervisor-dashboard")) profilePath = "/supervisor-dashboard/profile";
-    else if (path.startsWith("/work-assigned")) profilePath = "/work-assigned/profile";
-    else if (path.startsWith("/application-receive")) profilePath = "/application-receive/profile";
-
-    navigate(profilePath);
+    navigate(profileLink);
     if (isMenuOpen) toggleMenu();
   };
 
   const handleLogout = async () => {
     try {
-      await api.post("/api/admin/logout");
+      await api.post("/api/auth/logout");
     } catch (err) {
       console.warn("Logout failed", err);
     }
     window.dispatchEvent(new Event("applicationUpdated"));
     if (isMenuOpen) toggleMenu();
-    navigate("/admin-login", { replace: true });
+
+    // Force hard reload to clear any client-side state/cache
+    window.location.href = "/admin-login";
   };
 
   return (

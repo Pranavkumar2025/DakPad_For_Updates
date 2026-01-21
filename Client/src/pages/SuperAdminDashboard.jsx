@@ -24,11 +24,11 @@ const SuperAdminDashboard = () => {
   useEffect(() => {
     const fetchAdmin = async () => {
       try {
-        const { data } = await api.get("/api/admin/profile");
+        const { data } = await api.get("/api/me");
         setAdmin({
-          name: data.name || "Super Admin",
-          position: data.position || "System Administrator",
-          role: data.role || "admin",
+          name: data.user?.name || "Super Admin",
+          position: data.user?.position || data.user?.role || "System Administrator",
+          role: data.user?.role || "admin",
         });
       } catch (err) {
         console.error("Failed to load admin profile:", err);
@@ -76,6 +76,7 @@ const SuperAdminDashboard = () => {
           userName={admin.name}
           userPosition={admin.position}
           logoLink="/SuperAdmin/applications"
+          profileLink="/SuperAdmin/profile"
           isMenuOpen={isMenuOpen}
           toggleMenu={toggleMenu}
         />

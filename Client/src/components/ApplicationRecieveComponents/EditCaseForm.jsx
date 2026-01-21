@@ -37,6 +37,8 @@ const EditCaseForm = ({ isOpen, onClose, editApplication }) => {
   const validate = () => {
     const newErrors = {};
     if (!formData.applicant.trim()) newErrors.applicant = "Name is required";
+    else if (!/^[a-zA-Z\s]+$/.test(formData.applicant.trim())) newErrors.applicant = "Name should not contain numbers or special characters";
+
     if (!formData.applicationDate) newErrors.applicationDate = "Date is required";
     if (!/^\d{10}$/.test(formData.phoneNumber))
       newErrors.phoneNumber = "Enter valid 10-digit phone number";

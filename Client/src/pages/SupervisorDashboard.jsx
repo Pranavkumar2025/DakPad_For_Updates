@@ -74,6 +74,7 @@ const SupervisorDashboard = () => {
           userName={supervisor.name}
           userPosition={supervisor.position}
           logoLink="/supervisor-dashboard/applications"
+          profileLink="/supervisor-dashboard/profile"
           isMenuOpen={isMenuOpen}
           toggleMenu={toggleMenu}
         />

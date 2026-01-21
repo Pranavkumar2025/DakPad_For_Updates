@@ -118,9 +118,21 @@ export const supervisorLogin = async (req, res) => {
 
 // Logout & Refresh remain the same
 export const logout = (req, res) => {
-  res.clearCookie("access_token", { path: "/", sameSite: "none", secure: true });
-  res.clearCookie("refresh_token", { path: "/", sameSite: "none", secure: true });
-  res.json({ success: true });
+  const cookieOptions = {
+    path: "/",
+    sameSite: "none",
+    secure: true,
+  };
+
+  // Clear with specific options
+  res.clearCookie("access_token", cookieOptions);
+  res.clearCookie("refresh_token", cookieOptions);
+
+  // Also try clearing without secure just in case (for localhost)
+  res.clearCookie("access_token", { path: "/" });
+  res.clearCookie("refresh_token", { path: "/" });
+
+  res.json({ success: true, message: "Logged out successfully" });
 };
 
 export const refreshToken = async (req, res) => {
