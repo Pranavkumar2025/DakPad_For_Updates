@@ -199,7 +199,7 @@ export const complianceApplication = async (req, res) => {
 
 export const disposeApplication = async (req, res) => {
   const { id } = req.params;
-  const { note } = req.body;
+  const { note, date } = req.body;
 
   try {
     const app = await prisma.application.findUnique({
@@ -209,12 +209,21 @@ export const disposeApplication = async (req, res) => {
 
     if (!app) return res.status(404).json({ error: "Application not found" });
 
+    // Format date from YYYY-MM-DD to DD/MM/YYYY if provided
+    let formattedDate = new Date().toLocaleDateString("en-GB");
+    if (date) {
+      const parts = date.split("-");
+      if (parts.length === 3) {
+        formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+    }
+
     const { pdfUrl } = await handleFileUpload(req);
 
     const newEntry = {
       section: "Disposed",
       comment: note?.trim() || "Application disposed",
-      date: new Date().toLocaleDateString("en-GB"),
+      date: formattedDate,
       pdfLink: pdfUrl, // ← Only in timeline
       department: app.concernedOfficer || "N/A",
       officer: app.concernedOfficer || "N/A",

@@ -30,6 +30,6 @@ router.get("/", getAllApplications);
 router.get("/:id", getApplicationById);
 router.patch("/:id/assign", upload.single("file"), validateAssign, assignApplication);
 router.patch("/:id/compliance", upload.single("file"), validateAction, complianceApplication);
-router.patch("/:id/dispose", upload.single("file"), validateAction, disposeApplication);
+router.patch("/:id/dispose", validateAction, disposeApplication);
 
 export default router;

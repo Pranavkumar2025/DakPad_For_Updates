@@ -74,8 +74,16 @@ export const validateAssign = [
   handleValidationErrors,
 ];
 
+export const validateDate = (fieldName = "date") =>
+  body(fieldName)
+    .optional()
+    .trim()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage(`${fieldName} must be in YYYY-MM-DD format`);
+
 export const validateAction = [
   body("note").optional().trim(),
+  validateDate("date"),
   handleValidationErrors,
 ];
 
