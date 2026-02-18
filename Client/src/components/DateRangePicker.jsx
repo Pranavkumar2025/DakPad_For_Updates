@@ -54,10 +54,10 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }) => {
   const displayLabel = selectedDate?.startDate && selectedDate?.endDate
     ? `${selectedDate.startDate} - ${selectedDate.endDate}`
     : selectedDate?.startDate
-    ? `${selectedDate.startDate} - Select End Date`
-    : selectedDate?.endDate
-    ? `Select Start Date - ${selectedDate.endDate}`
-    : "Select Date Range";
+      ? `${selectedDate.startDate} - Select End Date`
+      : selectedDate?.endDate
+        ? `Select Start Date - ${selectedDate.endDate}`
+        : "Select Date Range";
 
   return (
     <div className="relative inline-block text-left mb-2" ref={dropdownRef}>

@@ -18,7 +18,7 @@ const SuperAdminFilterHeader = ({
   selectedDate,
   setSelectedDate,
   onExcelClick,
-  
+
 }) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 

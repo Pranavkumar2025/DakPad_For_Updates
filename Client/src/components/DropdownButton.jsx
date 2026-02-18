@@ -116,9 +116,8 @@ const DropdownButton = ({ label, items }) => {
 
       {/* Desktop/Laptop Dropdown (Unchanged) */}
       <div
-        className={`hidden md:block absolute left-0 z-40 mt-1 w-full rounded-md bg-gray-100 shadow-lg py-1 transition-all ${
-          dropdownOpen ? "top-full opacity-100 visible" : "top-[110%] opacity-0 invisible"
-        }`}
+        className={`hidden md:block absolute left-0 z-40 mt-1 w-full rounded-md bg-gray-100 shadow-lg py-1 transition-all ${dropdownOpen ? "top-full opacity-100 visible" : "top-[110%] opacity-0 invisible"
+          }`}
       >
         {items.map((item, index) => (
           <a

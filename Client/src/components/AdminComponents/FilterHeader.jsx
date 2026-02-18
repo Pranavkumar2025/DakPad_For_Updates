@@ -88,7 +88,7 @@
 //                   { label: "Disposed", onClick: () => setSelectedStatus("Disposed") },
 //                 ]}
 //               />
-              
+
 //               <DateRangePicker
 //                 selectedDate={selectedDate}
 //                 setSelectedDate={setSelectedDate}
@@ -109,7 +109,7 @@
 //           >
 //             Reset Filters
 //           </button>
-        
+
 //           <motion.button
 //             onClick={onExcelClick}
 //             initial="rest"
@@ -277,10 +277,10 @@ const FilterHeader = ({
   const displayDate = selectedDate?.startDate && selectedDate?.endDate
     ? `${selectedDate.startDate} to ${selectedDate.endDate}`
     : selectedDate?.startDate
-    ? `${selectedDate.startDate} to Select End Date`
-    : selectedDate?.endDate
-    ? `Select Start Date to ${selectedDate.endDate}`
-    : "All";
+      ? `${selectedDate.startDate} to Select End Date`
+      : selectedDate?.endDate
+        ? `Select Start Date to ${selectedDate.endDate}`
+        : "All";
 
   return (
     <>
@@ -345,7 +345,7 @@ const FilterHeader = ({
                   { label: "Disposed", onClick: () => setSelectedStatus("Disposed") },
                 ]}
               />
-              
+
               <DateRangePicker
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
@@ -366,7 +366,7 @@ const FilterHeader = ({
           >
             Reset Filters
           </button>
-        
+
           <motion.button
             onClick={onExcelClick}
             initial="rest"
