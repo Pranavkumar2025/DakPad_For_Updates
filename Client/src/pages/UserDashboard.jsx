@@ -149,28 +149,26 @@ const UserDashboard = () => {
     <div className="min-h-screen font-sans text-slate-900 bg-slate-50 selection:bg-blue-100 selection:text-blue-900">
       <UserNavbar />
 
-      {/* Hero Section - Enterprise Gradient & Clean Layout */}
-      <section className="pt-8 pb-16 lg:pt-12 lg:pb-24 overflow-hidden relative bg-white">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-slate-50/50 skew-x-12 translate-x-32 -z-10" />
-
-        <div className="container mx-auto px-6 max-w-7xl relative z-10">
+      {/* Hero Section - Minimal Enterprise */}
+      <section className="pt-12 pb-16 lg:pt-20 lg:pb-24 bg-white border-b border-slate-200">
+        <div className="container mx-auto px-6 max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
 
             {/* Left Column: Text & Call to Action */}
             <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-widest rounded-sm mb-6">
-                <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold uppercase tracking-wider rounded-sm mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-700"></span>
                 Official District Portal
               </div>
 
-              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-slate-900 mb-6 leading-[1.1]">
+              <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-6 leading-tight">
                 {isHindi ? "जन समाधान" : "Jan Samadhan"}
-                <span className="block text-slate-400 font-medium text-3xl lg:text-5xl mt-2">
+                <span className="block text-slate-500 font-medium text-2xl lg:text-4xl mt-2">
                   {isHindi ? "ई-गवर्नेंस पहल" : "e-Governance Initiative"}
                 </span>
               </h1>
 
-              <p className="text-xl text-slate-600 mb-10 leading-relaxed max-w-lg font-light">
+              <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-lg">
                 {isHindi
                   ? "पारदर्शी, जवाबदेह और उत्तरदायी प्रशासन के लिए एक एकीकृत डिजिटल मंच।"
                   : "Bridging the gap between citizens and administration with a fully digital, transparent grievance redressal system."}
@@ -179,92 +177,80 @@ const UserDashboard = () => {
               <div className="flex flex-wrap gap-4">
                 <button
                   onClick={() => document.getElementById('search-section').scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded-sm transition-all flex items-center gap-3 shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 hover:-translate-y-0.5"
+                  className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-sm transition-colors flex items-center gap-2"
                 >
                   {isHindi ? "आवेदन ट्रैक करें" : "Track Application"}
-                  <ArrowRight size={18} />
+                  <ArrowRight size={16} />
                 </button>
                 <button
                   onClick={() => navigate("/admin-login")}
-                  className="px-8 py-4 bg-white hover:bg-slate-50 text-slate-800 font-semibold rounded-sm border border-slate-200 transition-all flex items-center gap-3 hover:border-slate-300 hover:shadow-sm"
+                  className="px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-sm border border-slate-300 transition-colors flex items-center gap-2"
                 >
-                  <LogIn size={18} className="text-slate-400" />
+                  <LogIn size={16} className="text-slate-400" />
                   {isHindi ? "विभागीय लॉगिन" : "Department Login"}
                 </button>
               </div>
 
-              <div className="mt-12 flex items-center gap-8 text-sm text-slate-500 font-medium border-t border-slate-100 pt-6">
-                <div className="flex items-center gap-2 group cursor-default">
-                  <div className="p-1 rounded-full bg-green-100 group-hover:bg-green-200 transition-colors">
-                    <CheckCircle size={14} className="text-green-700" />
-                  </div>
-                  <span className="group-hover:text-slate-800 transition-colors">ISO 27001 Certified</span>
+              <div className="mt-10 flex items-center gap-8 text-sm text-slate-500 border-t border-slate-100 pt-6">
+                <div className="flex items-center gap-2">
+                  <CheckCircle size={14} className="text-slate-400" />
+                  <span>ISO 27001 Certified</span>
                 </div>
-                <div className="flex items-center gap-2 group cursor-default">
-                  <div className="p-1 rounded-full bg-blue-100 group-hover:bg-blue-200 transition-colors">
-                    <Globe size={14} className="text-blue-700" />
-                  </div>
-                  <span className="group-hover:text-slate-800 transition-colors">24/7 Digital Access</span>
+                <div className="flex items-center gap-2">
+                  <Globe size={14} className="text-slate-400" />
+                  <span>24/7 Digital Access</span>
                 </div>
               </div>
             </div>
 
-            {/* Right Column: Precise Frame */}
-            <div className="relative hidden lg:block">
-              <div className="relative aspect-[4/3] p-2 bg-white border border-slate-200 rounded-lg shadow-2xl shadow-slate-200/50">
-                <div className="w-full h-full relative rounded-md overflow-hidden bg-slate-100">
-                  <AnimatePresence initial={false} mode="wait">
-                    <motion.img
-                      key={currentImageIndex}
-                      src={images[currentImageIndex]}
-                      alt="District Administration"
-                      className="absolute inset-0 w-full h-full object-cover grayscale-[10%] hover:grayscale-0 transition-all duration-1000"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.8 }}
-                    />
-                  </AnimatePresence>
+            {/* Right Column: Clean Image Frame */}
+            <div className="hidden lg:block">
+              <div className="relative aspect-[4/3] bg-slate-100 border border-slate-200 rounded-sm overflow-hidden">
+                <AnimatePresence initial={false} mode="wait">
+                  <motion.img
+                    key={currentImageIndex}
+                    src={images[currentImageIndex]}
+                    alt="District Administration"
+                    className="absolute inset-0 w-full h-full object-cover grayscale-[20%]"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </AnimatePresence>
 
-                  {/* Branding Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/90 to-transparent p-6 pt-20">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-sm flex items-center justify-center border border-white/20">
-                        <img src="/logo.svg" alt="logo" className="w-6 h-6 opacity-90" />
-                      </div>
-                      <div>
-                        <p className="text-white text-sm font-bold tracking-wide">District Administration</p>
-                        <p className="text-slate-300 text-xs">Official Portal</p>
-                      </div>
+                {/* Minimal Overlay */}
+                <div className="absolute inset-x-0 bottom-0 bg-slate-900/80 p-4 backdrop-blur-sm">
+                  <div className="flex items-center gap-3">
+                    <img src="/logo.svg" alt="logo" className="w-8 h-8 opacity-90" />
+                    <div>
+                      <p className="text-white text-sm font-semibold tracking-wide">District Administration</p>
+                      <p className="text-slate-300 text-xs">Official Portal</p>
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* Abstract decorative pattern */}
-              <div className="absolute -z-10 top-6 -right-6 w-24 h-24 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Search / Tracking Section - Floating Bar Style */}
-      <section id="search-section" className="py-20 bg-slate-50 border-y border-slate-200">
+      {/* Search / Tracking Section - Clean & Functional */}
+      <section id="search-section" className="py-16 bg-slate-50 border-b border-slate-200">
         <div className="container mx-auto px-6 max-w-4xl">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold text-slate-800 mb-3 tracking-tight">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-slate-800 mb-2 tracking-tight">
               {isHindi ? "आवेदन की स्थिति जांचें" : "Check Application Status"}
             </h2>
-            <p className="text-slate-500 text-sm max-w-lg mx-auto">
+            <p className="text-slate-500 text-sm">
               Enter your unique application reference ID to track real-time progress.
             </p>
           </div>
 
-          <div className="max-w-2xl mx-auto bg-white p-2 rounded-lg shadow-xl shadow-slate-200/40 border border-slate-100">
-            <div className={`relative flex items-center transition-all duration-300 ${isInputFocused ? 'ring-2 ring-blue-500/10' : ''}`}>
-
-              <div className="pl-6 text-slate-400">
-                <Search size={20} />
+          <div className="max-w-xl mx-auto">
+            <div className={`flex items-center bg-white border border-slate-300 rounded-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 ${isInputFocused ? 'border-blue-500' : ''}`}>
+              <div className="pl-4 text-slate-400">
+                <Search size={18} />
               </div>
 
               <input
@@ -275,53 +261,50 @@ const UserDashboard = () => {
                 onBlur={() => setIsInputFocused(false)}
                 onKeyDown={handleKeyPress}
                 placeholder={isHindi ? "आवेदन संख्या (उदा: BP2025...)" : "Enter Application ID (e.g. BP2025...)"}
-                className="w-full pl-4 pr-4 py-4 bg-transparent border-none outline-none text-lg font-medium text-slate-800 placeholder:text-slate-400 uppercase tracking-wider"
+                className="w-full px-4 py-3 bg-transparent border-none outline-none text-base text-slate-800 placeholder:text-slate-400 uppercase tracking-wide font-mono"
               />
 
-              <div className="pr-2">
+              <div className="p-1">
                 <button
                   onClick={handleApplicationIdSearch}
                   disabled={isLoading || !applicationIdInput.trim()}
-                  className="px-8 py-3 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-widest rounded-md transition-all shadow-lg shadow-slate-900/10 active:scale-95"
+                  className="px-6 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors"
                 >
-                  {isLoading ? <Loader2 className="animate-spin" size={16} /> : (isHindi ? "खोजें" : "TRACK")}
+                  {isLoading ? <Loader2 className="animate-spin" size={14} /> : (isHindi ? "खोजें" : "TRACK")}
                 </button>
               </div>
             </div>
-          </div>
 
-          <div className="mt-6 text-center h-8">
-            {error && (
-              <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 text-red-600 text-sm font-medium bg-red-50 px-4 py-1.5 rounded-full border border-red-100">
-                <XCircle size={14} /> {error}
-              </motion.div>
-            )}
+            <div className="mt-4 text-center h-6">
+              {error && (
+                <span className="inline-flex items-center gap-1.5 text-red-600 text-sm font-medium">
+                  <XCircle size={14} /> {error}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Services Grid - Professional Cards */}
-      <section className="py-24 bg-white">
+      {/* Services Grid - Minimal Cards */}
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-6 max-w-7xl">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 border-b border-slate-100 pb-8">
-            <div className="max-w-2xl">
-              <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                {isHindi ? "नागरिक केंद्रित सेवाएं" : "Citizen Centric Services"}
-              </h2>
-              <p className="text-slate-500">
-                Empowering citizens with technology-driven governance solutions.
-              </p>
-            </div>
+          <div className="mb-12 border-b border-slate-100 pb-4">
+            <h2 className="text-2xl font-bold text-slate-900 mb-1">
+              {isHindi ? "नागरिक केंद्रित सेवाएं" : "Citizen Centric Services"}
+            </h2>
+            <p className="text-slate-500 text-sm">
+              Empowering citizens with technology-driven governance solutions.
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6">
             {/* Feature 1 */}
-            <div className="group p-8 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-200 transition-all duration-300 cursor-default relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="w-12 h-12 bg-white rounded-lg border border-slate-100 flex items-center justify-center mb-6 text-blue-600 shadow-sm group-hover:scale-110 transition-transform">
-                <Clock size={24} />
+            <div className="p-6 rounded-sm border border-slate-200 bg-white hover:border-slate-300 transition-colors">
+              <div className="w-10 h-10 bg-slate-50 rounded-sm border border-slate-100 flex items-center justify-center mb-4 text-slate-700">
+                <Clock size={20} />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-blue-700 transition-colors">
+              <h3 className="text-base font-bold text-slate-900 mb-2">
                 {isHindi ? "समयबद्ध निपटान" : "Time-Bound Disposal"}
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
@@ -332,12 +315,11 @@ const UserDashboard = () => {
             </div>
 
             {/* Feature 2 */}
-            <div className="group p-8 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-200 transition-all duration-300 cursor-default relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="w-12 h-12 bg-white rounded-lg border border-slate-100 flex items-center justify-center mb-6 text-orange-600 shadow-sm group-hover:scale-110 transition-transform">
-                <QrCode size={24} />
+            <div className="p-6 rounded-sm border border-slate-200 bg-white hover:border-slate-300 transition-colors">
+              <div className="w-10 h-10 bg-slate-50 rounded-sm border border-slate-100 flex items-center justify-center mb-4 text-slate-700">
+                <QrCode size={20} />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-orange-700 transition-colors">
+              <h3 className="text-base font-bold text-slate-900 mb-2">
                 {isHindi ? "डिजिटल सत्यापन" : "Digital Verification"}
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
@@ -348,12 +330,11 @@ const UserDashboard = () => {
             </div>
 
             {/* Feature 3 */}
-            <div className="group p-8 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-200 transition-all duration-300 cursor-default relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="w-12 h-12 bg-white rounded-lg border border-slate-100 flex items-center justify-center mb-6 text-emerald-600 shadow-sm group-hover:scale-110 transition-transform">
-                <Shield size={24} />
+            <div className="p-6 rounded-sm border border-slate-200 bg-white hover:border-slate-300 transition-colors">
+              <div className="w-10 h-10 bg-slate-50 rounded-sm border border-slate-100 flex items-center justify-center mb-4 text-slate-700">
+                <Shield size={20} />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-emerald-700 transition-colors">
+              <h3 className="text-base font-bold text-slate-900 mb-2">
                 {isHindi ? "सुरक्षित एवं गोपनीय" : "Secure & Confidential"}
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
@@ -367,22 +348,22 @@ const UserDashboard = () => {
       </section>
 
       {/* Footer - Professional Government Standard */}
-      <footer className="bg-slate-900 text-slate-400 pt-16 pb-8 text-sm">
+      <footer className="bg-slate-900 text-slate-400 py-12 text-sm border-t-4 border-blue-900">
         <div className="container mx-auto px-6 max-w-7xl">
-          <div className="grid md:grid-cols-4 gap-12 mb-16">
+          <div className="grid md:grid-cols-4 gap-10 mb-12">
 
             {/* Brand Column */}
-            <div className="col-span-1 md:col-span-2 space-y-6">
+            <div className="col-span-1 md:col-span-2 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white rounded-md flex items-center justify-center">
-                  <img src="/logo.svg" alt="Jan Samadhan Logo" className="w-8 h-8" />
+                <div className="w-8 h-8 bg-white rounded-sm flex items-center justify-center">
+                  <img src="/logo.svg" alt="Jan Samadhan Logo" className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-lg leading-tight uppercase tracking-wider">Jan Samadhan</h3>
-                  <p className="text-xs text-slate-500 uppercase tracking-widest">District Administration</p>
+                  <h3 className="font-bold text-white text-base leading-tight uppercase tracking-wide">Jan Samadhan</h3>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest">District Administration</p>
                 </div>
               </div>
-              <p className="text-slate-400 leading-relaxed text-sm max-w-sm">
+              <p className="text-slate-500 leading-relaxed text-xs max-w-sm">
                 Designed to bridge the gap between administration and citizens through technology.
                 Ensuring every grievance is heard, tracked, and resolved with transparency.
               </p>
@@ -390,38 +371,38 @@ const UserDashboard = () => {
 
             {/* Links Column */}
             <div>
-              <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Quick Access</h4>
-              <ul className="space-y-4">
-                <li><a onClick={() => document.getElementById('search-section').scrollIntoView({ behavior: 'smooth' })} className="hover:text-white cursor-pointer transition-colors flex items-center gap-2">Track Application</a></li>
-                <li><a onClick={() => navigate("/admin-login")} className="hover:text-white cursor-pointer transition-colors flex items-center gap-2">Department Login</a></li>
-                <li><a href="#" className="hover:text-white cursor-pointer transition-colors flex items-center gap-2">Citizen Charter</a></li>
+              <h4 className="font-bold text-white mb-4 uppercase tracking-wider text-xs">Quick Access</h4>
+              <ul className="space-y-3 text-xs">
+                <li><a onClick={() => document.getElementById('search-section').scrollIntoView({ behavior: 'smooth' })} className="hover:text-white cursor-pointer transition-colors">Track Application</a></li>
+                <li><a onClick={() => navigate("/admin-login")} className="hover:text-white cursor-pointer transition-colors">Department Login</a></li>
+                <li><a href="#" className="hover:text-white cursor-pointer transition-colors">Citizen Charter</a></li>
               </ul>
             </div>
 
             {/* Contact Column */}
             <div>
-              <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Contact</h4>
-              <ul className="space-y-4 text-sm">
-                <li className="flex items-start gap-3">
-                  <Building size={16} className="mt-0.5 text-slate-500" />
+              <h4 className="font-bold text-white mb-4 uppercase tracking-wider text-xs">Contact</h4>
+              <ul className="space-y-3 text-xs">
+                <li className="flex items-start gap-2">
+                  <Building size={14} className="mt-0.5 text-slate-600" />
                   <span>Collectorate, Main Building,<br />Ara, Bhojpur - 802301</span>
                 </li>
-                <li className="flex items-center gap-3">
-                  <Globe size={16} className="text-slate-500" />
+                <li className="flex items-center gap-2">
+                  <Globe size={14} className="text-slate-600" />
                   <a href="https://bhojpur.nic.in" className="hover:text-white transition-colors">bhojpur.nic.in</a>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-500">
+          <div className="border-t border-slate-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-medium text-slate-600 uppercase tracking-wider">
             <div>
               &copy; {new Date().getFullYear()} District Administration, Bhojpur. All Rights Reserved.
             </div>
 
             <div className="flex items-center gap-2">
               <span>Technical Partner</span>
-              <span className="font-bold text-slate-300">NIC</span>
+              <span className="font-bold text-slate-500">NIC</span>
             </div>
           </div>
         </div>
