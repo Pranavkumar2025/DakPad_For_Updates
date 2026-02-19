@@ -11,11 +11,10 @@ import {
   LogIn,
   ChevronRight,
   Activity,
-  FileText,
   Building,
-  CheckCircle,
   Globe,
-  LayoutGrid
+  CheckCircle,
+  FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -52,7 +51,7 @@ const UserDashboard = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }, 4000);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -143,349 +142,278 @@ const UserDashboard = () => {
     setFoundApplication(null);
     setQrCodeUrl("");
     setError("");
+    setApplicationIdInput("");
   };
 
   return (
-    // Body Background with Subtle Dot Pattern
-    <div className="min-h-screen font-sans text-slate-800 bg-slate-50 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] bg-[size:24px_24px]">
+    <div className="min-h-screen font-sans text-slate-900 bg-slate-50 selection:bg-blue-100 selection:text-blue-900">
       <UserNavbar />
 
-      {/* Hero Section - Dark Corporate Overlay */}
-      <section className="relative pt-20 pb-40 overflow-hidden bg-slate-900 border-b border-white/5">
-        {/* Abstract Dark Background Image/Pattern */}
-        <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2672&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay" />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 via-slate-900/80 to-slate-900" />
+      {/* Hero Section - Enterprise Gradient & Clean Layout */}
+      <section className="pt-8 pb-16 lg:pt-12 lg:pb-24 overflow-hidden relative bg-white">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-slate-50/50 skew-x-12 translate-x-32 -z-10" />
 
-        {/* Animated Gradient Mesh */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-600/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4" />
-
-
-        <div className="container mx-auto px-4 max-w-7xl relative z-10">
+        <div className="container mx-auto px-6 max-w-7xl relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left: Text Content */}
-            <div className="space-y-8">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white/5 backdrop-blur-md text-blue-200 text-xs font-bold uppercase tracking-widest rounded-sm border border-white/10"
-              >
-                <Shield size={14} className="text-[#ff5010]" />
-                {isHindi ? "आधिकारिक जिला पोर्टल" : "Official Govt Portal"}
-              </motion.div>
 
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight text-white"
-              >
+            {/* Left Column: Text & Call to Action */}
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-widest rounded-sm mb-6">
+                <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                Official District Portal
+              </div>
+
+              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-slate-900 mb-6 leading-[1.1]">
                 {isHindi ? "जन समाधान" : "Jan Samadhan"}
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#ff5010] to-[#ff8c42]">
-                  {isHindi ? "पोर्टल" : "Portal"}
+                <span className="block text-slate-400 font-medium text-3xl lg:text-5xl mt-2">
+                  {isHindi ? "ई-गवर्नेंस पहल" : "e-Governance Initiative"}
                 </span>
-              </motion.h1>
+              </h1>
 
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-lg text-slate-300/80 max-w-lg leading-relaxed font-light"
-              >
+              <p className="text-xl text-slate-600 mb-10 leading-relaxed max-w-lg font-light">
                 {isHindi
-                  ? "डिजिटल भारत की ओर एक कदम। अपनी शिकायतों का निवारण पारदर्शी और समयबद्ध तरीके से पाएं।"
-                  : "Empowering citizens with a fully digital, transparent, and responsive grievance redressal system."}
-              </motion.p>
+                  ? "पारदर्शी, जवाबदेह और उत्तरदायी प्रशासन के लिए एक एकीकृत डिजिटल मंच।"
+                  : "Bridging the gap between citizens and administration with a fully digital, transparent grievance redressal system."}
+              </p>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="flex flex-wrap gap-4 pt-4"
-              >
+              <div className="flex flex-wrap gap-4">
                 <button
-                  onClick={() => document.getElementById('track-section').scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-3.5 bg-[#ff5010] hover:bg-[#e6450f] text-white font-bold rounded-sm shadow-xl shadow-orange-900/20 transition-all active:scale-95 flex items-center gap-2"
+                  onClick={() => document.getElementById('search-section').scrollIntoView({ behavior: 'smooth' })}
+                  className="px-8 py-4 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded-sm transition-all flex items-center gap-3 shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 hover:-translate-y-0.5"
                 >
-                  {isHindi ? "स्थिति देखें" : "Track Application"}
+                  {isHindi ? "आवेदन ट्रैक करें" : "Track Application"}
                   <ArrowRight size={18} />
                 </button>
                 <button
                   onClick={() => navigate("/admin-login")}
-                  className="px-8 py-3.5 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-sm border border-white/20 backdrop-blur-sm transition-all active:scale-95 flex items-center gap-2"
+                  className="px-8 py-4 bg-white hover:bg-slate-50 text-slate-800 font-semibold rounded-sm border border-slate-200 transition-all flex items-center gap-3 hover:border-slate-300 hover:shadow-sm"
                 >
-                  <LogIn size={18} />
-                  {isHindi ? "प्रशासन लॉगिन" : "Admin Login"}
+                  <LogIn size={18} className="text-slate-400" />
+                  {isHindi ? "विभागीय लॉगिन" : "Department Login"}
                 </button>
-              </motion.div>
+              </div>
+
+              <div className="mt-12 flex items-center gap-8 text-sm text-slate-500 font-medium border-t border-slate-100 pt-6">
+                <div className="flex items-center gap-2 group cursor-default">
+                  <div className="p-1 rounded-full bg-green-100 group-hover:bg-green-200 transition-colors">
+                    <CheckCircle size={14} className="text-green-700" />
+                  </div>
+                  <span className="group-hover:text-slate-800 transition-colors">ISO 27001 Certified</span>
+                </div>
+                <div className="flex items-center gap-2 group cursor-default">
+                  <div className="p-1 rounded-full bg-blue-100 group-hover:bg-blue-200 transition-colors">
+                    <Globe size={14} className="text-blue-700" />
+                  </div>
+                  <span className="group-hover:text-slate-800 transition-colors">24/7 Digital Access</span>
+                </div>
+              </div>
             </div>
 
-            {/* Right: Modern Slider with Glass Frame */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative aspect-video rounded-md overflow-hidden shadow-2xl shadow-black/50 border border-white/10 bg-slate-900/80"
-            >
-              <AnimatePresence initial={false} mode="wait">
-                <motion.img
-                  key={currentImageIndex}
-                  src={images[currentImageIndex]}
-                  alt="Slide"
-                  className="absolute inset-0 w-full h-full object-cover opacity-80"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.8 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8 }}
-                />
-              </AnimatePresence>
+            {/* Right Column: Precise Frame */}
+            <div className="relative hidden lg:block">
+              <div className="relative aspect-[4/3] p-2 bg-white border border-slate-200 rounded-lg shadow-2xl shadow-slate-200/50">
+                <div className="w-full h-full relative rounded-md overflow-hidden bg-slate-100">
+                  <AnimatePresence initial={false} mode="wait">
+                    <motion.img
+                      key={currentImageIndex}
+                      src={images[currentImageIndex]}
+                      alt="District Administration"
+                      className="absolute inset-0 w-full h-full object-cover grayscale-[10%] hover:grayscale-0 transition-all duration-1000"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.8 }}
+                    />
+                  </AnimatePresence>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
-
-              <div className="absolute bottom-6 left-6 right-6">
-                <div className="flex items-center gap-2 text-[#ff5010] text-xs font-bold uppercase tracking-widest mb-2">
-                  <Activity size={14} className="animate-pulse" /> Live Dashboard
+                  {/* Branding Overlay */}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/90 to-transparent p-6 pt-20">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-sm flex items-center justify-center border border-white/20">
+                        <img src="/logo.svg" alt="logo" className="w-6 h-6 opacity-90" />
+                      </div>
+                      <div>
+                        <p className="text-white text-sm font-bold tracking-wide">District Administration</p>
+                        <p className="text-slate-300 text-xs">Official Portal</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-white tracking-wide">Digital Governance Initiative</h3>
-                <p className="text-slate-400 text-sm mt-1">Connecting Citizens with Administration</p>
               </div>
-            </motion.div>
+
+              {/* Abstract decorative pattern */}
+              <div className="absolute -z-10 top-6 -right-6 w-24 h-24 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Floating Glass Search Card */}
-      <section id="track-section" className="relative z-20 -mt-24 px-4 mb-24">
-        <div className="container mx-auto max-w-4xl">
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="bg-white rounded-xl shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)] border border-slate-100 p-8 md:p-12 relative overflow-hidden"
-          >
-            {/* Minimal accent line */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 bg-[#ff5010] rounded-b-full" />
+      {/* Search / Tracking Section - Floating Bar Style */}
+      <section id="search-section" className="py-20 bg-slate-50 border-y border-slate-200">
+        <div className="container mx-auto px-6 max-w-4xl">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-bold text-slate-800 mb-3 tracking-tight">
+              {isHindi ? "आवेदन की स्थिति जांचें" : "Check Application Status"}
+            </h2>
+            <p className="text-slate-500 text-sm max-w-lg mx-auto">
+              Enter your unique application reference ID to track real-time progress.
+            </p>
+          </div>
 
-            <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-slate-800 tracking-tight mb-3">
-                {isHindi ? "आवेदन स्थिति" : "Check Application Status"}
-              </h2>
-              <p className="text-slate-500 font-medium text-sm uppercase tracking-wide">
-                {isHindi
-                  ? "अपनी आवेदन आईडी दर्ज करें"
-                  : "Official Application Tracking System"}
-              </p>
-            </div>
+          <div className="max-w-2xl mx-auto bg-white p-2 rounded-lg shadow-xl shadow-slate-200/40 border border-slate-100">
+            <div className={`relative flex items-center transition-all duration-300 ${isInputFocused ? 'ring-2 ring-blue-500/10' : ''}`}>
 
-            <div className="relative max-w-2xl mx-auto">
-              <div
-                className={`relative flex items-center transition-all duration-300 ${isInputFocused ? 'scale-[1.02]' : ''
-                  }`}
-              >
-                <Search
-                  className={`absolute left-0 transition-colors duration-300 ${isInputFocused ? 'text-[#ff5010]' : 'text-slate-300'
-                    }`}
-                  size={24}
-                />
-                <input
-                  type="text"
-                  value={applicationIdInput}
-                  onChange={(e) => setApplicationIdInput(e.target.value.toUpperCase())}
-                  onFocus={() => setIsInputFocused(true)}
-                  onBlur={() => setIsInputFocused(false)}
-                  onKeyDown={handleKeyPress}
-                  placeholder={isInputFocused ? "" : (isHindi ? "आवेदन संख्या (उदहारण: BP2025...)" : "Enter Application ID (e.g. BP2025...)")}
-                  className="w-full pl-10 pr-36 py-4 bg-transparent border-none outline-none ring-0 focus:ring-0 text-2xl font-medium text-slate-800 uppercase transition-all placeholder:text-slate-300 placeholder:font-normal placeholder:text-2xl"
-                />
+              <div className="pl-6 text-slate-400">
+                <Search size={20} />
+              </div>
 
+              <input
+                type="text"
+                value={applicationIdInput}
+                onChange={(e) => setApplicationIdInput(e.target.value.toUpperCase())}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+                onKeyDown={handleKeyPress}
+                placeholder={isHindi ? "आवेदन संख्या (उदा: BP2025...)" : "Enter Application ID (e.g. BP2025...)"}
+                className="w-full pl-4 pr-4 py-4 bg-transparent border-none outline-none text-lg font-medium text-slate-800 placeholder:text-slate-400 uppercase tracking-wider"
+              />
+
+              <div className="pr-2">
                 <button
                   onClick={handleApplicationIdSearch}
                   disabled={isLoading || !applicationIdInput.trim()}
-                  className="absolute right-0 bottom-3 px-8 py-2 bg-[#0f4c8a] hover:bg-[#0a3563] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm tracking-wide rounded-sm transition-all shadow-lg shadow-blue-900/20 active:scale-95"
+                  className="px-8 py-3 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-widest rounded-md transition-all shadow-lg shadow-slate-900/10 active:scale-95"
                 >
-                  {isLoading ? <Loader2 className="animate-spin" size={18} /> : (isHindi ? "खोजें" : "SEARCH")}
+                  {isLoading ? <Loader2 className="animate-spin" size={16} /> : (isHindi ? "खोजें" : "TRACK")}
                 </button>
               </div>
-
-              <div className={`mt-2 text-xs text-slate-400 font-medium transition-opacity duration-300 ${isInputFocused ? 'opacity-100' : 'opacity-0'}`}>
-                {isHindi ? "कृपया अपनी पावती रसीद पर दी गई आवेदन संख्या दर्ज करें।" : "Please enter the application number referenced on your acknowledgement receipt."}
-              </div>
-
-              <AnimatePresence>
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: "auto" }}
-                    exit={{ opacity: 0, y: 10, height: 0 }}
-                    className="mt-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-sm text-red-700 text-sm font-medium flex items-center gap-3 shadow-sm"
-                  >
-                    <XCircle size={18} /> {error}
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
-          </motion.div>
+          </div>
+
+          <div className="mt-6 text-center h-8">
+            {error && (
+              <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 text-red-600 text-sm font-medium bg-red-50 px-4 py-1.5 rounded-full border border-red-100">
+                <XCircle size={14} /> {error}
+              </motion.div>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Government Features - Official 3-Column Grid */}
-      <section className="py-24 bg-white border-t border-slate-100">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4 font-serif">
-              {isHindi ? "नागरिक सुविधायें" : "Government Services & Assurance"}
-            </h2>
-            <div className="w-16 h-1 bg-slate-200 mx-auto rounded-full" />
+      {/* Services Grid - Professional Cards */}
+      <section className="py-24 bg-white">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 border-b border-slate-100 pb-8">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                {isHindi ? "नागरिक केंद्रित सेवाएं" : "Citizen Centric Services"}
+              </h2>
+              <p className="text-slate-500">
+                Empowering citizens with technology-driven governance solutions.
+              </p>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12">
-            {/* Service 1 */}
-            <div className="relative p-8 rounded-xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-6 shadow-sm border border-slate-100 group-hover:border-[#0f4c8a]/20 group-hover:scale-110 transition-all">
-                <Clock className="text-[#0f4c8a]" size={24} />
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="group p-8 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-200 transition-all duration-300 cursor-default relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="w-12 h-12 bg-white rounded-lg border border-slate-100 flex items-center justify-center mb-6 text-blue-600 shadow-sm group-hover:scale-110 transition-transform">
+                <Clock size={24} />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-3">
-                {isHindi ? "समयबद्ध निवारण" : "Time-Bound Disposal"}
+              <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-blue-700 transition-colors">
+                {isHindi ? "समयबद्ध निपटान" : "Time-Bound Disposal"}
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
                 {isHindi
-                  ? "प्रत्येक आवेदन की निगरानी की जाती है और समय सीमा के भीतर हल किया जाता है।"
-                  : "All applications are strictly monitored and processed within the stipulated timeline mandated by state service acts."}
+                  ? "सेवा के अधिकार अधिनियम के तहत निर्धारित समय सीमा के भीतर शिकायतों का निवारण।"
+                  : "Mandatory disposal of grievances within the stipulated time frame as per the Right to Service Act protocols."}
               </p>
             </div>
 
-            {/* Service 2 */}
-            <div className="relative p-8 rounded-xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-6 shadow-sm border border-slate-100 group-hover:border-[#ff5010]/20 group-hover:scale-110 transition-all">
-                <QrCode className="text-[#ff5010]" size={24} />
+            {/* Feature 2 */}
+            <div className="group p-8 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-200 transition-all duration-300 cursor-default relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="w-12 h-12 bg-white rounded-lg border border-slate-100 flex items-center justify-center mb-6 text-orange-600 shadow-sm group-hover:scale-110 transition-transform">
+                <QrCode size={24} />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-3">
+              <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-orange-700 transition-colors">
                 {isHindi ? "डिजिटल सत्यापन" : "Digital Verification"}
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
                 {isHindi
-                  ? "QR कोड सक्षम प्रमाण पत्र, जिसे कहीं भी और कभी भी सत्यापित किया जा सकता है।"
-                  : "Encrypted QR Code integration on all issued documents ensures instant authenticity verification globally."}
+                  ? "प्रत्येक दस्तावेज और रसीद पर क्यूआर कोड के माध्यम से तत्काल प्रमाणिकता की जांच।"
+                  : "Instant verification of authenticity via secure encrypted QR codes embedded on every document generated."}
               </p>
             </div>
 
-            {/* Service 3 */}
-            <div className="relative p-8 rounded-xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-6 shadow-sm border border-slate-100 group-hover:border-emerald-500/20 group-hover:scale-110 transition-all">
-                <Shield className="text-emerald-700" size={24} />
+            {/* Feature 3 */}
+            <div className="group p-8 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-200 transition-all duration-300 cursor-default relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="w-12 h-12 bg-white rounded-lg border border-slate-100 flex items-center justify-center mb-6 text-emerald-600 shadow-sm group-hover:scale-110 transition-transform">
+                <Shield size={24} />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-3">
-                {isHindi ? "डेटा सुरक्षा" : "Secure Infrastructure"}
+              <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-emerald-700 transition-colors">
+                {isHindi ? "सुरक्षित एवं गोपनीय" : "Secure & Confidential"}
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
                 {isHindi
-                  ? "आपका डेटा एन्क्रिप्शन के उच्चतम मानकों के साथ सुरक्षित है।"
-                  : "Hosted on secure government servers with end-to-end encryption to protect citizen's sensitive information."}
+                  ? "आपकी व्यक्तिगत जानकारी और शिकायत डेटा पूर्णतः सुरक्षित और एन्क्रिप्टेड है।"
+                  : "State-of-the-art encryption ensures that your personal data and grievance details remain confidential and secure."}
               </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust & Assurance - Satyamev Jayate / Official Charter Style */}
-      <section className="py-24 bg-[#1e293b] text-white relative overflow-hidden">
-        {/* Background Patterns */}
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-
-        <div className="container mx-auto px-4 max-w-5xl relative z-10 text-center">
-          <div className="inline-block mb-8">
-            <Shield size={48} className="text-[#bf9b30] mx-auto mb-4 opacity-90" strokeWidth={1} />
-            <h3 className="text-xs font-bold tracking-[0.3em] text-[#bf9b30] uppercase">
-              {isHindi ? "सत्यमेव जयते" : "Satyamev Jayate"}
-            </h3>
-          </div>
-
-          <h2 className="text-3xl md:text-5xl font-serif text-white mb-8 leading-tight">
-            {isHindi
-              ? "पारदर्शिता। जवाबदेही। सुशासन।"
-              : "Transparency. Accountability. Governance."}
-          </h2>
-
-          <p className="text-slate-400 max-w-2xl mx-auto text-lg font-light mb-12">
-            {isHindi
-              ? "जिला प्रशासन नागरिकों को त्वरित और निष्पक्ष सेवाएं प्रदान करने के लिए प्रतिबद्ध है।"
-              : "The District Administration is committed to providing prompt, fair, and transparent services to every citizen, ensuring that governance reaches the last mile."}
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-white/10 pt-12">
-            <div className="p-4">
-              <div className="text-3xl font-bold text-white mb-1">100%</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider">Digital Process</div>
-            </div>
-            <div className="p-4">
-              <div className="text-3xl font-bold text-white mb-1">24/7</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider">Accessibility</div>
-            </div>
-            <div className="p-4">
-              <div className="text-3xl font-bold text-white mb-1">ISO</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider">Standard Security</div>
-            </div>
-            <div className="p-4">
-              <div className="text-3xl font-bold text-white mb-1">Zero</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider">Hidden Fees</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer - Professional Government Standard */}
-      <footer className="bg-slate-900 border-t-4 border-[#ff5010] text-slate-300 pt-16 pb-8 text-sm">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
+      <footer className="bg-slate-900 text-slate-400 pt-16 pb-8 text-sm">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="grid md:grid-cols-4 gap-12 mb-16">
 
-            {/* Column 1: Identity */}
-            <div className="col-span-1 md:col-span-2 space-y-4">
+            {/* Brand Column */}
+            <div className="col-span-1 md:col-span-2 space-y-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                  <img src="/logo.svg" alt="Logo" className="w-8 h-8" />
+                <div className="w-10 h-10 bg-white rounded-md flex items-center justify-center">
+                  <img src="/logo.svg" alt="Jan Samadhan Logo" className="w-8 h-8" />
                 </div>
                 <div>
                   <h3 className="font-bold text-white text-lg leading-tight uppercase tracking-wider">Jan Samadhan</h3>
-                  <p className="text-xs text-slate-400 uppercase tracking-widest">District Unit</p>
+                  <p className="text-xs text-slate-500 uppercase tracking-widest">District Administration</p>
                 </div>
               </div>
-              <p className="text-slate-400 leading-relaxed text-sm max-w-sm mt-4">
+              <p className="text-slate-400 leading-relaxed text-sm max-w-sm">
                 Designed to bridge the gap between administration and citizens through technology.
-                Ensuring every grievance is heard, tracked, and resolved.
+                Ensuring every grievance is heard, tracked, and resolved with transparency.
               </p>
             </div>
 
-            {/* Column 2: Quick Links */}
+            {/* Links Column */}
             <div>
               <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Quick Access</h4>
-              <ul className="space-y-3">
-                <li><a onClick={() => document.getElementById('track-section').scrollIntoView({ behavior: 'smooth' })} className="hover:text-[#ff5010] cursor-pointer transition-colors flex items-center gap-2"><ChevronRight size={14} /> Track Application</a></li>
-                <li><a onClick={() => navigate("/admin-login")} className="hover:text-[#ff5010] cursor-pointer transition-colors flex items-center gap-2"><ChevronRight size={14} /> Department Login</a></li>
-                <li><a href="#" className="hover:text-[#ff5010] cursor-pointer transition-colors flex items-center gap-2"><ChevronRight size={14} /> Citizen Charter</a></li>
+              <ul className="space-y-4">
+                <li><a onClick={() => document.getElementById('search-section').scrollIntoView({ behavior: 'smooth' })} className="hover:text-white cursor-pointer transition-colors flex items-center gap-2">Track Application</a></li>
+                <li><a onClick={() => navigate("/admin-login")} className="hover:text-white cursor-pointer transition-colors flex items-center gap-2">Department Login</a></li>
+                <li><a href="#" className="hover:text-white cursor-pointer transition-colors flex items-center gap-2">Citizen Charter</a></li>
               </ul>
             </div>
 
-            {/* Column 3: Contact */}
+            {/* Contact Column */}
             <div>
               <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Contact</h4>
-              <ul className="space-y-3 text-sm">
+              <ul className="space-y-4 text-sm">
                 <li className="flex items-start gap-3">
                   <Building size={16} className="mt-0.5 text-slate-500" />
                   <span>Collectorate, Main Building,<br />Ara, Bhojpur - 802301</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Globe size={16} className="text-slate-500" />
-                  <span>https://bhojpur.nic.in</span>
+                  <a href="https://bhojpur.nic.in" className="hover:text-white transition-colors">bhojpur.nic.in</a>
                 </li>
               </ul>
             </div>
           </div>
 
-          {/* Bottom Strip */}
           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-500">
             <div>
               &copy; {new Date().getFullYear()} District Administration, Bhojpur. All Rights Reserved.
@@ -493,13 +421,13 @@ const UserDashboard = () => {
 
             <div className="flex items-center gap-2">
               <span>Technical Partner</span>
-              <span className="font-bold text-slate-200">NIC</span>
+              <span className="font-bold text-slate-300">NIC</span>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* Result Modal */}
+      {/* Result Modal - Keeping existing logic, just ensuring it renders */}
       <ApplicationResultModal
         isOpen={!!foundApplication}
         application={foundApplication}
