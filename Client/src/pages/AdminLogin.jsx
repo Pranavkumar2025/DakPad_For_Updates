@@ -39,168 +39,142 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#f4f7f6]">
+    <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row min-h-[650px]"
+        initial={{ opacity: 0, scale: 0.99 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-5xl bg-white border border-slate-300 flex flex-col md:flex-row min-h-[600px] shadow-none"
       >
-        {/* Left Side - Professional Solid Color Branding */}
-        <div className="hidden md:flex md:w-5/12 bg-[#1e293b] relative p-10 flex-col justify-between text-white">
-          <div className="relative z-10">
-            <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center mb-8 border border-white/10">
-              <img src="/logo.svg" alt="Logo" className="w-8 h-8 object-contain" />
+        {/* Left Side - Stark Branding */}
+        <div className="hidden md:flex md:w-5/12 bg-slate-900 p-12 flex-col justify-center items-center text-center text-white relative overflow-hidden">
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center mb-8 rounded-sm">
+              <img src="/logo.svg" alt="Logo" className="w-8 h-8 opacity-90" />
             </div>
 
-            <h1 className="text-3xl font-bold leading-tight mb-4 tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight mb-4 text-white uppercase">
               Jan Samadhan
             </h1>
-            <p className="text-slate-300 text-sm leading-relaxed max-w-sm">
-              Empowering efficient governance and seamless communication for a better tomorrow.
+            <div className="w-12 h-1 bg-blue-600 mb-6"></div>
+            <p className="text-slate-400 text-sm leading-relaxed max-w-xs font-light">
+              Official Administrative Portal for District Grievance Redressal and Management.
             </p>
           </div>
 
-          <div className="relative z-10 flex flex-col gap-4 mt-auto">
-            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-lg border border-white/5">
-              <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
-                <LayoutDashboard size={20} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm">Admin Portal</h3>
-                <p className="text-xs text-slate-400">Comprehensive management</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-lg border border-white/5">
-              <div className="p-2 bg-orange-500/20 rounded-lg text-orange-400">
-                <UserCheck size={20} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm">Supervisor Access</h3>
-                <p className="text-xs text-slate-400">Field operations & reporting</p>
-              </div>
-            </div>
-          </div>
+          {/* Subtle background detail */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-800/20 to-transparent pointer-events-none"></div>
         </div>
 
         {/* Right Side - Login Forms */}
-        <div className="w-full md:w-7/12 p-8 md:p-12 flex flex-col relative bg-white">
+        <div className="w-full md:w-7/12 p-8 md:p-16 flex flex-col justify-center relative bg-white">
 
-          {/* Back to Home Link */}
-          <div className="absolute top-6 left-8 md:top-8 md:left-12">
+          {/* Top Bar */}
+          <div className="absolute top-6 right-6">
             <Link
               to="/"
-              className="flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 transition-colors group font-medium"
+              className="text-xs font-semibold text-slate-500 hover:text-slate-900 uppercase tracking-widest transition-colors"
             >
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
               Back to Home
             </Link>
           </div>
 
-          <div className="mt-12 md:mt-16 flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome Back</h2>
-              <p className="text-slate-500 text-sm">Please sign in to continue to your dashboard.</p>
+          <div className="max-w-sm mx-auto w-full">
+            <div className="mb-10">
+              <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">Sign In</h2>
+              <p className="text-slate-500 text-sm">Access your control panel.</p>
             </div>
 
-            {/* Toggle Switch */}
-            <div className="flex bg-slate-100 p-1 rounded-xl mb-8 relative w-full">
-              <motion.div
-                className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm"
-                animate={{ x: activeTab === "admin" ? 0 : "100%" }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                style={{ translateX: activeTab === "supervisor" ? "4px" : "0" }}
-              />
+            {/* Flat Tabs */}
+            <div className="flex border-b border-slate-200 mb-8 w-full">
               <button
                 onClick={() => setActiveTab("admin")}
-                className={`flex-1 relative z-10 py-2.5 text-sm font-semibold transition-colors duration-200 rounded-lg ${activeTab === "admin" ? "text-slate-800" : "text-slate-500 hover:text-slate-700"
+                className={`pb-3 text-sm font-semibold transition-colors mr-6 relative ${activeTab === "admin" ? "text-slate-900 border-b-2 border-slate-900 -mb-[1px]" : "text-slate-400 hover:text-slate-600"
                   }`}
               >
-                Admin
+                Administrator
               </button>
               <button
                 onClick={() => setActiveTab("supervisor")}
-                className={`flex-1 relative z-10 py-2.5 text-sm font-semibold transition-colors duration-200 rounded-lg ${activeTab === "supervisor" ? "text-slate-800" : "text-slate-500 hover:text-slate-700"
+                className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === "supervisor" ? "text-slate-900 border-b-2 border-slate-900 -mb-[1px]" : "text-slate-400 hover:text-slate-600"
                   }`}
               >
                 Supervisor
               </button>
             </div>
 
-            {/* Form Container with fixed height helper to prevent jarring layout shifts */}
-            <div className="relative min-h-[350px]">
+            {/* Form Container */}
+            <div className="relative min-h-[320px]">
               <AnimatePresence mode="wait">
                 {activeTab === "admin" ? (
                   <motion.div
                     key="admin"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <form onSubmit={handleAdminLogin} className="space-y-5">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    <form onSubmit={handleAdminLogin} className="space-y-6">
+                      <div className="space-y-1">
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                           Admin ID
                         </label>
                         <input
                           type="text"
-                          placeholder="Enter your Admin ID"
                           value={adminId}
                           onChange={(e) => setAdminId(e.target.value.trim())}
-                          className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all bg-white hover:border-slate-300"
+                          className="w-full px-0 py-3 border-b border-slate-300 focus:border-slate-900 focus:ring-0 outline-none transition-colors bg-transparent text-sm placeholder:text-slate-300 rounded-none"
+                          placeholder="ENTER ID"
                           required
                           disabled={loading}
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                      <div className="space-y-1">
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                           Password
                         </label>
                         <div className="relative">
                           <input
                             type={showPassword ? "text" : "password"}
-                            placeholder="Enter your password"
                             value={adminPassword}
                             onChange={(e) => setAdminPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all bg-white hover:border-slate-300 pr-12"
+                            className="w-full px-0 py-3 border-b border-slate-300 focus:border-slate-900 focus:ring-0 outline-none transition-colors bg-transparent text-sm placeholder:text-slate-300 rounded-none pr-10"
+                            placeholder="PASSWORD"
                             required
                             disabled={loading}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors"
+                            className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors bg-white pl-2"
                           >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
                         </div>
                       </div>
 
                       {error && (
-                        <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-100 animate-pulse">
+                        <div className="text-red-700 text-xs bg-red-50 p-3 border-l-2 border-red-700 font-medium">
                           {error}
-                        </p>
+                        </div>
                       )}
 
                       <button
                         type="submit"
                         disabled={loading || !adminId || !adminPassword}
-                        className="w-full bg-[#1e293b] hover:bg-slate-800 text-white font-semibold py-3.5 rounded-lg shadow-lg shadow-slate-200 transition-all transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+                        className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed text-xs uppercase tracking-widest mt-4"
                       >
-                        {loading ? "Signing in..." : "Login as Admin"}
-                        {!loading && <ArrowRight size={16} />}
+                        {loading ? "AUTHENTICATING..." : "LOGIN"}
                       </button>
                     </form>
                   </motion.div>
                 ) : (
                   <motion.div
                     key="supervisor"
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
                     <SupervisorLogin embedded={true} />

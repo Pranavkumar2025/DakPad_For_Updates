@@ -42,10 +42,10 @@ const SupervisorLogin = ({ onBack, embedded = false }) => {
   };
 
   const formContent = (
-    <form onSubmit={handleSupervisorLogin} className="space-y-5">
+    <form onSubmit={handleSupervisorLogin} className="space-y-6">
       {/* Supervisor Select */}
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+      <div className="space-y-1">
+        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
           Select Supervisor
         </label>
         <select
@@ -53,7 +53,7 @@ const SupervisorLogin = ({ onBack, embedded = false }) => {
           onChange={(e) => setSupervisorName(e.target.value)}
           required
           disabled={loading}
-          className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-base hover:border-slate-300 transition-all"
+          className="w-full px-0 py-3 border-b border-slate-300 focus:border-slate-900 focus:ring-0 bg-transparent text-sm transition-colors outline-none cursor-pointer"
         >
           <option value="">Choose a supervisor</option>
           <option>ADM Bhojpur</option>
@@ -65,69 +65,71 @@ const SupervisorLogin = ({ onBack, embedded = false }) => {
       </div>
 
       {/* Admin ID */}
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+      <div className="space-y-1">
+        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
           Supervisor ID
         </label>
         <input
           type="text"
           value={adminId}
           onChange={(e) => setAdminId(e.target.value)}
-          placeholder="e.g. SUP001"
+          className="w-full px-0 py-3 border-b border-slate-300 focus:border-slate-900 focus:ring-0 outline-none transition-colors bg-transparent text-sm placeholder:text-slate-300 rounded-none"
+          placeholder="ENTER ID"
           required
           disabled={loading}
-          className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-base hover:border-slate-300 transition-all"
         />
       </div>
 
       {/* Password */}
-      <div className="relative">
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+      <div className="space-y-1">
+        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
           Password
         </label>
-        <input
-          type={showPassword ? "text" : "password"}
-          value={supervisorPassword}
-          onChange={(e) => setSupervisorPassword(e.target.value)}
-          placeholder="Enter your password"
-          required
-          disabled={loading}
-          className="w-full px-4 py-3 border border-slate-200 rounded-lg pr-14 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-base hover:border-slate-300 transition-all"
-          autoComplete="new-password"
-        />
-        <button
-          type="button"
-          onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-9 text-slate-400 hover:text-indigo-600 transition"
-        >
-          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-        </button>
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            value={supervisorPassword}
+            onChange={(e) => setSupervisorPassword(e.target.value)}
+            className="w-full px-0 py-3 border-b border-slate-300 focus:border-slate-900 focus:ring-0 outline-none transition-colors bg-transparent text-sm placeholder:text-slate-300 rounded-none pr-10"
+            placeholder="PASSWORD"
+            required
+            disabled={loading}
+            autoComplete="new-password"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors bg-white pl-2"
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
       </div>
 
       {/* Error Message */}
       {error && (
-        <motion.p
-          initial={{ opacity: 0, y: -10 }}
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-100 animate-pulse"
+          className="text-red-700 text-xs bg-red-50 p-3 border-l-2 border-red-700 font-medium"
         >
           {error}
-        </motion.p>
+        </motion.div>
       )}
 
       {/* Submit */}
       <button
         type="submit"
         disabled={loading || !supervisorName || !adminId || !supervisorPassword}
-        className="w-full bg-[#1e293b] hover:bg-slate-800 text-white font-semibold py-3.5 rounded-lg shadow-lg shadow-slate-200 transition-all transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed text-xs uppercase tracking-widest mt-4"
       >
         {loading ? (
           <>
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Authenticating...
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block mr-2" />
+            AUTHENTICATING...
           </>
         ) : (
-          "Login as Supervisor"
+          "LOGIN"
         )}
       </button>
     </form>

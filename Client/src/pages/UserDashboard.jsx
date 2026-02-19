@@ -146,7 +146,7 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen font-sans text-slate-900 bg-slate-50 selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-screen font-sans text-slate-900 bg-slate-50 selection:bg-slate-200 selection:text-slate-900">
       <UserNavbar />
 
       {/* Hero Section - Minimal Enterprise */}
@@ -157,7 +157,7 @@ const UserDashboard = () => {
             {/* Left Column: Text & Call to Action */}
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold uppercase tracking-wider rounded-sm mb-6">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-700"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-800"></span>
                 Official District Portal
               </div>
 
@@ -177,7 +177,7 @@ const UserDashboard = () => {
               <div className="flex flex-wrap gap-4">
                 <button
                   onClick={() => document.getElementById('search-section').scrollIntoView({ behavior: 'smooth' })}
-                  className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-sm transition-colors flex items-center gap-2"
+                  className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-sm transition-colors flex items-center gap-2 shadow-sm"
                 >
                   {isHindi ? "आवेदन ट्रैक करें" : "Track Application"}
                   <ArrowRight size={16} />
@@ -186,7 +186,7 @@ const UserDashboard = () => {
                   onClick={() => navigate("/admin-login")}
                   className="px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-sm border border-slate-300 transition-colors flex items-center gap-2"
                 >
-                  <LogIn size={16} className="text-slate-400" />
+                  <LogIn size={16} className="text-slate-500" />
                   {isHindi ? "विभागीय लॉगिन" : "Department Login"}
                 </button>
               </div>
@@ -205,7 +205,7 @@ const UserDashboard = () => {
 
             {/* Right Column: Clean Image Frame */}
             <div className="hidden lg:block">
-              <div className="relative aspect-[4/3] bg-slate-100 border border-slate-200 rounded-sm overflow-hidden">
+              <div className="relative aspect-[4/3] bg-slate-100 border border-slate-200 rounded-sm overflow-hidden shadow-sm">
                 <AnimatePresence initial={false} mode="wait">
                   <motion.img
                     key={currentImageIndex}
@@ -220,12 +220,12 @@ const UserDashboard = () => {
                 </AnimatePresence>
 
                 {/* Minimal Overlay */}
-                <div className="absolute inset-x-0 bottom-0 bg-slate-900/80 p-4 backdrop-blur-sm">
+                <div className="absolute inset-x-0 bottom-0 bg-slate-900/90 p-4 backdrop-blur-md border-t border-slate-800">
                   <div className="flex items-center gap-3">
                     <img src="/logo.svg" alt="logo" className="w-8 h-8 opacity-90" />
                     <div>
                       <p className="text-white text-sm font-semibold tracking-wide">District Administration</p>
-                      <p className="text-slate-300 text-xs">Official Portal</p>
+                      <p className="text-slate-400 text-xs">Official Portal</p>
                     </div>
                   </div>
                 </div>
@@ -248,8 +248,8 @@ const UserDashboard = () => {
           </div>
 
           <div className="max-w-xl mx-auto">
-            <div className={`flex items-center bg-white border border-slate-300 rounded-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 ${isInputFocused ? 'border-blue-500' : ''}`}>
-              <div className="pl-4 text-slate-400">
+            <div className={`flex items-center bg-white border rounded-sm transition-all focus-within:ring-1 focus-within:ring-slate-400 ${isInputFocused ? 'border-slate-800 ring-1 ring-slate-400' : 'border-slate-300'}`}>
+              <div className="pl-4 text-slate-500">
                 <Search size={18} />
               </div>
 
@@ -300,14 +300,14 @@ const UserDashboard = () => {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Feature 1 */}
-            <div className="p-6 rounded-sm border border-slate-200 bg-white hover:border-slate-300 transition-colors">
-              <div className="w-10 h-10 bg-slate-50 rounded-sm border border-slate-100 flex items-center justify-center mb-4 text-slate-700">
-                <Clock size={20} />
+            <div className="group p-8 rounded-sm border border-slate-200 bg-white hover:border-slate-800/20 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 cursor-default">
+              <div className="w-12 h-12 bg-slate-50 rounded-sm border border-slate-100 flex items-center justify-center mb-6 text-slate-700 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-800 transition-colors duration-300">
+                <Clock size={22} />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-2">
+              <h3 className="text-base font-bold text-slate-900 mb-3 group-hover:text-black transition-colors">
                 {isHindi ? "समयबद्ध निपटान" : "Time-Bound Disposal"}
               </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <p className="text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
                 {isHindi
                   ? "सेवा के अधिकार अधिनियम के तहत निर्धारित समय सीमा के भीतर शिकायतों का निवारण।"
                   : "Mandatory disposal of grievances within the stipulated time frame as per the Right to Service Act protocols."}
@@ -315,14 +315,14 @@ const UserDashboard = () => {
             </div>
 
             {/* Feature 2 */}
-            <div className="p-6 rounded-sm border border-slate-200 bg-white hover:border-slate-300 transition-colors">
-              <div className="w-10 h-10 bg-slate-50 rounded-sm border border-slate-100 flex items-center justify-center mb-4 text-slate-700">
-                <QrCode size={20} />
+            <div className="group p-8 rounded-sm border border-slate-200 bg-white hover:border-slate-800/20 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 cursor-default">
+              <div className="w-12 h-12 bg-slate-50 rounded-sm border border-slate-100 flex items-center justify-center mb-6 text-slate-700 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-800 transition-colors duration-300">
+                <QrCode size={22} />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-2">
+              <h3 className="text-base font-bold text-slate-900 mb-3 group-hover:text-black transition-colors">
                 {isHindi ? "डिजिटल सत्यापन" : "Digital Verification"}
               </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <p className="text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
                 {isHindi
                   ? "प्रत्येक दस्तावेज और रसीद पर क्यूआर कोड के माध्यम से तत्काल प्रमाणिकता की जांच।"
                   : "Instant verification of authenticity via secure encrypted QR codes embedded on every document generated."}
@@ -330,14 +330,14 @@ const UserDashboard = () => {
             </div>
 
             {/* Feature 3 */}
-            <div className="p-6 rounded-sm border border-slate-200 bg-white hover:border-slate-300 transition-colors">
-              <div className="w-10 h-10 bg-slate-50 rounded-sm border border-slate-100 flex items-center justify-center mb-4 text-slate-700">
-                <Shield size={20} />
+            <div className="group p-8 rounded-sm border border-slate-200 bg-white hover:border-slate-800/20 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 cursor-default">
+              <div className="w-12 h-12 bg-slate-50 rounded-sm border border-slate-100 flex items-center justify-center mb-6 text-slate-700 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-800 transition-colors duration-300">
+                <Shield size={22} />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-2">
+              <h3 className="text-base font-bold text-slate-900 mb-3 group-hover:text-black transition-colors">
                 {isHindi ? "सुरक्षित एवं गोपनीय" : "Secure & Confidential"}
               </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <p className="text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
                 {isHindi
                   ? "आपकी व्यक्तिगत जानकारी और शिकायत डेटा पूर्णतः सुरक्षित और एन्क्रिप्टेड है।"
                   : "State-of-the-art encryption ensures that your personal data and grievance details remain confidential and secure."}
@@ -348,7 +348,7 @@ const UserDashboard = () => {
       </section>
 
       {/* Footer - Professional Government Standard */}
-      <footer className="bg-slate-900 text-slate-400 py-12 text-sm border-t-4 border-blue-900">
+      <footer className="bg-slate-900 text-slate-400 py-12 text-sm border-t-2 border-slate-800">
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="grid md:grid-cols-4 gap-10 mb-12">
 
